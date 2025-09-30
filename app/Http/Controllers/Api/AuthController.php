@@ -14,8 +14,12 @@ use App\Models\SchoolStudentProfile;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\SchoolStudentRegisterRequest;
+use App\Traits\ApiResponser; // <<< Bu satırı ekleyin!
+
 class AuthController extends Controller
 {
+        use ApiResponser; // <<< Trait'i kullanıma alın!
+
     // ✅ Kayıt
     public function register(RegisterRequest $request)
     {

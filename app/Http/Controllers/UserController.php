@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Traits\ApiResponser; // <<< Bu satırı ekleyin!
 
 class UserController extends Controller
 {
+            use ApiResponser; // <<< Trait'i kullanıma alın!
+
     public function index() // tüm kullanıcılar
     {
         $this->authorizeRole(['admin', 'manager']);
@@ -21,12 +24,17 @@ class UserController extends Controller
     public function show($id) // tek kullanıcı
     {
         $this->authorizeRole(['admin', 'manager', 'teacher']);
-        return User::with([
+        $user =  User::with([
             'individualStudentProfile',
             'schoolStudentProfile',
             'teacherProfile',
             'managerProfile'
         ])->findOrFail($id);
+         if (!$user) {
+            return $this->errorResponse('user_not_found', 404);
+        }
+        return $this->successResponse($user, 'Kullanıcı bilgileri başarıyla alındı.');
+
     }
 
     public function store(Request $request) // yeni kullanıcı
