@@ -11,7 +11,6 @@ use App\Http\Controllers\{
     SubscriptionController
 };
 Route::post("/register", [AuthController::class, "register"]);
-Route::post("/register", [AuthController::class, "register"]);
 
 Route::post("/managerregister", [AuthController::class, "managerregister"]);
 Route::post("/teacherregister", [AuthController::class, "teacherregister"]);

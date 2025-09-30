@@ -11,18 +11,15 @@ use App\Models\ManagerProfile;
 use App\Models\TeacherProfile;
 use App\Models\InvidualStudentProfile;
 use App\Models\SchoolStudentProfile;
-
+use Illuminate\Support\Facades\DB;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\SchoolStudentRegisterRequest;
 class AuthController extends Controller
 {
     // ✅ Kayıt
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $request->validate([
-            "name" => "required|string|max:255",
-            "userName" => "required|string|max:255|unique:users",
-            "email" => "required|string|email",
-            "password" => "required|string|min:6|confirmed"
-        ]);
+        
         $user = User::create([
             "name" => $request->name,
             "email" => $request->email,
@@ -36,14 +33,9 @@ class AuthController extends Controller
             "token" => $token
         ], 201);
     }
-    public function managerregister(Request $request)
+    public function managerregister(RegisterRequest $request)
     {
-        $request->validate([
-            "name" => "required|string|max:255",
-            "userName" => "required|string|max:255|unique:users",
-            "email" => "required|string|email",
-            "password" => "required|string|min:6|confirmed",
-        ]);
+       
             DB::beginTransaction();
 
         try {
@@ -67,14 +59,9 @@ class AuthController extends Controller
         }
        
     }
-    public function teacherregister(Request $request)
+    public function teacherregister(RegisterRequest $request)
     {
-        $request->validate([
-            "name" => "required|string|max:255",
-            "userName" => "required|string|max:255|unique:users",
-            "email" => "required|string|email",
-            "password" => "required|string|min:6|confirmed",
-        ]);
+
             DB::beginTransaction();
 
         try {
@@ -100,19 +87,12 @@ class AuthController extends Controller
     }
 
 
-public function schoolstudentregister(Request $request)
-    {
-        $request->validate([
-            "name" => "required|string|max:255",
-            "userName" => "required|string|max:255|unique:users",
-            "password" => "required|string|min:6|confirmed",
-        ]);
+public function schoolstudentregister(SchoolStudentRegisterRequest $request)
+    {       
             DB::beginTransaction();
-
         try {
            $user = User::create([
             "name" => $request->name,
-            "email" => $request->email,
             "userName" => $request->userName,
             "password" => Hash::make($request->password),
             "role" => 'schoolstudent'
@@ -134,39 +114,25 @@ public function schoolstudentregister(Request $request)
 
     //-------------------------------
 
-public function invidualstudentregister(Request $request)
+public function invidualstudentregister(RegisterRequest $request)
     {
-        $request->validate([
-            "name" => "required|string|max:255",
-            "userName" => "required|string|max:255|unique:users",
-            "email" => "required|string|email",
-            "password" => "required|string|min:6|confirmed",
-        ]);
-            DB::beginTransaction();
-
-        try {
-           $user = User::create([
+      
+        $user = User::create([
             "name" => $request->name,
             "email" => $request->email,
             "userName" => $request->userName,
             "password" => Hash::make($request->password),
             "role" => 'individualstudent'
         ]);
-        DB::commit();
-            $token = $user->createToken("api_token")->plainTextToken;
+
+        $token = $user->createToken("api_token")->plainTextToken;
         return response()->json([
             "user" => $user,
             "token" => $token
         ], 201);
-
-        } catch (\Exception $e) {
-          DB::rollBack();
-        return response()->json(["message" => "Öğrenci kaydı başarısız oldu."], 500);
-        }
        
     }
 
-    //-------------------------------
 
 
 
