@@ -12,20 +12,21 @@ return new class extends Migration
     public function up(): void
     {
 
-           Schema::create('manager_profiles', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('user_id')->constrained()->onDelete('cascade');
-    $table->string('phone')->nullable();
-    $table->string('address')->nullable();
-    $table->date('birth_date')->nullable();
-    $table->string('note')->nullable();
-    $table->string('referance')->nullable();
-    $table->unsignedBigInteger('schoolId')->nullable();
+        Schema::create('manager_profiles', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('phone')->nullable();
+            $table->string('address')->nullable();
+            $table->date('birth_date')->nullable();
+            $table->string('note')->nullable();
+            $table->string('referance')->nullable();
+            $table->unsignedBigInteger('schoolId')->nullable();
 
-    $table->boolean('payment_reminder')->default(false);
-           });
+            $table->boolean('payment_reminder')->default(false);
+            $table->timestamps();
+        });
     }
-       
+
 
 
     /**

@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class SchoolStudentProfile extends Model
 {
-     use HasFactory;
+    use HasFactory;
 
     protected $fillable = [
         'user_id',
+        'student_number',
+        'tc_no',
         'phone',
         'address',
         'birth_date',
@@ -19,9 +21,17 @@ class SchoolStudentProfile extends Model
         'parent_name',
         'parent_phone',
         'schoolId',
+        'gender',
+        'description',
+        'registered_at',
+        'img_path',
+        'status',
+        'is_active',
+        'parent_status',
+        'family_notes',
     ];
 
-        public function user()
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
@@ -35,8 +45,17 @@ class SchoolStudentProfile extends Model
     {
         return $this->belongsTo(Course::class, 'active_course_id');
     }
-     public function school()
+    public function school()
     {
         return $this->belongsTo(School::class, 'schooldId');
+    }
+    public function parents()
+    {
+        return $this->hasMany(StudentParent::class);
+    }
+
+    public function healthProfile()
+    {
+        return $this->hasOne(StudentHealthProfile::class);
     }
 }

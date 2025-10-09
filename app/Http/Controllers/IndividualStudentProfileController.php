@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\TeacherProfile;
+use App\Models\IndividualStudentProfile;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class IndividualStudentProfileController extends Controller
 {
@@ -38,7 +42,7 @@ public function show($user_id)
     $this->authorizeRole(['admin', 'manager', 'teacher', 'student']);
 
     // studentProfile tablosu user_id'ye göre aranır
-    $profile = StudentProfile::where('user_id', $user_id)
+    $profile = IndividualStudentProfile::where('user_id', $user_id)
                  ->with('user') // Profile ait user bilgilerini de yükle
                  ->firstOrFail();
 

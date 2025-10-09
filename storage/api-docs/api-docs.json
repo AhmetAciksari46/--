@@ -1,0 +1,70 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "EdeQR LMS API",
+        "description": "EdeQR LMS projesi için REST API dokümantasyonu",
+        "contact": {
+            "email": "destek@edekurs.com.tr"
+        },
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/user": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Kullanıcı bilgilerini döndürür",
+                "operationId": "e879c235f7fbf0388ce1654705fd87f1",
+                "responses": {
+                    "200": {
+                        "description": "Başarılı"
+                    },
+                    "401": {
+                        "description": "Yetkisiz erişim"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Kullanıcı listesini döndürür",
+                "operationId": "c457726701591d1183b53aa71fc13441",
+                "responses": {
+                    "200": {
+                        "description": "Başarılı"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "User",
+            "description": "User"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "apiKey",
+                "description": "JWT veya Sanctum tokenini \"Bearer {token}\" formatında girin",
+                "name": "Authorization",
+                "in": "header"
+            }
+        }
+    },
+    "security": {
+        "1": {
+            "bearerAuth": []
+        }
+    }
+}

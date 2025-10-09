@@ -18,18 +18,42 @@ class RolePermissionSeeder extends Seeder
             'user.create',
             'user.edit',
             'user.delete',
+
             'organization.create',
             'organization.edit',
             'organization.delete',
-            'settings.edit',
+
+
             'class.create',
             'class.edit',
             'class.delete',
+
             'student.create',
             'student.edit',
             'student.delete',
-            'profile.update',
 
+            'worker.create',
+            'worker.edit',
+            'worker.delete',
+
+            'teacher.create',
+            'teacher.edit',
+            'teacher.delete',
+
+            'profile.update',
+            'settings.edit',
+            
+            'student.view',
+            'class.view',
+            'teacher.view',
+            'worker.view',
+            'organization.view',
+
+            'student.view.list',
+            'class.view.list',
+            'teacher.view.list',
+            'worker.view.list',
+            'organization.view.list',
         ];
 
         foreach ($permissions as $permission) {
@@ -54,7 +78,22 @@ class RolePermissionSeeder extends Seeder
             'class.delete',
             'student.create',
             'student.edit',
-            'student.delete'
+            'student.delete',
+            'worker.create',
+            'worker.edit',
+            'worker.delete',
+            'teacher.create',
+            'teacher.edit',
+            'teacher.delete',
+            'student.view',
+            'class.view',
+            'teacher.view',
+            'worker.view',
+            'organization.view',
+            'student.view.list',
+            'class.view.list',
+            'teacher.view.list',
+            'worker.view.list',
         ]);
          $teacher->givePermissionTo([
              'class.create',
@@ -64,6 +103,10 @@ class RolePermissionSeeder extends Seeder
             'student.edit',
             'student.delete',
              'profile.update',
+             'student.view',
+            'class.view',
+            'student.view.list',
+            'class.view.list',
 
         ]);
         $individualstudent->givePermissionTo([
@@ -71,6 +114,7 @@ class RolePermissionSeeder extends Seeder
         ]);
          $schoolstudent->givePermissionTo([
             'profile.update',
+            'student.view.list',
         ]);
         $worker->givePermissionTo([
             'profile.update',

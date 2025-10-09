@@ -15,15 +15,20 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\SchoolStudentRegisterRequest;
 use App\Traits\ApiResponser; // <<< Bu satırı ekleyin!
+use Illuminate\Support\Facades\Log;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // Bunu ekle
+
 
 class AuthController extends Controller
 {
-        use ApiResponser; // <<< Trait'i kullanıma alın!
+    use ApiResponser;
 
-    // ✅ Kayıt
+    use AuthorizesRequests; 
+    //  Kayıt
+ 
     public function register(RegisterRequest $request)
     {
-        
+
         $user = User::create([
             "name" => $request->name,
             "email" => $request->email,
@@ -39,88 +44,85 @@ class AuthController extends Controller
     }
     public function managerregister(RegisterRequest $request)
     {
-       
-            DB::beginTransaction();
-
+        DB::beginTransaction();
         try {
-           $user = User::create([
-            "name" => $request->name,
-            "email" => $request->email,
-            "userName" => $request->userName,
-            "password" => Hash::make($request->password),
-            "role" => 'manager'
-        ]);
-        DB::commit();
+            $user = User::create([
+                "name" => $request->name,
+                "email" => $request->email,
+                "userName" => $request->userName,
+                "password" => Hash::make($request->password),
+                "role" => 'manager'
+            ]);
+            DB::commit();
             $token = $user->createToken("api_token")->plainTextToken;
-        return response()->json([
-            "user" => $user,
-            "token" => $token
-        ], 201);
-
+            return response()->json([
+                "user" => $user,
+                "token" => $token
+            ], 201);
         } catch (\Exception $e) {
-          DB::rollBack();
-        return response()->json(["message" => "Yönetici kaydı başarısız oldu."], 500);
+            DB::rollBack();
+            return response()->json(["message" => "Yönetici kaydı başarısız oldu."], 500);
         }
-       
     }
+    
     public function teacherregister(RegisterRequest $request)
     {
 
-            DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
-           $user = User::create([
-            "name" => $request->name,
-            "email" => $request->email,
-            "userName" => $request->userName,
-            "password" => Hash::make($request->password),
-            "role" => 'teacher'
-        ]);
-        DB::commit();
+            $user = User::create([
+                "name" => $request->name,
+                "email" => $request->email,
+                "userName" => $request->userName,
+                "password" => Hash::make($request->password),
+                "role" => 'teacher'
+            ]);
+            DB::commit();
             $token = $user->createToken("api_token")->plainTextToken;
-        return response()->json([
-            "user" => $user,
-            "token" => $token
-        ], 201);
-
+            return response()->json([
+                "user" => $user,
+                "token" => $token
+            ], 201);
         } catch (\Exception $e) {
-          DB::rollBack();
-        return response()->json(["message" => "Öğretmen kaydı başarısız oldu."], 500);
+            DB::rollBack();
+            return response()->json(["message" => "Öğretmen kaydı başarısız oldu."], 500);
         }
-       
+    }
+
+    public function createTeacher(RegisterRequest $request) {
+        $this->authorize('createTeacher', [User::class, $request]);
+
     }
 
 
-public function schoolstudentregister(SchoolStudentRegisterRequest $request)
-    {       
-            DB::beginTransaction();
-        try {
-           $user = User::create([
-            "name" => $request->name,
-            "userName" => $request->userName,
-            "password" => Hash::make($request->password),
-            "role" => 'schoolstudent'
-        ]);
-        DB::commit();
-            $token = $user->createToken("api_token")->plainTextToken;
-        return response()->json([
-            "user" => $user,
-            "token" => $token
-        ], 201);
-
-        } catch (\Exception $e) {
-          DB::rollBack();
-        return response()->json(["message" => "Öğrenci kaydı başarısız oldu."], 500);
-        }
-       
-    }
-
-
-    //-------------------------------
-
-public function invidualstudentregister(RegisterRequest $request)
+    public function schoolstudentregister(SchoolStudentRegisterRequest $request)
     {
-      
+        DB::beginTransaction();
+        try {
+            $user = User::create([
+                "name" => $request->name,
+                "userName" => $request->userName,
+                "password" => Hash::make($request->password),
+                "role" => 'schoolstudent'
+            ]);
+            DB::commit();
+            $token = $user->createToken("api_token")->plainTextToken;
+            return response()->json([
+                "user" => $user,
+                "token" => $token
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(["message" => "Öğrenci kaydı başarısız oldu."], 500);
+        }
+    }
+
+
+
+    public function invidualstudentregister(RegisterRequest $request)
+    {
+        DB::beginTransaction();
         $user = User::create([
             "name" => $request->name,
             "email" => $request->email,
@@ -134,7 +136,6 @@ public function invidualstudentregister(RegisterRequest $request)
             "user" => $user,
             "token" => $token
         ], 201);
-       
     }
 
 
@@ -142,43 +143,49 @@ public function invidualstudentregister(RegisterRequest $request)
 
 
     // ✅ Giriş
- public function login(Request $request)
-{
-    // 1. DOĞRULAMA (VALIDATION)
-    // email veya userName'den en az biri zorunlu olmalı, password zorunlu.
-    $request->validate([
-        "login" => "required|string", // Kullanıcının girdiği 'email' veya 'userName' değeri
-        "password" => "required|string"
-    ]);
+    public function login(Request $request)
+    {
+        // 1. DOĞRULAMA (VALIDATION)
+        // email veya userName'den en az biri zorunlu olmalı, password zorunlu.
+        $request->validate([
+            "login" => "required|string", // Kullanıcının girdiği 'email' veya 'userName' değeri
+            "password" => "required|string"
+        ]);
 
-    // Kullanıcının girdiği değeri (e-posta mı yoksa kullanıcı adı mı olduğunu) belirleme
-    $loginValue = $request->input('login');
-    $fieldType = filter_var($loginValue, FILTER_VALIDATE_EMAIL) ? 'email' : 'userName';
+        // Kullanıcının girdiği değeri (e-posta mı yoksa kullanıcı adı mı olduğunu) belirleme
+        $loginValue = $request->input('login');
+        $fieldType = filter_var($loginValue, FILTER_VALIDATE_EMAIL) ? 'email' : 'userName';
 
-    // 2. KİMLİK BİLGİLERİNİ HAZIRLAMA
-    $credentials = [
-        $fieldType => $loginValue,
-        'password' => $request->input('password')
-    ];
+        // 2. KİMLİK BİLGİLERİNİ HAZIRLAMA
+        $credentials = [
+            $fieldType => $loginValue,
+            'password' => $request->input('password')
+        ];
 
-    // 3. GİRİŞ DENEMESİ (AUTHENTICATION ATTEMPT)
-    if (!Auth::attempt($credentials)) {
+        // 3. GİRİŞ DENEMESİ (AUTHENTICATION ATTEMPT)
+        if (!Auth::attempt($credentials)) {
+            return response()->json([
+                "message" => "Giriş bilgileri hatalı. Lütfen kullanıcı adınızı/e-posta adresinizi ve şifrenizi kontrol edin."
+            ], 401);
+        }
+
+        // 4. BAŞARILI GİRİŞ
+        $user = Auth::user();
+
+        // Zaten 'api_token' kullanıyorsunuz, bu iyi bir yöntem.
+        $token = $user->createToken("api_token")->plainTextToken;
+
         return response()->json([
-            "message" => "Giriş bilgileri hatalı. Lütfen kullanıcı adınızı/e-posta adresinizi ve şifrenizi kontrol edin."
-        ], 401);
+            "user" => $user,
+            "token" => $token
+        ]);
     }
 
-    // 4. BAŞARILI GİRİŞ
-    $user = Auth::user();
-    
-    // Zaten 'api_token' kullanıyorsunuz, bu iyi bir yöntem.
-    $token = $user->createToken("api_token")->plainTextToken; 
 
-    return response()->json([
-        "user" => $user,
-        "token" => $token
-    ]);
-}
+
+
+
+
 
     // ✅ Çıkış
     public function logout(Request $request)
@@ -187,9 +194,5 @@ public function invidualstudentregister(RegisterRequest $request)
         return response()->json(["message" => "Çıkış yapıldı"]);
     }
 
-    // ✅ Kullanıcı Bilgisi
-    public function me(Request $request)
-    {
-        return response()->json($request->user());
-    }
+
 }

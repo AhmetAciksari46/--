@@ -13,22 +13,25 @@ return new class extends Migration
     {
         Schema::create('school_student_profiles', function (Blueprint $table) {
             $table->id();
-                $table->foreignId('user_id')->constrained()->onDelete('cascade');
-    
-    // Ortak alanlar
-    $table->string('phone')->nullable();
-    $table->string('address')->nullable();
-
-    // Öğrenciye özel
-    $table->unsignedBigInteger('active_course_id')->nullable();
-    $table->unsignedBigInteger('active_class_id')->nullable();
-    $table->string('parent_name')->nullable();
-    $table->string('parent_phone')->nullable();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('schoolId');
+            $table->string('phone')->nullable();
+            $table->string('address')->nullable();
+            $table->unsignedBigInteger('active_course_id')->nullable();
+            $table->unsignedBigInteger('active_class_id')->nullable();
+            $table->string('parent_name')->nullable();
+            $table->string('parent_phone')->nullable();
             $table->date('birth_date');
-
-    // Öğrenciye özel
-    $table->unsignedBigInteger('schoolId')->constrained('schools')->onDelete('cascade');
-
+            $table->string('student_number')->unique();
+            $table->string('tc_no')->unique();
+            $table->string('gender')->nullable();
+            $table->text('description')->nullable();
+            $table->date('registered_at')->nullable();
+            $table->string('img_path')->nullable();
+            $table->string('status')->default('active');
+            $table->boolean('is_active')->default(true);
+            $table->enum('parent_status', ['evli', 'boşanmış'])->default('evli');
+            $table->text('family_notes')->nullable();
             $table->timestamps();
         });
     }

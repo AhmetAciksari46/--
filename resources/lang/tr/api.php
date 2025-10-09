@@ -31,4 +31,21 @@ return [
     'resource_update_failed' => 'Kayıt güncellenemedi.',
     'resource_delete_failed' => 'Kayıt silinemedi.',
     'already_exists'        => 'Bu kayıt zaten mevcut.',
+    'profile_fetched' => 'Profil bilgileri başarıyla getirildi.',
+    'profile_updated' => 'Profil başarıyla güncellendi.',
+    'success' => 'İşlem başarılı.',
+    'user_not_found' => 'Kullanıcı bulunamadı.',
+    'unauthorized' => 'Bu işlem için yetkiniz yok.',
+    'validation_failed' => 'Doğrulama hatası oluştu.',
+    'unknown_error' => 'Bilinmeyen bir hata meydana geldi.',
+
+     // Hata mesajları
+    'validation_error' => 'Gönderilen veriler geçerli değil.',
+    'unauthenticated' => 'Oturumunuz bulunamadı. Lütfen giriş yapın.',
+    'unauthorized' => 'Bu işlem için yetkiniz yok.',
+    'not_found' => 'Kayıt bulunamadı.',
+    'route_not_found' => 'İstediğiniz adres bulunamadı.',
+    'method_not_allowed' => 'Geçersiz istek yöntemi.',
+    'http_error' => 'Bir HTTP hatası oluştu.',
+    'unexpected_error' => 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.',
 ];

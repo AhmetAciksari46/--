@@ -8,8 +8,18 @@ use App\Traits\ApiResponser; // <<< Bu satırı ekleyin!
 
 class UserController extends Controller
 {
-            use ApiResponser; // <<< Trait'i kullanıma alın!
-
+    use ApiResponser; // <<< Trait'i kullanıma alın!
+/**
+ * @OA\Get(
+ *     path="/api/users",
+ *     summary="Kullanıcı listesini döndürür",
+ *     tags={"User"},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Başarılı",
+ *     )
+ * )
+ */
     public function index() // tüm kullanıcılar
     {
         $this->authorizeRole(['admin', 'manager']);
@@ -51,7 +61,7 @@ class UserController extends Controller
         $user->update($request->all());
         return response()->json($user);
     }
-
+   
     public function destroy($id)
     {
         $this->authorizeRole(['admin']);

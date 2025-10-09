@@ -10,7 +10,7 @@ class Subscription extends Model
     use HasFactory;
 
     protected $dates = ['start_date', 'end_date'];
-protected $fillable = [
+    protected $fillable = [
         'school_id',
         'user_id',
         'package_id',
@@ -18,7 +18,7 @@ protected $fillable = [
         'end_date',
         'is_active',
     ];
-     protected $casts = [
+    protected $casts = [
         'is_active' => 'boolean',
         'start_date' => 'date',
         'end_date' => 'date',
