@@ -20,10 +20,9 @@ use App\Http\Controllers\{
     SchoolStudentController,
     SchoolStudentProfileController,
     IndividualStudentProfileController,
-    IndividualStudentController
+    IndividualStudentController,
+    AdditionalClassRoomController
 };
-use App\Models\SchoolStudentProfile;
-use PHPUnit\TextUI\XmlConfiguration\Logging\TeamCity;
 
 Route::post("/register", [AuthController::class, "register"]);
 Route::post("/login", [AuthController::class, "login"]);
@@ -33,6 +32,9 @@ Route::post("/teacherregister", [AuthController::class, "teacherregister"]);
 Route::post("/schoolstudentregister", [AuthController::class, "schoolstudentregister"]);
 Route::post("/invidualstudentregister", [AuthController::class, "invidualstudentregister"]);
 
+
+Route::get('packages', [PackageController::class, 'publicIndex']);
+Route::get('packages/{id}', [PackageController::class, 'publicShow']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -50,11 +52,14 @@ Route::middleware('auth:sanctum')->group(function () {
         });
 
         // Teacher kendi profili
+        //TODO : MANAGER TARAFLI KONTROL EDİLECEK
         Route::prefix("teacher")->middleware("role:teacher")->group(function () {
             Route::put("/updateprofile", [TeacherController::class, "updateprofile"]);
             Route::put("/updateprofilesettings", [TeacherProfileController::class, "updateprofilesettings"]);
             Route::get("/getprofilesettings", [TeacherProfileController::class, "getprofilesettings"]);
         });
+        //TODO : MANAGER TARAFLI KONTROL EDİLECEK
+
         // School Student kendi profili ->Sadece ad syad ve şifre değişebilir// diğer bilgileri manager yada teacher değiştirir
         Route::prefix("schoolstudent")->middleware("role:schoolstudent")->group(function () {
             Route::put("/updateprofile", [SchoolStudentController::class, "updateprofile"]);
@@ -78,6 +83,64 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/users', [UserController::class, 'store']);
         Route::put('/users/{id}', [UserController::class, 'update']);
         Route::delete('/users/{id}', [UserController::class, 'destroy']);
+        //----------------------------------------------admin----------------------------------------------------
+        Route::prefix("admin")->group(function () {
+
+            Route::prefix("package")->group(function () {
+                Route::get('/getpackages', [PackageController::class, 'getpackages']);
+                Route::get('/getpackagebyid/{id}', [PackageController::class, 'getpackagebyid']);
+                Route::post('/createpackage', [PackageController::class, 'create']);
+                Route::put('/updatepackagebyid/{id}', [PackageController::class, 'updatepackagebyid']);
+                Route::delete('/deletepackagebyid/{id}', [PackageController::class, 'delete']);
+            });
+
+            Route::prefix("subscription")->group(function () {});
+        });
+        //------------------------------------------------admin-----------------------------------------------
+        Route::prefix("schools/{school}")->group(function () {
+
+            // Öğrenci işlemleri
+            Route::prefix("students")->group(function () {
+                Route::get("/getstudents", [SchoolStudentController::class, "index"]); // o okuldaki öğrencilerin tamamını getir
+                Route::get("/getstudentsbyclassid/{classId}", [SchoolStudentController::class, "getstudentsbyclassid"]); //  sınıf id bazlı öğrencilerin tamamını getir
+                Route::get("/{id}", [SchoolStudentController::class, "show"]); // id ye göre öğrenci getir
+                Route::post("/createstudent", [SchoolStudentController::class, "store"]);    // öğrenci oluştur (user modeldeki bilgiler)
+                Route::post("/createstudentprofile", [SchoolStudentController::class, "createstudentprofile"]);    // öğrenci oluştur (schoolstudentprofile modeldeki bilgiler)
+                Route::post("/createstudentparent", [SchoolStudentController::class, "createstudentprofile"]);    // öğrenci oluştur (schoolstudentparent modeldeki bilgiler)
+                Route::post("/createstudenthealth", [SchoolStudentController::class, "createstudenthealth"]);    // öğrenci oluştur (schoolstudenthealth modeldeki bilgiler)
+                Route::put("/updatestudent/{id}", [SchoolStudentController::class, "updateById"]);    // id ye göre öğrenci güncelle (user modeldeki bilgiler)
+                Route::put("/updatestudentprofile/{id}", [SchoolStudentProfileController::class, "updateProfileSettingsById"]); // id ye göre öğrenci profil settings güncelle
+                Route::put("/updatestudentparent/{id}", [SchoolStudentController::class, "updateStudentParentById"]); // id ye göre öğrenci parent bilgilerini güncelle
+                Route::put("/updatestudenthealth/{id}", [SchoolStudentController::class, "updateStudentHealthById"]); // id ye göre öğrenci health bilgilerini güncelle
+                Route::put("/updateprofilesettings/{id}", [SchoolStudentProfileController::class, "updateProfileSettingsById"]); // id ye göre öğrenci profil settings güncelle
+                Route::delete("/{id}", [SchoolStudentController::class, "destroy"]); // id ye göre öğrenci ve tüm profile bilgileri sil
+            });
+
+            // Classroom işlemleri
+            Route::prefix("classrooms")->group(function () {
+                Route::get("/getclass", [ClassModelController::class, "index"]); // o okuldaki sınıfların tamamını getir
+                Route::post("/create", [ClassModelController::class, "store"]); // sınıf oluştur
+                Route::get("/{id}", [ClassModelController::class, "show"]); // id ye göre sınıf getir
+                Route::put("/update/{id}", [ClassModelController::class, "updateClassroom"]); // id ye göre sınıf güncelle
+                Route::delete("/{id}", [ClassModelController::class, "destroy"]); //id ye göre sınıf sil
+            });
+            Route::prefix("additionalclassrooms")->group(function () {
+                Route::get("/getclass", [AdditionalClassRoomController::class, "index"]); // o okuldaki sınıfların tamamını getir
+                Route::post("/create", [AdditionalClassRoomController::class, "store"]); // sınıf oluştur
+                Route::get("/{id}", [AdditionalClassRoomController::class, "show"]); // id ye göre sınıf getir
+                Route::put("/update/{id}", [AdditionalClassRoomController::class, "updateClassroom"]); // id ye göre sınıf güncelle
+                Route::delete("/{id}", [AdditionalClassRoomController::class, "destroy"]); //id ye göre sınıf sil
+            });
+            // Öğretmen işlemleri
+            Route::prefix("teachers")->group(function () {
+                Route::get("/getteachers", [TeacherController::class, "index"]); // o okuldaki öğretmenlerin tamamını getir
+                Route::post("/create", [TeacherController::class, "store"]); // öğretmen oluştur
+                Route::get("/{id}", [TeacherController::class, "show"]); // id ye göre öğretmen getir
+                Route::delete("/{id}", [TeacherController::class, "destroy"]); // id ye göre öğretmen sil
+                Route::put("/updateprofile/{id}", [TeacherController::class, "updateProfileByManager"]); // id ye göre öğretmen güncelle (manager için)
+                Route::put("/updateprofilesettings{id}", [TeacherController::class, "updateProfileSettingsByManager"]); // id ye göre öğretmen profil settings güncelle (manager için)
+            });
+        });
 
         // Schools
         Route::apiResource('schools', SchoolController::class)->only(['index', 'show', 'store']);
@@ -95,39 +158,23 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('packages', PackageController::class)->only(['index', 'show', 'store']);
 
         // Subscriptions
+        Route::get('subscriptions', [SubscriptionController::class, 'index']); // kullanıcının abonelikleri
+        Route::get('subscriptions/{id}', [SubscriptionController::class, 'show']);
+        Route::post('subscriptions', [SubscriptionController::class, 'store']);
+        Route::patch('subscriptions/{id}', [SubscriptionController::class, 'update']);
+        Route::post('subscriptions/{id}/cancel', [SubscriptionController::class, 'cancel']);
+        Route::prefix('admin')->middleware(['auth:sanctum', 'can:admin-access'])->group(function () {
+            Route::get('subscriptions', [SubscriptionController::class, 'adminIndex']);
+            Route::get('subscriptions/{id}', [SubscriptionController::class, 'show']);
+            // admin update/delete vs.
+        });
+
+        // Webhook (externally called, genelde auth/secret ile korunur)
+        Route::post('subscriptions/webhook/payment', [SubscriptionController::class, 'paymentWebhook']);
+
+
+
         Route::apiResource('subscriptions', SubscriptionController::class)->only(['index', 'show', 'store']);
         Route::get('/subscriptions/check/{schoolId}', [SubscriptionController::class, 'checkActive']);
-
-        Route::prefix("schools/{school}")->group(function () {
-
-            // Öğrenci işlemleri
-            Route::prefix("students")->group(function () {
-                Route::get("/getstudents", [SchoolStudentController::class, "index"]); // o okuldaki öğrencilerin tamamını getir
-                Route::get("/getstudentsbyclassid/{classId}", [SchoolStudentController::class, "getstudentsbyclassid"]); // o okuldaki sınıf id bazlı öğrencilerin tamamını getir
-                Route::get("/{id}", [SchoolStudentController::class, "show"]); // id ye göre öğrenci getir
-                Route::post("/create", [SchoolStudentController::class, "store"]);    // öğrenci oluştur
-                Route::put("/updateprofile/{id}", [SchoolStudentController::class, "updateById"]);    // id ye göre öğrenci güncelle
-                Route::put("/updateprofilesettings/{id}", [SchoolStudentProfileController::class, "updateProfileSettingsById"]); // id ye göre öğrenci profil settings güncelle
-                Route::delete("/{id}", [SchoolStudentController::class, "destroy"]); // id ye göre öğrenci sil
-            });
-
-            // Classroom işlemleri
-            Route::prefix("classrooms")->group(function () {
-                Route::get("/getclass", [ClassModelController::class, "index"]); // o okuldaki sınıfların tamamını getir
-                Route::post("/create", [ClassModelController::class, "store"]); // sınıf oluştur
-                Route::get("/{id}", [ClassModelController::class, "show"]); // id ye göre sınıf getir
-                Route::put("/update/{id}", [ClassModelController::class, "updateClassroom"]); // id ye göre sınıf güncelle
-                Route::delete("/{id}", [ClassModelController::class, "destroy"]); //id ye göre sınıf sil
-            });
-            // Öğretmen işlemleri
-            Route::prefix("teachers")->group(function () {
-                Route::get("/getteachers", [TeacherController::class, "index"]); // o okuldaki öğretmenlerin tamamını getir
-                Route::post("/create", [TeacherController::class, "store"]); // öğretmen oluştur
-                Route::get("/{id}", [TeacherController::class, "show"]); // id ye göre öğretmen getir
-                Route::delete("/{id}", [TeacherController::class, "destroy"]); // id ye göre öğretmen sil
-                Route::put("/updateprofile/{id}", [TeacherController::class, "updateProfileByManager"]); // id ye göre öğretmen güncelle (manager için)
-                Route::put("/updateprofilesettings{id}", [TeacherController::class, "updateProfileSettingsByManager"]); // id ye göre öğretmen profil settings güncelle (manager için)
-            });
-        });
     });
 });

@@ -11,28 +11,29 @@ return new class extends Migration
      */
     public function up(): void
     {
-   Schema::create('subscriptions', function (Blueprint $table) {
-    $table->id();
+        Schema::create('subscriptions', function (Blueprint $table) {
+            $table->id();
+            $table->morphs('subscribable');
+            $table->foreignId('package_id')->constrained()->onDelete('cascade');
 
-    // Okul ile ilişki (nullable olabilir ama FK düzgün tanımlanmalı)
-    $table->unsignedBigInteger('school_id')->nullable();
-    $table->foreign('school_id')->references('id')->on('schools')->onDelete('cascade');
+            $table->decimal('price', 10, 2);
+            $table->string('currency', 3)->default('TRY');
 
-    // Kullanıcı ile ilişki
-    $table->unsignedBigInteger('user_id')->nullable();
-    $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->string('payment_method')->nullable(); // kredi kartı, kripto, havale, vb.
+            $table->string('payment_reference')->nullable(); // ödeme ID / tx hash / dekont no
+            $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
 
-    // Paket ile ilişki (nullable değil)
-    $table->foreignId('package_id')->constrained('packages')->onDelete('cascade');
-
-    $table->date('start_date');
-    $table->date('end_date');
-    $table->boolean('is_active')->default(true);
-    $table->timestamps();
-});
+            $table->dateTime('start_date');
+            $table->dateTime('end_date');
+            $table->enum('status', ['active', 'expired', 'cancelled'])->default('active');
 
 
 
+            $table->boolean('auto_renew')->default(false);
+            $table->text('note')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+        });
     }
 
     /**

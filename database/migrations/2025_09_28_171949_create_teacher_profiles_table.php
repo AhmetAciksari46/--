@@ -16,12 +16,10 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->string('img_path')->nullable();
             $table->string('status')->default('active');
-            $table->unsignedBigInteger('schoolId')->constrained('schools')->onDelete('cascade');
-            $table->foreignId('branch_id')
-                ->nullable()
-                ->constrained('branches')
-                ->cascadeOnUpdate()
-                ->nullOnDelete();
+
+            $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
+            $table->foreignId('branch_id')->constrained('branches')->onDelete('cascade');
+
             $table->boolean('is_active')->default(true);
             $table->string('gender')->nullable();
             $table->date('birth_date')->nullable();
@@ -36,6 +34,8 @@ return new class extends Migration
             $table->timestamps();
         });
     }
+
+
 
     public function down(): void
     {

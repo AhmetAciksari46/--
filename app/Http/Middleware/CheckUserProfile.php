@@ -12,13 +12,15 @@ class CheckUserProfile
 {
     public function handle(Request $request, Closure $next)
     {
-         $user = $request->user();
-
-        if (!$user || !UserProfileHelper::profileExists($user)) {
-            return response()->json([
-                'message' => 'Profiliniz eksik. Lütfen önce profilinizi oluşturun.'
-            ], 403); // API için JSON
+        $user = $request->user();
+        if ($user->role !== "admin") {
+            if (!$user || !UserProfileHelper::profileExists($user)) {
+                return response()->json([
+                    'message' => 'Profiliniz eksik. Lütfen önce profilinizi oluşturun.'
+                ], 403); // API için JSON
+            }
         }
+
 
         return $next($request);
     }

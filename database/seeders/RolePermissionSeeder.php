@@ -42,7 +42,12 @@ class RolePermissionSeeder extends Seeder
 
             'profile.update',
             'settings.edit',
-            
+
+            'package.create',
+            'package.edit',
+            'package.delete',
+            'package.view',
+
             'student.view',
             'class.view',
             'teacher.view',
@@ -95,15 +100,15 @@ class RolePermissionSeeder extends Seeder
             'teacher.view.list',
             'worker.view.list',
         ]);
-         $teacher->givePermissionTo([
-             'class.create',
+        $teacher->givePermissionTo([
+            'class.create',
             'class.edit',
             'class.delete',
             'student.create',
             'student.edit',
             'student.delete',
-             'profile.update',
-             'student.view',
+            'profile.update',
+            'student.view',
             'class.view',
             'student.view.list',
             'class.view.list',
@@ -112,7 +117,7 @@ class RolePermissionSeeder extends Seeder
         $individualstudent->givePermissionTo([
             'profile.update',
         ]);
-         $schoolstudent->givePermissionTo([
+        $schoolstudent->givePermissionTo([
             'profile.update',
             'student.view.list',
         ]);

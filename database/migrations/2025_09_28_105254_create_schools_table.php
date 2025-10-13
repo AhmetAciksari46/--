@@ -12,16 +12,15 @@ return new class extends Migration
     public function up(): void
     {
 
-    Schema::create('schools', function (Blueprint $table) {
-    $table->id(); // unsignedBigInteger
-    $table->string('name');
-    $table->string('nickname');
-    $table->string('address')->nullable();
-    $table->foreignId('manager_id')->constrained('users')->onDelete('cascade');
-    $table->timestamps();
-});
-
-
+        Schema::create('schools', function (Blueprint $table) {
+            $table->id(); // unsignedBigInteger
+            $table->string('name');
+            $table->string('nickname');
+            $table->string('address')->nullable();
+            $table->foreignId('manager_id')->constrained('users')->onDelete('cascade');
+            $table->boolean('is_active');
+            $table->timestamps();
+        });
     }
 
     /**

@@ -6,12 +6,10 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+
     public function up(): void
     {
-        Schema::create('classes', function (Blueprint $table) {
+        Schema::create('additional_class_rooms', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->foreignId('school_id')->constrained()->onDelete('cascade');
@@ -20,11 +18,9 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
+
     public function down(): void
     {
-        Schema::dropIfExists('classes');
+        Schema::dropIfExists('additional_class_rooms');
     }
 };

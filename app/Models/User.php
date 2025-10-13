@@ -19,7 +19,7 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-    //test
+    //TODO : EMAİL UNİQUE AYARI REQUEST RULELARA EKLENECEK
     protected $fillable = [
         'name',
         'userName',

@@ -20,12 +20,12 @@ class ManagerProfile extends Model
         'birth_date',
     ];
 
-        public function user()
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-     public function school()
+    public function school()
     {
         return $this->belongsTo(School::class, 'schooldId');
     }

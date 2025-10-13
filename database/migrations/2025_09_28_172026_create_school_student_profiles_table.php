@@ -11,6 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
+        //TODO :ADDİTİONAL CLASSROOM İÇİN AYNI ŞEY YAPILACAK.
+
         Schema::create('school_student_profiles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
@@ -19,6 +21,7 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->unsignedBigInteger('active_course_id')->nullable();
             $table->unsignedBigInteger('active_class_id')->nullable();
+            $table->unsignedBigInteger('active_additional_class_id')->nullable();
             $table->string('parent_name')->nullable();
             $table->string('parent_phone')->nullable();
             $table->date('birth_date');
