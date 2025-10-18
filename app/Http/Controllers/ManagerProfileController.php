@@ -21,8 +21,10 @@ class ManagerProfileController extends Controller
         $user = Auth::user();
         $profile = ManagerProfile::where('user_id', $user->id)
             ->with('user')
-            ->firstOrFail();
-
+            ->first();
+        if (!$profile) {
+            return $this->errorResponse('Profil Ayarları Bulunamadı', 404);
+        }
         return $this->successResponse($profile);
         //return $this->successResponse($profile, __('api.profile_fetched'));
 

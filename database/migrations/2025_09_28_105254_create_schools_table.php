@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->foreignId('manager_id')->constrained('users')->onDelete('cascade');
             $table->boolean('is_active');
+            $table->string('img_path')->nullable();
             $table->timestamps();
         });
     }
@@ -28,6 +29,8 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('schools');
+        Schema::enableForeignKeyConstraints();
     }
 };

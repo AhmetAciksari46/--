@@ -7,7 +7,7 @@ use App\Traits\ApiResponser;
 use App\Http\Requests\Profile\SchoolStudentUpdateProfileRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-
+use App\Models\School;
 
 class SchoolStudentController extends Controller
 {
@@ -42,5 +42,22 @@ class SchoolStudentController extends Controller
         }
 
         return $this->successResponse($user->fresh(), $message);
+    }
+    public function index(Request $request, School $school)
+    {
+        $school = $request->user()->school;
+        $students = $school->students()
+            ->with('user')
+            ->get()
+            ->map(function ($student) {
+                return [
+                    'id' => $student->id,
+                    'name' => $student->user?->name,
+                    'email' => $student->user?->email,
+                    'is_active' => $student->is_active,
+                ];
+            });
+
+        return $this->successResponse($students, 'Öğrenci listesi başarıyla getirildi.');
     }
 }

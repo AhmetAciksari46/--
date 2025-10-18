@@ -27,6 +27,6 @@ class ManagerProfile extends Model
 
     public function school()
     {
-        return $this->belongsTo(School::class, 'schooldId');
+        return $this->belongsTo(School::class, 'schoolId', 'id');
     }
 }

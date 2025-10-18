@@ -15,6 +15,8 @@ class School extends Model
         'address',
         'manager_id',
         'is_active',
+        'img_path',
+        'nickname',
     ];
     protected $casts = [
         'is_active' => 'boolean',
@@ -47,10 +49,6 @@ class School extends Model
     {
         return $this->hasMany(TeacherProfile::class, 'schoolId');
     }
-    public function students()
-    {
-        return $this->hasMany(SchoolStudentProfile::class, 'school_id');
-    }
 
     public function additionalClassRooms()
     {
@@ -77,5 +75,9 @@ class School extends Model
     public function hasActiveSubscription(): bool
     {
         return (bool) $this->activeSubscription();
+    }
+    public function students()
+    {
+        return $this->hasMany(SchoolStudentProfile::class, 'schoolId', 'id');
     }
 }

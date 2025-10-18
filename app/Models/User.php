@@ -59,24 +59,24 @@ class User extends Authenticatable
     // Öğretmen profili ilişkisi
     public function teacherProfile()
     {
-        return $this->hasOne(TeacherProfile::class);
+        return $this->hasOne(TeacherProfile::class, 'user_id', 'id');
     }
 
     // Öğrenci profili ilişkisi
     public function schoolStudentProfile()
     {
-        return $this->hasOne(SchoolStudentProfile::class);
+        return $this->hasOne(SchoolStudentProfile::class, 'user_id', 'id');
     }
     // Öğrenci profili ilişkisi
 
     public function individualStudentProfile()
     {
-        return $this->hasOne(IndividualStudentProfile::class);
+        return $this->hasOne(IndividualStudentProfile::class, 'user_id', 'id');
     }
     // Yöneticilik profili ilişkisi
     public function managerProfile()
     {
-        return $this->hasOne(ManagerProfile::class);
+        return $this->hasOne(ManagerProfile::class, 'user_id', 'id');
     }
 
 

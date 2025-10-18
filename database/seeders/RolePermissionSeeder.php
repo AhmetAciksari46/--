@@ -23,6 +23,10 @@ class RolePermissionSeeder extends Seeder
             'organization.edit',
             'organization.delete',
 
+            'school.create',
+            'school.update',
+            'school.delete',
+            'school.view',
 
             'class.create',
             'class.edit',
@@ -99,6 +103,10 @@ class RolePermissionSeeder extends Seeder
             'class.view.list',
             'teacher.view.list',
             'worker.view.list',
+            'school.create',
+            'school.update',
+            'school.delete',
+            'school.view',
         ]);
         $teacher->givePermissionTo([
             'class.create',
