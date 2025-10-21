@@ -108,8 +108,8 @@ return [
              * @link https://zircote.github.io/swagger-php/reference/processors.html
              */
             'default_processors_configuration' => [
-            /** Example */
-            /**
+                /** Example */
+                /**
              * 'operationId.hash' => true,
              * 'pathFilter' => [
              * 'tags' => [
@@ -216,11 +216,11 @@ return [
                 ],
                 */
                 'bearerAuth' => [
-        'type' => 'apiKey',
-        'description' => 'JWT veya Sanctum tokenini "Bearer {token}" formatında girin',
-        'name' => 'Authorization',
-        'in' => 'header',
-    ],
+                    'type' => 'http',
+                    'scheme' => 'bearer',
+                    'bearerFormat' => 'JWT', // opsiyonel
+                    'description' => 'JWT veya Sanctum tokenini "Bearer {token}" formatında girin',
+                ],
             ],
             'security' => [
                 /*
@@ -234,9 +234,8 @@ return [
                     ],
 
                     'passport' => []
-                    */
-                ],
-                 ['bearerAuth' => []],
+                    */],
+                ['bearerAuth' => []],
             ],
         ],
 

@@ -9,19 +9,1031 @@
         "version": "1.0.0"
     },
     "paths": {
-        "/api/user": {
+        "/api/register": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Yeni kullanıcı kaydı oluşturur",
+                "operationId": "8e4e3cb7b46126f4696379d3c7eeb4ad",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Ahmet Açısarı"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "ahmet@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "12345678"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Kullanıcı başarıyla oluşturuldu",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Geçersiz veri gönderildi"
+                    }
+                }
+            }
+        },
+        "/api/managerregister": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Manager kullanıcı kaydı",
+                "operationId": "3fb9729fde6c24ac037713f6ad4fbf5a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "userName",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "userName": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Manager kaydı başarıyla oluşturuldu"
+                    },
+                    "500": {
+                        "description": "Kayıt başarısız"
+                    }
+                }
+            }
+        },
+        "/api/teacherregister": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Teacher kullanıcı kaydı",
+                "operationId": "daf2f583b84f020001f40bbe30aa25a6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "userName",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "userName": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Teacher kaydı başarıyla oluşturuldu"
+                    },
+                    "500": {
+                        "description": "Kayıt başarısız"
+                    }
+                }
+            }
+        },
+        "/api/invidualstudentregister": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Individual Student kaydı",
+                "operationId": "e06ea2357dba8ccd66b331e246b762bf",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "userName",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "userName": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Individual student kaydı başarıyla oluşturuldu"
+                    },
+                    "500": {
+                        "description": "Kayıt başarısız"
+                    }
+                }
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Kullanıcı girişi yapar ve erişim token'ı döner",
+                "operationId": "222b2625838e3c57e017987f73598fda",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "login",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "login": {
+                                        "type": "string",
+                                        "example": "root@root.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "root"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Giriş başarılı",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|abcdef1234567890"
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Geçersiz kimlik bilgileri"
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Aktif kullanıcı oturumunu kapatır",
+                "operationId": "ad65cbbd4e9f201619eae184a5961a98",
+                "responses": {
+                    "200": {
+                        "description": "Çıkış başarılı"
+                    },
+                    "401": {
+                        "description": "Yetkilendirme gerekli"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/manager/profile/settings": {
             "get": {
                 "tags": [
-                    "User"
+                    "ManagerProfile"
                 ],
-                "summary": "Kullanıcı bilgilerini döndürür",
-                "operationId": "e879c235f7fbf0388ce1654705fd87f1",
+                "summary": "Yönetici profil ayarlarını getir",
+                "operationId": "aced1524b91dc3a4f271b25499f57fb1",
+                "responses": {
+                    "200": {
+                        "description": "Profil ayarları bulundu",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ManagerProfile"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Profil ayarları bulunamadı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "ManagerProfile"
+                ],
+                "summary": "Yönetici profil ayarlarını güncelle",
+                "operationId": "ae43142f15f0cb84c243515e9b92101d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ManagerUpdateProfileSettingRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profil güncellendi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ManagerProfile"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/manager/profile/{user_id}": {
+            "get": {
+                "tags": [
+                    "ManagerProfile"
+                ],
+                "summary": "Belirli kullanıcıya ait öğrenci profilini getir",
+                "operationId": "37b60e416afb3e88571e1e32cb01b5a0",
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "path",
+                        "description": "Kullanıcı ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Profil bulundu",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SchoolStudentProfile"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Profil bulunamadı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/publicpackage/{id}": {
+            "get": {
+                "tags": [
+                    "Packages"
+                ],
+                "summary": "İlgili Paketi Getirir",
+                "description": "Paket detaylarını getirir.",
+                "operationId": "74f5bcb4044d7451426a5fa24630a71f",
+                "responses": {
+                    "200": {
+                        "description": "Başarılı",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Package"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/schools/info": {
+            "get": {
+                "tags": [
+                    "Schools"
+                ],
+                "summary": "Kullanıcının bağlı olduğu okul bilgisini getirir",
+                "description": "Manager, teacher veya student rollü kullanıcının okul bilgisini döner.",
+                "operationId": "d31d10eb4d2ee4e7add8c134fbd5ba35",
+                "responses": {
+                    "200": {
+                        "description": "Okul bilgisi başarıyla getirildi"
+                    },
+                    "404": {
+                        "description": "Okul bilgisi bulunamadı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools": {
+            "get": {
+                "tags": [
+                    "Schools"
+                ],
+                "summary": "Okul bilgisi (aktif oturumdan alınır)",
+                "operationId": "07ad67f69ed66c98e40f8ffec7133839",
+                "responses": {
+                    "200": {
+                        "description": "Okul bilgisi başarıyla getirildi"
+                    },
+                    "404": {
+                        "description": "Okul bulunamadı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/create": {
+            "post": {
+                "tags": [
+                    "Schools"
+                ],
+                "summary": "Yeni okul oluştur (Manager rolü)",
+                "description": "Manager kullanıcılar için yeni okul oluşturma işlemi. Eğer mevcut okulu varsa hata döner.",
+                "operationId": "c7c88c1713e948637340dac31b904998",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "nickname"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Açıksarı Koleji"
+                                    },
+                                    "nickname": {
+                                        "type": "string",
+                                        "example": "ackolej"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "Kahramanmaraş"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "img_path": {
+                                        "type": "string",
+                                        "example": "uploads/schools/logo.png"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Okul başarıyla oluşturuldu"
+                    },
+                    "403": {
+                        "description": "Manager zaten bir okula sahip"
+                    },
+                    "500": {
+                        "description": "Sunucu hatası"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{id}/update": {
+            "put": {
+                "tags": [
+                    "Schools"
+                ],
+                "summary": "Okul bilgilerini güncelle (Manager rolü)",
+                "description": "Manager kullanıcı, bağlı olduğu okulun bilgilerini günceller.",
+                "operationId": "bec41e2b91877946c2a11899ce8657dd",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Açıksarı Anadolu Lisesi"
+                                    },
+                                    "nickname": {
+                                        "type": "string",
+                                        "example": "ackolej"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "Kahramanmaraş Onikişubat"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Okul başarıyla güncellendi"
+                    },
+                    "403": {
+                        "description": "Manager bir okula bağlı değil"
+                    },
+                    "500": {
+                        "description": "Sunucu hatası"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/schools/create": {
+            "post": {
+                "tags": [
+                    "Admin - Schools"
+                ],
+                "summary": "Admin tarafından okul oluştur",
+                "description": "Admin kullanıcılar, istediği manager_id’ye bağlı yeni okul oluşturabilir.",
+                "operationId": "f1e9edcd4391f6919b1c9a9d28377226",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "nickname",
+                                    "manager_id"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Ede Koleji"
+                                    },
+                                    "nickname": {
+                                        "type": "string",
+                                        "example": "edekolej"
+                                    },
+                                    "manager_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "Maraş Dulkadiroğlu"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Okul başarıyla oluşturuldu"
+                    },
+                    "500": {
+                        "description": "Sunucu hatası"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/schools/{id}/update": {
+            "put": {
+                "tags": [
+                    "Admin - Schools"
+                ],
+                "summary": "Admin tarafından okul bilgilerini güncelle",
+                "operationId": "7af4396ccac82ed7a4e4d1816384348f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Ede Koleji Güncel"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Okul başarıyla güncellendi"
+                    },
+                    "500": {
+                        "description": "Sunucu hatası"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/school/getschools": {
+            "get": {
+                "tags": [
+                    "Admin - Schools"
+                ],
+                "summary": "Tüm okulları listele (Admin)",
+                "description": "Sadece school.view iznine sahip adminler listeyi görebilir.",
+                "operationId": "4871cde7a0101d508b5c60a5dc7fcd21",
+                "responses": {
+                    "200": {
+                        "description": "Okul listesi başarıyla getirildi"
+                    },
+                    "403": {
+                        "description": "Yetkiniz yok"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/school/getschoolbyid/{id}": {
+            "get": {
+                "tags": [
+                    "Admin - Schools"
+                ],
+                "summary": "Tek okul bilgisi getir (Admin)",
+                "operationId": "ad9098862dbbd1ace8935f383bdcea04",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Okul bilgisi başarıyla getirildi"
+                    },
+                    "403": {
+                        "description": "Yetkiniz yok"
+                    },
+                    "404": {
+                        "description": "Okul bulunamadı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/schools/{id}": {
+            "delete": {
+                "tags": [
+                    "Admin - Schools"
+                ],
+                "summary": "Okul sil (Admin)",
+                "description": "Sadece school.delete iznine sahip adminler okul silebilir.",
+                "operationId": "3988f7a6ecb1d6dd06e05ec0bda76990",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Okul başarıyla silindi"
+                    },
+                    "403": {
+                        "description": "Yetkiniz yok"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/subscriptions": {
+            "get": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Kullanıcının tüm aboneliklerini listele",
+                "operationId": "67df8b16e2d36e7aab97ce19a17f9355",
                 "responses": {
                     "200": {
                         "description": "Başarılı"
                     },
                     "401": {
-                        "description": "Yetkisiz erişim"
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Yeni abonelik oluştur",
+                "operationId": "a71648bdc4f0b03d53530ab22adf00cd",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PackageStoreSubscriptionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Abonelik oluşturuldu"
+                    },
+                    "422": {
+                        "description": "Validation Error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/subscriptions": {
+            "get": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Admin: Tüm abonelikleri listele",
+                "operationId": "2b211aba6043e3a99ba2ec02beff24f2",
+                "responses": {
+                    "200": {
+                        "description": "Başarılı"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/subscriptions/{id}": {
+            "get": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Abonelik detayını göster",
+                "operationId": "574df44b447a730bf9aa01eb1d9d632e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Abonelik ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Başarılı"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/subscriptions/{id}": {
+            "put": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Abonelik güncelle",
+                "operationId": "bac8be53d2f4233f44fd60abb494230b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Abonelik ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SubscriptionUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Abonelik güncellendi"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/subscriptions/{id}/cancel": {
+            "post": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Aboneliği iptal et",
+                "operationId": "61189db3f788e8ebc35e0350e7b6d6b0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Abonelik ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Abonelik iptal edildi"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/subscriptions/webhook/payment": {
+            "post": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Ödeme webhook bildirimi al",
+                "operationId": "06630daae424b8cf63fe4742a8f35ac6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            },
+                            "example": {
+                                "payment_reference": "abc123",
+                                "payment_status": "paid"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Webhook işlendi"
+                    },
+                    "404": {
+                        "description": "Abonelik bulunamadı"
+                    }
+                }
+            }
+        },
+        "/subscriptions/check-active/{schoolId}": {
+            "get": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Okul aboneliğini kontrol et",
+                "operationId": "31d36c04319f5ab63e761241697ce951",
+                "parameters": [
+                    {
+                        "name": "schoolId",
+                        "in": "path",
+                        "description": "Okul ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Abonelik aktif"
+                    },
+                    "403": {
+                        "description": "Abonelik pasif veya yok"
                     }
                 },
                 "security": [
@@ -43,25 +1055,707 @@
                         "description": "Başarılı"
                     }
                 }
+            },
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Yeni kullanıcı oluştur",
+                "operationId": "592819a0265360b2014512d6dbfaf0e7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "userName": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "role": {
+                                        "type": "string"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Kullanıcı oluşturuldu"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users/{id}": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Tek kullanıcı bilgisi",
+                "operationId": "36a33ff774d5cba33c039dec2c3e0287",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Kullanıcı ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Başarılı"
+                    },
+                    "404": {
+                        "description": "Kullanıcı bulunamadı"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Kullanıcıyı güncelle",
+                "operationId": "b9091397c8b25f12c6adb74be6ce3a5a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Kullanıcı ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "userName": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "role": {
+                                        "type": "string"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Başarılı"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Kullanıcıyı sil",
+                "operationId": "fa56cffde745d3f152f95cbacd936c0b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Kullanıcı ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Başarılı"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "SchoolStudentProfile": {
+                "title": "SchoolStudentProfile",
+                "description": "Okul öğrencisi profil modeli",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "first_name": {
+                        "type": "string",
+                        "example": "Ahmet"
+                    },
+                    "last_name": {
+                        "type": "string",
+                        "example": "Açıksarı"
+                    },
+                    "birth_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2010-05-01",
+                        "nullable": true
+                    },
+                    "class": {
+                        "type": "string",
+                        "example": "5/A",
+                        "nullable": true
+                    },
+                    "notes": {
+                        "type": "string",
+                        "example": "Özel not",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-21T12:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-21T12:00:00Z"
+                    },
+                    "user": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/User"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "SubscriptionUpdateRequest": {
+                "title": "Subscription Güncelleme Request",
+                "required": [],
+                "properties": {
+                    "package_id": {
+                        "type": "integer",
+                        "example": 2,
+                        "nullable": true
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 199.99,
+                        "nullable": true
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "TRY",
+                        "nullable": true
+                    },
+                    "payment_method": {
+                        "type": "string",
+                        "example": "credit_card",
+                        "nullable": true
+                    },
+                    "payment_reference": {
+                        "type": "string",
+                        "example": "TX123456",
+                        "nullable": true
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-21T12:00:00Z",
+                        "nullable": true
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-21T12:00:00Z",
+                        "nullable": true
+                    },
+                    "auto_renew": {
+                        "type": "boolean",
+                        "example": false,
+                        "nullable": true
+                    },
+                    "note": {
+                        "type": "string",
+                        "example": "Özel not",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "PackageStoreSubscriptionRequest": {
+                "title": "Yeni Abonelik Request",
+                "required": [
+                    "subscribable_type",
+                    "subscribable_id",
+                    "package_id"
+                ],
+                "properties": {
+                    "subscribable_type": {
+                        "type": "string",
+                        "example": "App\\\\Models\\\\User"
+                    },
+                    "subscribable_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "package_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 199.99,
+                        "nullable": true
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "TRY",
+                        "nullable": true
+                    },
+                    "payment_method": {
+                        "type": "string",
+                        "example": "credit_card",
+                        "nullable": true
+                    },
+                    "payment_reference": {
+                        "type": "string",
+                        "example": "TX123456",
+                        "nullable": true
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-21T12:00:00Z",
+                        "nullable": true
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-21T12:00:00Z",
+                        "nullable": true
+                    },
+                    "auto_renew": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "note": {
+                        "type": "string",
+                        "example": "Özel not",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "ManagerUpdateProfileSettingRequest": {
+                "title": "Manager Update Profile Request",
+                "required": [],
+                "properties": {
+                    "phone": {
+                        "type": "string",
+                        "example": "+905551234567",
+                        "nullable": true
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "İstanbul, Türkiye",
+                        "nullable": true
+                    },
+                    "birth_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "1990-01-01",
+                        "nullable": true
+                    },
+                    "note": {
+                        "type": "string",
+                        "example": "Özel not",
+                        "nullable": true
+                    },
+                    "referance": {
+                        "type": "string",
+                        "example": "ABC123",
+                        "nullable": true
+                    },
+                    "schoolId": {
+                        "type": "integer",
+                        "example": 2,
+                        "nullable": true
+                    },
+                    "payment_reminder": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "ManagerProfile": {
+                "title": "ManagerProfile",
+                "description": "Yönetici profil modeli",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+905551234567",
+                        "nullable": true
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "İstanbul, Türkiye",
+                        "nullable": true
+                    },
+                    "birth_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "1990-01-01",
+                        "nullable": true
+                    },
+                    "note": {
+                        "type": "string",
+                        "example": "Özel not",
+                        "nullable": true
+                    },
+                    "referance": {
+                        "type": "string",
+                        "example": "ABC123",
+                        "nullable": true
+                    },
+                    "schoolId": {
+                        "type": "integer",
+                        "example": 2,
+                        "nullable": true
+                    },
+                    "payment_reminder": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-21T12:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-21T12:00:00Z"
+                    },
+                    "user": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/User"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Package": {
+                "title": "Package",
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Full Paket"
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 199.99
+                    }
+                },
+                "type": "object"
+            },
+            "School": {
+                "title": "School Model",
+                "description": "Okul bilgisi şeması",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Açıksarı Koleji"
+                    },
+                    "nickname": {
+                        "type": "string",
+                        "example": "ackolej"
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "Kahramanmaraş"
+                    },
+                    "manager_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "img_path": {
+                        "type": "string",
+                        "example": "uploads/schools/logo.png"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Subscription": {
+                "title": "Subscription",
+                "description": "Abonelik modeli",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "subscribable_type": {
+                        "type": "string",
+                        "example": "App\\\\Models\\\\User"
+                    },
+                    "subscribable_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "package_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 199.99
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "TRY"
+                    },
+                    "payment_method": {
+                        "type": "string",
+                        "example": "credit_card",
+                        "nullable": true
+                    },
+                    "payment_reference": {
+                        "type": "string",
+                        "example": "TX123456",
+                        "nullable": true
+                    },
+                    "payment_status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "paid",
+                            "failed",
+                            "refunded"
+                        ],
+                        "example": "paid"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "active",
+                            "expired",
+                            "cancelled"
+                        ],
+                        "example": "active"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-21T12:00:00Z"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-21T12:00:00Z"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "auto_renew": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "note": {
+                        "type": "string",
+                        "example": "Özel not",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-21T12:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-21T12:00:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "title": "User Model",
+                "description": "Kullanıcı modelini temsil eder.",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Ahmet Açısarı"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "ahmet@example.com"
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "admin"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "responses": {
+            "201": {
+                "description": "School student kaydı başarıyla oluşturuldu"
+            },
+            "500": {
+                "description": "Kayıt başarısız"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "JWT veya Sanctum tokenini \"Bearer {token}\" formatında girin"
             }
         }
     },
     "tags": [
         {
+            "name": "Auth",
+            "description": "Kullanıcı kimlik doğrulama işlemleri"
+        },
+        {
+            "name": "Schools",
+            "description": "Okul yönetimi işlemleri (Manager, Teacher, Student, Admin)"
+        },
+        {
             "name": "User",
-            "description": "User"
+            "description": "Kullanıcı işlemleri"
+        },
+        {
+            "name": "ManagerProfile",
+            "description": "ManagerProfile"
+        },
+        {
+            "name": "Packages",
+            "description": "Packages"
+        },
+        {
+            "name": "Admin - Schools",
+            "description": "Admin - Schools"
+        },
+        {
+            "name": "Subscriptions",
+            "description": "Subscriptions"
         }
     ],
-    "components": {
-        "securitySchemes": {
-            "bearerAuth": {
-                "type": "apiKey",
-                "description": "JWT veya Sanctum tokenini \"Bearer {token}\" formatında girin",
-                "name": "Authorization",
-                "in": "header"
-            }
-        }
-    },
     "security": {
         "1": {
             "bearerAuth": []

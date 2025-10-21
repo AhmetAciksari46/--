@@ -10,26 +10,96 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Requests\SubscriptionUpdateRequest;
 use App\Http\Requests\PackageStoreSubscriptionRequest;
 
+/**
+ * @OA\Tag(
+ *     name="Subscriptions",
+ *     description="Subscription işlemleri(Manager, Teacher, Student, Admin)",
+ * )
+ * @OAS\SecurityScheme(
+ *      securityScheme="bearer_token",
+ *      type="http",
+ *      scheme="bearer"
+ * )
+ */
+
+
+/**
+ * @OA\Schema(
+ *     schema="SubscriptionUpdateRequest",
+ *     type="object",
+ *     title="Subscription Güncelleme Request",
+ *     required={},
+ *     @OA\Property(property="package_id", type="integer", example=2, nullable=true),
+ *     @OA\Property(property="price", type="number", format="float", example=199.99, nullable=true),
+ *     @OA\Property(property="currency", type="string", example="TRY", nullable=true),
+ *     @OA\Property(property="payment_method", type="string", example="credit_card", nullable=true),
+ *     @OA\Property(property="payment_reference", type="string", example="TX123456", nullable=true),
+ *     @OA\Property(property="start_date", type="string", format="date-time", example="2025-10-21T12:00:00Z", nullable=true),
+ *     @OA\Property(property="end_date", type="string", format="date-time", example="2025-11-21T12:00:00Z", nullable=true),
+ *     @OA\Property(property="auto_renew", type="boolean", example=false, nullable=true),
+ *     @OA\Property(property="note", type="string", example="Özel not", nullable=true)
+ * )
+ */
+
+
+
 class SubscriptionController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/api/subscriptions",
+     *     tags={"Subscriptions"},
+     *     summary="Kullanıcının tüm aboneliklerini listele",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Response(response=200, description="Başarılı"),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
+
     public function index(Request $request)
     {
         $user = $request->user();
-
-        // Eğer polymorphic subscribable tipi kullanıcı ise:
         $subscriptions = Subscription::where('subscribable_type', get_class($user))
             ->where('subscribable_id', $user->id)
             ->orderByDesc('created_at')
             ->get();
-
         return response()->json(['data' => $subscriptions], 200);
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/admin/subscriptions",
+     *     tags={"Subscriptions"},
+     *     summary="Admin: Tüm abonelikleri listele",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Response(response=200, description="Başarılı"),
+     *     @OA\Response(response=403, description="Forbidden")
+     * )
+     */
+
+
     // Admin için tüm abonelikleri getir (admin middleware ile koru)
     public function adminIndex()
     {
+
         $subscriptions = Subscription::with(['package', 'subscribable'])->orderByDesc('created_at')->get();
         return response()->json(['data' => $subscriptions], 200);
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/subscriptions",
+     *     tags={"Subscriptions"},
+     *     summary="Yeni abonelik oluştur",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/PackageStoreSubscriptionRequest")
+     *     ),
+     *     @OA\Response(response=201, description="Abonelik oluşturuldu"),
+     *     @OA\Response(response=422, description="Validation Error")
+     * )
+     */
 
     // Yeni abonelik oluştur
     public function store(PackageStoreSubscriptionRequest $request)
@@ -78,6 +148,26 @@ class SubscriptionController extends Controller
         return response()->json(['message' => 'Subscription created', 'data' => $subscription], 201);
     }
 
+
+    /**
+     * @OA\Get(
+     *     path="/api/admin/subscriptions/{id}",
+     *     tags={"Subscriptions"},
+     *     summary="Abonelik detayını göster",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Abonelik ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response=200, description="Başarılı"),
+     *     @OA\Response(response=403, description="Unauthorized"),
+     *     @OA\Response(response=404, description="Not Found")
+     * )
+     */
+
     public function show($id, Request $request)
     {
         $subscription = Subscription::with('package', 'subscribable')->findOrFail($id);
@@ -95,7 +185,28 @@ class SubscriptionController extends Controller
         // Misafir/başka kullanıcı erişemez
         return response()->json(['message' => 'Unauthorized'], 403);
     }
-
+    /**
+     * @OA\Put(
+     *     path="/api/subscriptions/{id}",
+     *     tags={"Subscriptions"},
+     *     summary="Abonelik güncelle",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Abonelik ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/SubscriptionUpdateRequest")
+     *     ),
+     *     @OA\Response(response=200, description="Abonelik güncellendi"),
+     *     @OA\Response(response=403, description="Unauthorized"),
+     *     @OA\Response(response=404, description="Not Found")
+     * )
+     */
     // Güncelle (admin veya owner)
     public function update(SubscriptionUpdateRequest $request, $id)
     {
@@ -115,6 +226,25 @@ class SubscriptionController extends Controller
 
         return response()->json(['message' => 'Subscription updated', 'data' => $subscription], 200);
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/subscriptions/{id}/cancel",
+     *     tags={"Subscriptions"},
+     *     summary="Aboneliği iptal et",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Abonelik ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response=200, description="Abonelik iptal edildi"),
+     *     @OA\Response(response=403, description="Unauthorized"),
+     *     @OA\Response(response=404, description="Not Found")
+     * )
+     */
 
     // Cancel (abonelik iptali)
     public function cancel(Request $request, $id)
@@ -137,6 +267,20 @@ class SubscriptionController extends Controller
 
         return response()->json(['message' => 'Subscription cancelled', 'data' => $subscription], 200);
     }
+
+    /**
+     * @OA\Post(
+     *     path="/subscriptions/webhook/payment",
+     *     tags={"Subscriptions"},
+     *     summary="Ödeme webhook bildirimi al",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(type="object", example={"payment_reference":"abc123", "payment_status":"paid"})
+     *     ),
+     *     @OA\Response(response=200, description="Webhook işlendi"),
+     *     @OA\Response(response=404, description="Abonelik bulunamadı")
+     * )
+     */
 
     // Webhook örneği: ödeme sağlayıcısından gelen bildirimleri işler
     // /api/subscriptions/webhook/payment
@@ -164,7 +308,23 @@ class SubscriptionController extends Controller
     }
 
 
-
+    /**
+     * @OA\Get(
+     *     path="/subscriptions/check-active/{schoolId}",
+     *     tags={"Subscriptions"},
+     *     summary="Okul aboneliğini kontrol et",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="schoolId",
+     *         in="path",
+     *         required=true,
+     *         description="Okul ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response=200, description="Abonelik aktif"),
+     *     @OA\Response(response=403, description="Abonelik pasif veya yok")
+     * )
+     */
 
 
     public function checkActive($schoolId)

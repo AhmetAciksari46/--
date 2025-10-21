@@ -5,6 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @OA\Schema(
+ *     schema="Package",
+ *     type="object",
+ *     title="Package",
+ *     required={"id", "name"},
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="Full Paket"),
+ *     @OA\Property(property="price", type="number", format="float", example=199.99),
+ * )
+ */
 class Package extends Model
 {
     use HasFactory;

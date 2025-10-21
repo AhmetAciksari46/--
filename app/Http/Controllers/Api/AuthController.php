@@ -18,14 +18,40 @@ use App\Traits\ApiResponser; // <<< Bu satırı ekleyin!
 use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // Bunu ekle
 
-
+/**
+ * @OA\Tag(
+ *     name="Auth",
+ *     description="Kullanıcı kimlik doğrulama işlemleri"
+ * )
+ */
 class AuthController extends Controller
 {
     use ApiResponser;
 
-    use AuthorizesRequests; 
+    use AuthorizesRequests;
     //  Kayıt
- 
+    /**
+     * @OA\Post(
+     *     path="/api/register",
+     *     summary="Yeni kullanıcı kaydı oluşturur",
+     *     tags={"Auth"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name","email","password"},
+     *             @OA\Property(property="name", type="string", example="Ahmet Açısarı"),
+     *             @OA\Property(property="email", type="string", example="ahmet@example.com"),
+     *             @OA\Property(property="password", type="string", example="12345678")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Kullanıcı başarıyla oluşturuldu",
+     *         @OA\JsonContent(ref="#/components/schemas/User")
+     *     ),
+     *     @OA\Response(response=400, description="Geçersiz veri gönderildi")
+     * )
+     */
     public function register(RegisterRequest $request)
     {
 
@@ -42,6 +68,26 @@ class AuthController extends Controller
             "token" => $token
         ], 201);
     }
+    /**
+     * @OA\Post(
+     *     path="/api/managerregister",
+     *     summary="Manager kullanıcı kaydı",
+     *     tags={"Auth"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name","userName","password"},
+     *             @OA\Property(property="name", type="string"),
+     *             @OA\Property(property="email", type="string", format="email"),
+     *             @OA\Property(property="userName", type="string"),
+     *             @OA\Property(property="password", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Manager kaydı başarıyla oluşturuldu"),
+     *     @OA\Response(response=500, description="Kayıt başarısız")
+     * )
+     */
+
     public function managerregister(RegisterRequest $request)
     {
         DB::beginTransaction();
@@ -64,7 +110,25 @@ class AuthController extends Controller
             return response()->json(["message" => "Yönetici kaydı başarısız oldu."], 500);
         }
     }
-    
+    /**
+     * @OA\Post(
+     *     path="/api/teacherregister",
+     *     summary="Teacher kullanıcı kaydı",
+     *     tags={"Auth"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name","userName","password"},
+     *             @OA\Property(property="name", type="string"),
+     *             @OA\Property(property="email", type="string", format="email"),
+     *             @OA\Property(property="userName", type="string"),
+     *             @OA\Property(property="password", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Teacher kaydı başarıyla oluşturuldu"),
+     *     @OA\Response(response=500, description="Kayıt başarısız")
+     * )
+     */
     public function teacherregister(RegisterRequest $request)
     {
 
@@ -90,12 +154,20 @@ class AuthController extends Controller
         }
     }
 
-    public function createTeacher(RegisterRequest $request) {
+    public function createTeacher(RegisterRequest $request)
+    {
         $this->authorize('createTeacher', [User::class, $request]);
-
     }
 
-
+    /**
+     * @OA@Post(
+     *     path="/api/schoolstudentregister",
+     *     summary="School Student kaydı",
+     *     tags={"Auth"},  
+     *     @OA\Response(response=201, description="School student kaydı başarıyla oluşturuldu"),
+     *     @OA\Response(response=500, description="Kayıt başarısız")
+     * )
+     */
     public function schoolstudentregister(SchoolStudentRegisterRequest $request)
     {
         DB::beginTransaction();
@@ -119,7 +191,25 @@ class AuthController extends Controller
     }
 
 
-
+    /**
+     * @OA\Post(
+     *     path="/api/invidualstudentregister",
+     *     summary="Individual Student kaydı",
+     *     tags={"Auth"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name","userName","password"},
+     *             @OA\Property(property="name", type="string"),
+     *             @OA\Property(property="email", type="string", format="email"),
+     *             @OA\Property(property="userName", type="string"),
+     *             @OA\Property(property="password", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Individual student kaydı başarıyla oluşturuldu"),
+     *     @OA\Response(response=500, description="Kayıt başarısız")
+     * )
+     */
     public function invidualstudentregister(RegisterRequest $request)
     {
         DB::beginTransaction();
@@ -141,6 +231,30 @@ class AuthController extends Controller
 
 
 
+    /**
+     * @OA\Post(
+     *     path="/api/login",
+     *     summary="Kullanıcı girişi yapar ve erişim token'ı döner",
+     *     tags={"Auth"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"login","password"},
+     *             @OA\Property(property="login", type="string", example="root@root.com"),
+     *             @OA\Property(property="password", type="string", example="root")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Giriş başarılı",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="token", type="string", example="1|abcdef1234567890"),
+     *             @OA\Property(property="user", ref="#/components/schemas/User")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Geçersiz kimlik bilgileri")
+     * )
+     */
 
     // ✅ Giriş
     public function login(Request $request)
@@ -186,6 +300,16 @@ class AuthController extends Controller
 
 
 
+    /**
+     * @OA\Post(
+     *     path="/api/logout",
+     *     summary="Aktif kullanıcı oturumunu kapatır",
+     *     security={{"sanctum":{}}},
+     *     tags={"Auth"},
+     *     @OA\Response(response=200, description="Çıkış başarılı"),
+     *     @OA\Response(response=401, description="Yetkilendirme gerekli")
+     * )
+     */
 
     // ✅ Çıkış
     public function logout(Request $request)
@@ -193,6 +317,4 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
         return response()->json(["message" => "Çıkış yapıldı"]);
     }
-
-
 }

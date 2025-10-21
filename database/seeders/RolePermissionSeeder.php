@@ -82,31 +82,36 @@ class RolePermissionSeeder extends Seeder
         $manager->givePermissionTo([
             'organization.edit',
             'profile.update',
+
             'class.create',
             'class.edit',
             'class.delete',
+            'class.view',
+            'class.view.list',
+
+            'student.view',
+            'student.view.list',
             'student.create',
             'student.edit',
             'student.delete',
+
             'worker.create',
             'worker.edit',
             'worker.delete',
+            'worker.view.list',
+            'worker.view',
+
             'teacher.create',
             'teacher.edit',
             'teacher.delete',
-            'student.view',
-            'class.view',
             'teacher.view',
-            'worker.view',
-            'organization.view',
-            'student.view.list',
-            'class.view.list',
             'teacher.view.list',
-            'worker.view.list',
             'school.create',
             'school.update',
             'school.delete',
             'school.view',
+            'organization.view',
+
         ]);
         $teacher->givePermissionTo([
             'class.create',

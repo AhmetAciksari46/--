@@ -6,6 +6,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
+/**
+ * @OA\Schema(
+ *     schema="School",
+ *     title="School Model",
+ *     description="Okul bilgisi şeması",
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="Açıksarı Koleji"),
+ *     @OA\Property(property="nickname", type="string", example="ackolej"),
+ *     @OA\Property(property="address", type="string", example="Kahramanmaraş"),
+ *     @OA\Property(property="manager_id", type="integer", example=5),
+ *     @OA\Property(property="is_active", type="boolean", example=true),
+ *     @OA\Property(property="img_path", type="string", example="uploads/schools/logo.png"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class School extends Model
 {
     use HasFactory;

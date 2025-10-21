@@ -9,11 +9,12 @@ use App\Models\Package;
 use Illuminate\Support\Facades\Auth;
 use App\Traits\ApiResponser;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Subscription;
+use App\Http\Requests\Package\PurchasePackageRequest;
 
 class PackageController extends Controller
 {
     use ApiResponser;
-    //TODO : packages ve package id liyi ayrı bir route ekle ana sayfadan görünmesi ve üyelerin görebilmesi için
     public function getpackages()
     {
 
@@ -21,21 +22,38 @@ class PackageController extends Controller
         return $this->successResponse($packages);
     }
 
-
+    // Sadece aktif ve görünür olan paketleri getir
     public function publicIndex()
     {
-        // Sadece aktif ve görünür olan paketleri getir
-        $packages = Package::where('is_active', true)
-            ->where('is_visible', true)
-            ->orderBy('sort_order')
-            ->get();
-
-        return $this->successResponse($packages, 'Paket listesi başarıyla getirildi.');
+        try {
+            $packages = Package::where('is_active', true)
+                ->where('is_visible', true)
+                ->orderBy('sort_order')
+                ->get();
+            return $this->successResponse($packages, 'Paket listesi başarıyla getirildi.');
+        } catch (\Exception $e) {
+            return $this->errorResponse('Paketler getirilirken bir hata oluştu: ' . $e->getMessage(), 500);
+        }
     }
+    // Sadece aktif ve görünür paketi id ile gösterebilir
+
+
+    /**
+     * @OA\Get(
+     *     path="/api/publicpackage/{id}",
+     *     summary="İlgili Paketi Getirir",
+     *     description="Paket detaylarını getirir.",
+     *     tags={"Packages"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Başarılı",
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Package"))
+     *     )
+     * )
+     */
 
     public function publicShow($id)
     {
-        // Sadece aktif ve görünür paketi gösterebilir
         $package = Package::where('is_active', true)
             ->where('is_visible', true)
             ->findOrFail($id);
@@ -83,5 +101,83 @@ class PackageController extends Controller
         $package->delete();
 
         return $this->successResponse('Paket başarıyla silindi.');
+    }
+
+    public function purchase(PurchasePackageRequest $request, Package $package)
+    {
+        try {
+            $user = $request->user();
+            $subscription = Subscription::upgradeOrCreate($user, $package);
+
+
+            $data = [
+                'subscription_id' => $subscription->id,
+                'current_package' => [
+                    'id' => $subscription->package->id,
+                    'name' => $subscription->package->name,
+                    'description' => $subscription->package->description,
+                    'price' => $subscription->package->price,
+                    'duration_days' => $subscription->package->duration_days,
+                    'modules' => [
+                        'homework' => (bool) $subscription->package->has_homework_module,
+                        'exam' => (bool) $subscription->package->has_exam_module,
+                        'chat' => (bool) $subscription->package->has_chat_module,
+                        'analytics' => (bool) $subscription->package->has_analytics_module,
+                        'certificate' => (bool) $subscription->package->has_certificate_module,
+                    ],
+                ],
+            ];
+
+            return $this->successResponse($data, 'Ödeme başlatıldı, onay bekleniyor.');
+        } catch (\Exception $e) {
+            return $this->errorResponse('Paket satın alınırken bir hata oluştu: ' . $e->getMessage(), 500);
+        }
+    }
+
+    // Admin manuel onay
+    public function approvePayment(Request $request, Subscription $subscription)
+    {
+        if ($subscription->payment_status === 'paid') {
+            return $this->successResponse(null, 'Ödeme zaten onaylanmış.');
+        }
+
+        // Ödemeyi onayla
+        $subscription->update([
+            'payment_status' => 'paid',
+        ]);
+
+        // Eğer subscribable manager ise
+        $user = $subscription->subscribable;
+
+        if ($user->role === 'manager') {
+            // Manager profile al
+            $profile = $user->managerProfile;
+
+            if ($profile) {
+                // Payment reminder aktif et
+                $profile->update([
+                    'payment_reminder' => true,
+                ]);
+
+                // School varsa ve paket aktifse school.is_active = true
+                if ($profile->schoolId) {
+                    $school = $profile->school; // Eğer School modeli relation varsa
+                    if ($school) {
+                        $school->update([
+                            'is_active' => $subscription->package->is_active,
+                        ]);
+                    }
+                }
+            }
+        }
+
+        $data = [
+            'subscription_id' => $subscription->id,
+            'current_package' => $subscription->package,
+            'payment_status' => $subscription->payment_status,
+            'manager_profile' => $user->managerProfile ?? null,
+        ];
+
+        return $this->successResponse($data, 'Paket onaylandı ve manager profili güncellendi.');
     }
 }

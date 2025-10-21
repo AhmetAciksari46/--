@@ -4,6 +4,22 @@ namespace App\Http\Requests\Profile;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="ManagerUpdateProfileSettingRequest",
+ *     type="object",
+ *     title="Manager Update Profile Request",
+ *     required={},
+ *     @OA\Property(property="phone", type="string", example="+905551234567", nullable=true),
+ *     @OA\Property(property="address", type="string", example="İstanbul, Türkiye", nullable=true),
+ *     @OA\Property(property="birth_date", type="string", format="date", example="1990-01-01", nullable=true),
+ *     @OA\Property(property="note", type="string", example="Özel not", nullable=true),
+ *     @OA\Property(property="referance", type="string", example="ABC123", nullable=true),
+ *     @OA\Property(property="schoolId", type="integer", example=2, nullable=true),
+ *     @OA\Property(property="payment_reminder", type="boolean", example=true)
+ * )
+ */
+
 class ManagerUpdateProfileSettingRequest extends FormRequest
 {
     /**

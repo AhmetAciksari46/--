@@ -4,6 +4,25 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="PackageStoreSubscriptionRequest",
+ *     type="object",
+ *     title="Yeni Abonelik Request",
+ *     required={"subscribable_type","subscribable_id","package_id"},
+ *     @OA\Property(property="subscribable_type", type="string", example="App\\Models\\User"),
+ *     @OA\Property(property="subscribable_id", type="integer", example=1),
+ *     @OA\Property(property="package_id", type="integer", example=2),
+ *     @OA\Property(property="price", type="number", format="float", example=199.99, nullable=true),
+ *     @OA\Property(property="currency", type="string", example="TRY", nullable=true),
+ *     @OA\Property(property="payment_method", type="string", example="credit_card", nullable=true),
+ *     @OA\Property(property="payment_reference", type="string", example="TX123456", nullable=true),
+ *     @OA\Property(property="start_date", type="string", format="date-time", example="2025-10-21T12:00:00Z", nullable=true),
+ *     @OA\Property(property="end_date", type="string", format="date-time", example="2025-11-21T12:00:00Z", nullable=true),
+ *     @OA\Property(property="auto_renew", type="boolean", example=false),
+ *     @OA\Property(property="note", type="string", example="Özel not", nullable=true)
+ * )
+ */
 class PackageStoreSubscriptionRequest extends FormRequest
 {
     /**

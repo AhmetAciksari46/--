@@ -33,8 +33,8 @@ Route::post("/schoolstudentregister", [AuthController::class, "schoolstudentregi
 Route::post("/invidualstudentregister", [AuthController::class, "invidualstudentregister"]);
 
 
-Route::get('packages', [PackageController::class, 'publicIndex']);
-Route::get('packages/{id}', [PackageController::class, 'publicShow']);
+Route::get('/getpublicpackages', [PackageController::class, 'publicIndex']);
+Route::get('/publicpackage/{id}', [PackageController::class, 'publicShow']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -77,6 +77,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     Route::middleware(CheckUserProfile::class)->group(function () {
+        // Paket satın alma
+        Route::post('/packages/{package}/purchase', [PackageController::class, 'purchase'])
+            ->name('packages.purchase');
+
+        // Admin tarafından ödeme onayı
+        Route::post('/subscriptions/{subscription}/approve', [PackageController::class, 'approvePayment'])
+            ->middleware('role:admin') // Admin rolü zorunlu
+            ->name('subscriptions.approve');
+
         // Users
         Route::get('/users', [UserController::class, 'index']);
         Route::get('/users/{id}', [UserController::class, 'show']);
@@ -118,14 +127,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-        Route::prefix("schools/{school}")->middleware(['ensure.school'])
+        Route::prefix("schools/{school}")->middleware(['ensure.school', 'active.school'])
             ->group(function () {
 
                 // Öğrenci işlemleri
 
                 Route::prefix("students")->group(function () {
                     Route::get("/getstudents", [SchoolStudentController::class, "index"]); // o okuldaki öğrencilerin tamamını getir
-                    Route::get("/getstudentsbyclassid/{classId}", [SchoolStudentController::class, "getstudentsbyclassid"]); //  sınıf id bazlı öğrencilerin tamamını getir
+                    Route::get("/getstudentsbyclassid/{classModel}", [SchoolStudentController::class, "getstudentsbyclassid"]); //  sınıf id bazlı öğrencilerin tamamını getir
                     Route::get("/{id}", [SchoolStudentController::class, "show"]); // id ye göre öğrenci getir
                     Route::post("/createstudent", [SchoolStudentController::class, "store"]);    // öğrenci oluştur (user modeldeki bilgiler)
                     Route::post("/createstudentprofile", [SchoolStudentController::class, "createstudentprofile"]);    // öğrenci oluştur (schoolstudentprofile modeldeki bilgiler)
@@ -165,28 +174,16 @@ Route::middleware('auth:sanctum')->group(function () {
                 });
             });
 
-        // Schools
-        Route::apiResource('schools', SchoolController::class)->only(['index', 'show', 'store']);
-
-        // Classes
-        Route::apiResource('classes', ClassModelController::class)->only(['index', 'show', 'store']);
-
-        // Courses
-        Route::apiResource('courses', CourseController::class)->only(['index', 'show', 'store']);
-
-        // Assignments
-        Route::apiResource('assignments', AssignmentController::class)->only(['index', 'show', 'store']);
-
-        // Packages
-        Route::apiResource('packages', PackageController::class)->only(['index', 'show', 'store']);
-
         // Subscriptions
         Route::get('subscriptions', [SubscriptionController::class, 'index']); // kullanıcının abonelikleri
         Route::get('subscriptions/{id}', [SubscriptionController::class, 'show']);
         Route::post('subscriptions', [SubscriptionController::class, 'store']);
         Route::patch('subscriptions/{id}', [SubscriptionController::class, 'update']);
         Route::post('subscriptions/{id}/cancel', [SubscriptionController::class, 'cancel']);
-        Route::prefix('admin')->middleware(['auth:sanctum', 'can:admin-access'])->group(function () {
+        // Subscriptions by Admin
+        Route::prefix('admin')->middleware(['auth:sanctum'])->group(function () {
+
+            //Route::prefix('admin')->middleware(['auth:sanctum', 'can:admin-access'])->group(function () {
             Route::get('subscriptions', [SubscriptionController::class, 'adminIndex']);
             Route::get('subscriptions/{id}', [SubscriptionController::class, 'show']);
             // admin update/delete vs.
@@ -201,3 +198,31 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/subscriptions/check/{schoolId}', [SubscriptionController::class, 'checkActive']);
     });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // // Schools
+        // Route::apiResource('schools', SchoolController::class)->only(['index', 'show', 'store']);
+
+        // // Classes
+        // Route::apiResource('classes', ClassModelController::class)->only(['index', 'show', 'store']);
+
+        // // Courses
+        // Route::apiResource('courses', CourseController::class)->only(['index', 'show', 'store']);
+
+        // // Assignments
+        // Route::apiResource('assignments', AssignmentController::class)->only(['index', 'show', 'store']);
+
+        // Packages
+        //Route::apiResource('packages', PackageController::class)->only(['index', 'show', 'store']);
