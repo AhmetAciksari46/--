@@ -21,6 +21,8 @@ class CreateSchoolRequest extends FormRequest
             'address' => 'nullable|string|max:500',
             'img_path' => 'nullable|string|max:500',
             'is_active' => 'boolean',
+            'package_id' => 'required|exists:packages,id', // ✅ yeni
+
         ];
     }
     public function messages(): array
@@ -29,7 +31,8 @@ class CreateSchoolRequest extends FormRequest
             'name.required' => 'Okul adı zorunludur.',
             'name.string' => 'Okul adı metin türünde olmalıdır.',
             'name.max' => 'Okul adı en fazla 255 karakter olabilir.',
-
+            'package_id.required' => 'Paket seçimi zorunludur.', // ✅ yeni
+            'package_id.exists' => 'Seçilen paket bulunamadı.', // ✅ yeni
             'nickname.required' => 'Okul kısa adı (nickname) zorunludur.',
             'nickname.string' => 'Okul kısa adı metin türünde olmalıdır.',
             'nickname.max' => 'Okul kısa adı en fazla 255 karakter olabilir.',

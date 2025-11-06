@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Assignment;
 
 class AssignmentController extends Controller
 {
-        public function index()
+    public function index()
     {
         $this->authorizeRole(['admin', 'manager', 'teacher']);
         return Assignment::with('course')->get();

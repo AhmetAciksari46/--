@@ -12,7 +12,7 @@ class Course extends Model
     protected $fillable = [
         'title',
         'description',
-        'class_id',
+        'class_model_id',
     ];
 
     /* ======================
@@ -22,7 +22,7 @@ class Course extends Model
     // Bu dersin bağlı olduğu sınıf
     public function classModel()
     {
-        return $this->belongsTo(ClassModel::class, 'class_id');
+        return $this->belongsTo(ClassModel::class, 'class_model_id');
     }
 
     // Dersin ödevleri

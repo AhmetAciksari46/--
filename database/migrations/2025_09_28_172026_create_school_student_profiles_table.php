@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('address')->nullable();
             $table->unsignedBigInteger('active_course_id')->nullable();
-            $table->unsignedBigInteger('active_class_id')->nullable();
+            $table->foreignId('active_class_id')->nullable()->constrained('class_models')->nullOnDelete();
             $table->unsignedBigInteger('active_additional_class_id')->nullable();
             $table->string('parent_name')->nullable();
             $table->string('parent_phone')->nullable();

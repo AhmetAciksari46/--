@@ -23,12 +23,12 @@ class Package extends Model
     protected $fillable = [
         'name',
         'description',
-        'max_students',
-        'max_teachers',
         'duration_days',
         'price',
         'type',
         'is_active',
+        'has_schedule_module',
+        'week_count',
         'has_homework_module',
         'has_exam_module',
         'has_chat_module',
@@ -40,7 +40,17 @@ class Package extends Model
         'sort_order',
         'img_path',
     ];
-
+    protected $casts = [
+        'is_active' => 'boolean',
+        'is_visible' => 'boolean',
+        'has_homework_module' => 'boolean',
+        'has_schedule_module' => 'boolean',
+        'has_exam_module' => 'boolean',
+        'has_chat_module' => 'boolean',
+        'has_analytics_module' => 'boolean',
+        'has_certificate_module' => 'boolean',
+        'is_trial' => 'boolean',
+    ];
     /* ======================
      |   Relationships
      ====================== */
@@ -49,5 +59,18 @@ class Package extends Model
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class);
+    }
+    public function gradeRules()
+    {
+        return $this->hasMany(PackageWeekGradeRule::class);
+    }
+
+    public function subjectRules()
+    {
+        return $this->hasMany(PackageWeekSubjectRule::class);
+    }
+    public function schools()
+    {
+        return $this->hasMany(School::class);
     }
 }

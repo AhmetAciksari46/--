@@ -14,7 +14,25 @@ use App\Http\Requests\Profile\UpdateProfileRequest;
 class ManagerController extends Controller
 {
     use ApiResponser;
-
+    /**
+     * @OA\Put(
+     *     path="/api/me/manager/updateprofile",
+     *     tags={"ManagerProfile"},
+     *     summary="Yönetici kendi kullanıcı hesabını günceller",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/UpdateProfileRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Profil bilgileri başarıyla güncellendi",
+     *         @OA\JsonContent(ref="#/components/schemas/User")
+     *     ),
+     *     @OA\Response(response=401, description="Yetkisiz erişim"),
+     *     @OA\Response(response=422, description="Doğrulama hatası")
+     * )
+     */
     public function update(UpdateProfileRequest $request)
     {
         $user = $request->user();

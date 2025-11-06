@@ -11,18 +11,18 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Profile\ManagerUpdateProfileSettingRequest;
 
-
 /**
  * @OA\Tag(
- *     name="Manager Profile",
- *     description="Manager Profile İşlemleri",
+ *     name="ManagerProfile",
+ *     description="Yönetici profil yönetimi"
  * )
- * @OAS\SecurityScheme(
+ * @OA\SecurityScheme(
  *      securityScheme="bearer_token",
  *      type="http",
  *      scheme="bearer"
  * )
  */
+
 
 /**
  * ---------------------------
@@ -30,55 +30,24 @@ use App\Http\Requests\Profile\ManagerUpdateProfileSettingRequest;
  * ---------------------------
  */
 
-/**
- * @OA\Schema(
- *     schema="ManagerUpdateProfileSettingRequest",
- *     type="object",
- *     title="Manager Update Profile Request",
- *     description="Yönetici profil ayarlarını güncelleme requesti",
- *     required={},
- *     @OA\Property(property="phone", type="string", example="+905551234567", nullable=true),
- *     @OA\Property(property="address", type="string", example="İstanbul, Türkiye", nullable=true),
- *     @OA\Property(property="birth_date", type="string", format="date", example="1990-01-01", nullable=true),
- *     @OA\Property(property="note", type="string", example="Özel not", nullable=true),
- *     @OA\Property(property="referance", type="string", example="ABC123", nullable=true),
- *     @OA\Property(property="schoolId", type="integer", example=2, nullable=true),
- *     @OA\Property(property="payment_reminder", type="boolean", example=true)
- * )
- */
-/**
- * @OA\Schema(
- *     schema="SchoolStudentProfile",
- *     type="object",
- *     title="SchoolStudentProfile",
- *     description="Okul öğrencisi profil modeli",
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="user_id", type="integer", example=10),
- *     @OA\Property(property="first_name", type="string", example="Ahmet"),
- *     @OA\Property(property="last_name", type="string", example="Açıksarı"),
- *     @OA\Property(property="birth_date", type="string", format="date", example="2010-05-01", nullable=true),
- *     @OA\Property(property="class", type="string", example="5/A", nullable=true),
- *     @OA\Property(property="notes", type="string", example="Özel not", nullable=true),
- *     @OA\Property(property="created_at", type="string", format="date-time", example="2025-10-21T12:00:00Z"),
- *     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-10-21T12:00:00Z"),
- *     @OA\Property(
- *         property="user",
- *         ref="#/components/schemas/User",
- *         nullable=true
- *     )
- * )
- */
+
+
 class ManagerProfileController extends Controller
 {
 
     use ApiResponser;
     /**
      * @OA\Get(
-     *     path="/manager/profile/settings",
+     *     path="/api/me/manager/getprofilesettings",
      *     tags={"ManagerProfile"},
      *     summary="Yönetici profil ayarlarını getir",
      *     security={{"bearerAuth": {}}},
-     *     @OA\Response(response=200, description="Profil ayarları bulundu", @OA\JsonContent(ref="#/components/schemas/ManagerProfile")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Profil ayarları bulundu",
+     *         @OA\JsonContent(ref="#/components/schemas/ManagerProfile")
+     *     ),
+     *     @OA\Response(response=401, description="Yetkisiz erişim"),
      *     @OA\Response(response=404, description="Profil ayarları bulunamadı")
      * )
      */
@@ -97,7 +66,7 @@ class ManagerProfileController extends Controller
     }
     /**
      * @OA\Put(
-     *     path="/manager/profile/settings",
+     *     path="/api/me/manager/updateprofilesettings",
      *     tags={"ManagerProfile"},
      *     summary="Yönetici profil ayarlarını güncelle",
      *     security={{"bearerAuth": {}}},
@@ -105,10 +74,16 @@ class ManagerProfileController extends Controller
      *         required=true,
      *         @OA\JsonContent(ref="#/components/schemas/ManagerUpdateProfileSettingRequest")
      *     ),
-     *     @OA\Response(response=200, description="Profil güncellendi", @OA\JsonContent(ref="#/components/schemas/ManagerProfile")),
-     *     @OA\Response(response=422, description="Validation Error")
+     *     @OA\Response(
+     *         response=200,
+     *         description="Profil güncellendi",
+     *         @OA\JsonContent(ref="#/components/schemas/ManagerProfile")
+     *     ),
+     *     @OA\Response(response=401, description="Yetkisiz erişim"),
+     *     @OA\Response(response=422, description="Doğrulama hatası")
      * )
      */
+
 
     public function updateprofilesettings(ManagerUpdateProfileSettingRequest $request)
     {
@@ -123,10 +98,10 @@ class ManagerProfileController extends Controller
     }
 
 
-
     /**
      * @OA\Get(
      *     path="/manager/profile/{user_id}",
+     *     path="/api/manager/profile/{user_id}",
      *     tags={"ManagerProfile"},
      *     summary="Belirli kullanıcıya ait öğrenci profilini getir",
      *     security={{"bearerAuth": {}}},
@@ -137,8 +112,13 @@ class ManagerProfileController extends Controller
      *         description="Kullanıcı ID",
      *         @OA\Schema(type="integer")
      *     ),
-     *     @OA\Response(response=200, description="Profil bulundu", @OA\JsonContent(ref="#/components/schemas/SchoolStudentProfile")),
-     *     @OA\Response(response=403, description="Unauthorized"),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Profil bulundu",
+     *         @OA\JsonContent(ref="#/components/schemas/SchoolStudentProfile")
+     *     ),
+     *     @OA\Response(response=401, description="Yetkisiz erişim"),
+     *     @OA\Response(response=403, description="Yetkiniz yok"),
      *     @OA\Response(response=404, description="Profil bulunamadı")
      * )
      */

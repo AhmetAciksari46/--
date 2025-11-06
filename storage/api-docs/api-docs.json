@@ -2,13 +2,195 @@
     "openapi": "3.0.0",
     "info": {
         "title": "EdeQR LMS API",
-        "description": "EdeQR LMS projesi için REST API dokümantasyonu",
+        "description": "bridge digital LMS projesi için REST API dokümantasyonu",
         "contact": {
-            "email": "destek@edekurs.com.tr"
+            "email": "ahmet@aciksari.net"
         },
         "version": "1.0.0"
     },
     "paths": {
+        "/api/branches": {
+            "get": {
+                "tags": [
+                    "Branches"
+                ],
+                "summary": "List branches",
+                "operationId": "015f075a4a5d4c56cfa3d3c6ae15320d",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Search by name or code",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "is_active",
+                        "in": "query",
+                        "description": "Filter by active state",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Branch"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Branches"
+                ],
+                "summary": "Yeni branş oluştur",
+                "description": "Sisteme yeni bir branş ekler.",
+                "operationId": "56de1f768952eb60f9ddf1d94cc91a1c",
+                "requestBody": {
+                    "description": "Oluşturulacak branş verileri",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BranchStoreRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Branş başarıyla oluşturuldu",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Branch"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Doğrulama hatası"
+                    }
+                }
+            }
+        },
+        "/api/branches/{id}": {
+            "get": {
+                "tags": [
+                    "Branches"
+                ],
+                "summary": "Get a branch",
+                "operationId": "f47ae3689c8f8179be802eabbf74342c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Branch"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Branches"
+                ],
+                "summary": "Update branch",
+                "operationId": "87212cbeab4812ef924a9524d289bc60",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BranchUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Branch"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Branches"
+                ],
+                "summary": "Delete branch",
+                "operationId": "fa3f6917a7233af004c0a183cc07b3ba",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
         "/api/register": {
             "post": {
                 "tags": [
@@ -282,13 +464,264 @@
                 ]
             }
         },
-        "/manager/profile/settings": {
+        "/api/schools/{school_id}/classmodels": {
+            "get": {
+                "tags": [
+                    "ClassModels"
+                ],
+                "summary": "Belirli bir okula ait tüm sınıf modellerini getirir",
+                "operationId": "8cf444096838ba86e6bae90151dc8cd1",
+                "parameters": [
+                    {
+                        "name": "school_id",
+                        "in": "path",
+                        "description": "Okul ID'si",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Başarılı sorgu",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ClassModel"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Bu okula ait sınıf bulunamadı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/classmodels/{id}": {
+            "get": {
+                "tags": [
+                    "ClassModels"
+                ],
+                "summary": "ID’ye göre bir sınıf modelini getirir",
+                "operationId": "a01894caa23c6811ac3b313dc34b52c0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ClassModel ID'si",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ClassModel bulundu",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ClassModel"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "ClassModel bulunamadı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/class": {
+            "post": {
+                "tags": [
+                    "ClassModels"
+                ],
+                "summary": "Create a new class",
+                "operationId": "ae076c9cae1ee603d75ca3b8b6023216",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreClassRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Class created successfully"
+                    },
+                    "400": {
+                        "description": "No teachers found or invalid teacher"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/schools/{school}/class/{classModel}": {
+            "put": {
+                "tags": [
+                    "ClassModels"
+                ],
+                "summary": "Update an existing class",
+                "operationId": "786f8cbf6bb113995e96f7e796b5e776",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "classModel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateClassRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Class updated successfully"
+                    },
+                    "400": {
+                        "description": "Invalid class or teacher"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "ClassModels"
+                ],
+                "summary": "Delete a class",
+                "operationId": "9a113fa9f66f282769cd9340c12297f3",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "classModel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Class deleted successfully"
+                    },
+                    "400": {
+                        "description": "Invalid school or class"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/me/manager/updateprofile": {
+            "put": {
+                "tags": [
+                    "ManagerProfile"
+                ],
+                "summary": "Yönetici kendi kullanıcı hesabını günceller",
+                "operationId": "e129cc9eaae231ec0345a90d9ca3c5d1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateProfileRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profil bilgileri başarıyla güncellendi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Yetkisiz erişim"
+                    },
+                    "422": {
+                        "description": "Doğrulama hatası"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/me/manager/getprofilesettings": {
             "get": {
                 "tags": [
                     "ManagerProfile"
                 ],
                 "summary": "Yönetici profil ayarlarını getir",
-                "operationId": "aced1524b91dc3a4f271b25499f57fb1",
+                "operationId": "dbe67bcde7f4bd8ddc54f74f67c6ec57",
                 "responses": {
                     "200": {
                         "description": "Profil ayarları bulundu",
@@ -300,6 +733,9 @@
                             }
                         }
                     },
+                    "401": {
+                        "description": "Yetkisiz erişim"
+                    },
                     "404": {
                         "description": "Profil ayarları bulunamadı"
                     }
@@ -309,13 +745,15 @@
                         "bearerAuth": []
                     }
                 ]
-            },
+            }
+        },
+        "/api/me/manager/updateprofilesettings": {
             "put": {
                 "tags": [
                     "ManagerProfile"
                 ],
                 "summary": "Yönetici profil ayarlarını güncelle",
-                "operationId": "ae43142f15f0cb84c243515e9b92101d",
+                "operationId": "dffc4911dba9ecdec6fed391df1aef06",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -337,8 +775,11 @@
                             }
                         }
                     },
+                    "401": {
+                        "description": "Yetkisiz erişim"
+                    },
                     "422": {
-                        "description": "Validation Error"
+                        "description": "Doğrulama hatası"
                     }
                 },
                 "security": [
@@ -348,13 +789,13 @@
                 ]
             }
         },
-        "/manager/profile/{user_id}": {
+        "/api/manager/profile/{user_id}": {
             "get": {
                 "tags": [
                     "ManagerProfile"
                 ],
                 "summary": "Belirli kullanıcıya ait öğrenci profilini getir",
-                "operationId": "37b60e416afb3e88571e1e32cb01b5a0",
+                "operationId": "7632fa01871bc147e76205f3c53165e3",
                 "parameters": [
                     {
                         "name": "user_id",
@@ -377,8 +818,11 @@
                             }
                         }
                     },
+                    "401": {
+                        "description": "Yetkisiz erişim"
+                    },
                     "403": {
-                        "description": "Unauthorized"
+                        "description": "Yetkiniz yok"
                     },
                     "404": {
                         "description": "Profil bulunamadı"
@@ -391,39 +835,387 @@
                 ]
             }
         },
-        "/api/publicpackage/{id}": {
+        "api/packages": {
             "get": {
                 "tags": [
-                    "Packages"
+                    "Packages-Admin"
                 ],
-                "summary": "İlgili Paketi Getirir",
-                "description": "Paket detaylarını getirir.",
-                "operationId": "74f5bcb4044d7451426a5fa24630a71f",
+                "summary": "Tüm paketleri listele",
+                "description": "tüm paketleri listeler.",
+                "operationId": "1843fcea477f14be1e8688d70a764971",
                 "responses": {
                     "200": {
-                        "description": "Başarılı",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Package"
+                        "description": "Paket listesi başarıyla getirildi"
+                    },
+                    "403": {
+                        "description": "Yetkiniz yok"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Packages-Admin"
+                ],
+                "summary": "Yeni Paket oluştur ",
+                "description": "Paket Oluşturma işlemi.",
+                "operationId": "6c2f0ba0d8c2642107184703bde3aec9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "duration_days",
+                                    "price",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Kış 40 Hafta Paketi"
+                                    },
+                                    "duration_days": {
+                                        "type": "integer",
+                                        "example": 365
+                                    },
+                                    "price": {
+                                        "type": "integer",
+                                        "example": 499.99
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "example": "school"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "yoğun içerikli paket"
+                                    },
+                                    "is_active": {
+                                        "type": "boolen",
+                                        "example": true
+                                    },
+                                    "is_visible": {
+                                        "type": "boolen",
+                                        "example": true
+                                    },
+                                    "is_trial": {
+                                        "type": "boolen",
+                                        "example": false
+                                    },
+                                    "has_homework_module": {
+                                        "type": "boolen",
+                                        "example": true
+                                    },
+                                    "has_exam_module": {
+                                        "type": "boolen",
+                                        "example": true
+                                    },
+                                    "has_chat_module": {
+                                        "type": "boolen",
+                                        "example": true
+                                    },
+                                    "has_analytics_module": {
+                                        "type": "boolen",
+                                        "example": true
+                                    },
+                                    "has_certificate_module": {
+                                        "type": "boolen",
+                                        "example": true
+                                    },
+                                    "trial_days": {
+                                        "type": "integer",
+                                        "example": 15
+                                    },
+                                    "sort_order": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "img_path": {
+                                        "type": "string",
+                                        "example": "uploads/packages/package1.png"
                                     }
-                                }
+                                },
+                                "type": "object"
                             }
                         }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Paket başarıyla oluşturuldu"
+                    },
+                    "403": {
+                        "description": "yetki hatası"
+                    },
+                    "500": {
+                        "description": "Sunucu hatası"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "api/packages/{id}": {
+            "get": {
+                "tags": [
+                    "Packages-Admin"
+                ],
+                "summary": "Paket ID ile paket görüntüle ",
+                "description": "İdsi girilen paketi getirir.",
+                "operationId": "8550eef3fa084af9a28584a8677fee46",
+                "responses": {
+                    "200": {
+                        "description": "Paket detayı başarıyla getirildi"
+                    },
+                    "403": {
+                        "description": "Yetkiniz yok"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Packages-Admin"
+                ],
+                "summary": "Paket bilgilerini güncelle",
+                "operationId": "c42c82b517a6d6d97c03481f04d0e9ce",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Ede Koleji Güncel"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Okul başarıyla güncellendi"
+                    },
+                    "500": {
+                        "description": "Sunucu hatası"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Packages-Admin"
+                ],
+                "summary": "Paket silme",
+                "description": "ID ile paketi silme işlemi.",
+                "operationId": "a13c730efdc4753bd1590f3a41544ca5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Silinecek paketin ID'si",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paket başarıyla silindi"
+                    },
+                    "403": {
+                        "description": "Yetkiniz yok"
+                    },
+                    "404": {
+                        "description": "Paket bulunamadı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/manager/packages/{package}/purchase": {
+            "post": {
+                "tags": [
+                    "Packages-Manager"
+                ],
+                "summary": "Yeni Paket Satın al ",
+                "description": "Paket Satın alma işlemi.",
+                "operationId": "0503d843f4af1ab68e418b11524e2040",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "duration_days",
+                                    "price",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Kış 40 Hafta Paketi"
+                                    },
+                                    "duration_days": {
+                                        "type": "integer",
+                                        "example": 365
+                                    },
+                                    "price": {
+                                        "type": "integer",
+                                        "example": 499.99
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "example": "school"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "yoğun içerikli paket"
+                                    },
+                                    "is_active": {
+                                        "type": "boolen",
+                                        "example": true
+                                    },
+                                    "is_visible": {
+                                        "type": "boolen",
+                                        "example": true
+                                    },
+                                    "is_trial": {
+                                        "type": "boolen",
+                                        "example": false
+                                    },
+                                    "has_homework_module": {
+                                        "type": "boolen",
+                                        "example": true
+                                    },
+                                    "has_exam_module": {
+                                        "type": "boolen",
+                                        "example": true
+                                    },
+                                    "has_chat_module": {
+                                        "type": "boolen",
+                                        "example": true
+                                    },
+                                    "has_analytics_module": {
+                                        "type": "boolen",
+                                        "example": true
+                                    },
+                                    "has_certificate_module": {
+                                        "type": "boolen",
+                                        "example": true
+                                    },
+                                    "trial_days": {
+                                        "type": "integer",
+                                        "example": 15
+                                    },
+                                    "sort_order": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "img_path": {
+                                        "type": "string",
+                                        "example": "uploads/packages/package1.png"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Paket başarıyla oluşturuldu"
+                    },
+                    "403": {
+                        "description": "yetki hatası"
+                    },
+                    "500": {
+                        "description": "Sunucu hatası"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/permissions/teacher": {
+            "get": {
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "List permissions that a manager can assign to teachers",
+                "operationId": "dbd796b084a2cddc7fe8ca522b6fecd0",
+                "responses": {
+                    "200": {
+                        "description": "List of assignable permissions"
                     }
                 }
             }
         },
-        "/api/schools/info": {
+        "/api/schools/{school}/permissions/student": {
+            "get": {
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "List permissions that a manager can assign to students",
+                "operationId": "f0bd586b37a642f2b1371acbfefecd22",
+                "responses": {
+                    "200": {
+                        "description": "List of assignable permissions"
+                    }
+                }
+            }
+        },
+        "/api/school/info": {
             "get": {
                 "tags": [
                     "Schools"
                 ],
                 "summary": "Kullanıcının bağlı olduğu okul bilgisini getirir",
                 "description": "Manager, teacher veya student rollü kullanıcının okul bilgisini döner.",
-                "operationId": "d31d10eb4d2ee4e7add8c134fbd5ba35",
+                "operationId": "8aa5643ae42c9214aadf2e67cbc90554",
                 "responses": {
                     "200": {
                         "description": "Okul bilgisi başarıyla getirildi"
@@ -439,13 +1231,13 @@
                 ]
             }
         },
-        "/api/schools": {
+        "/api/getschool": {
             "get": {
                 "tags": [
                     "Schools"
                 ],
                 "summary": "Okul bilgisi (aktif oturumdan alınır)",
-                "operationId": "07ad67f69ed66c98e40f8ffec7133839",
+                "operationId": "b7060065ed498122ff030bb78d93b5f4",
                 "responses": {
                     "200": {
                         "description": "Okul bilgisi başarıyla getirildi"
@@ -523,69 +1315,6 @@
                 ]
             }
         },
-        "/api/schools/{id}/update": {
-            "put": {
-                "tags": [
-                    "Schools"
-                ],
-                "summary": "Okul bilgilerini güncelle (Manager rolü)",
-                "description": "Manager kullanıcı, bağlı olduğu okulun bilgilerini günceller.",
-                "operationId": "bec41e2b91877946c2a11899ce8657dd",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Açıksarı Anadolu Lisesi"
-                                    },
-                                    "nickname": {
-                                        "type": "string",
-                                        "example": "ackolej"
-                                    },
-                                    "address": {
-                                        "type": "string",
-                                        "example": "Kahramanmaraş Onikişubat"
-                                    },
-                                    "is_active": {
-                                        "type": "boolean",
-                                        "example": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Okul başarıyla güncellendi"
-                    },
-                    "403": {
-                        "description": "Manager bir okula bağlı değil"
-                    },
-                    "500": {
-                        "description": "Sunucu hatası"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/api/admin/schools/create": {
             "post": {
                 "tags": [
@@ -633,57 +1362,6 @@
                 "responses": {
                     "201": {
                         "description": "Okul başarıyla oluşturuldu"
-                    },
-                    "500": {
-                        "description": "Sunucu hatası"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/admin/schools/{id}/update": {
-            "put": {
-                "tags": [
-                    "Admin - Schools"
-                ],
-                "summary": "Admin tarafından okul bilgilerini güncelle",
-                "operationId": "7af4396ccac82ed7a4e4d1816384348f",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Ede Koleji Güncel"
-                                    },
-                                    "is_active": {
-                                        "type": "boolean",
-                                        "example": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Okul başarıyla güncellendi"
                     },
                     "500": {
                         "description": "Sunucu hatası"
@@ -785,6 +1463,249 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/api/schools/{school}/students/createuser": {
+            "post": {
+                "tags": [
+                    "SchoolStudentProfile"
+                ],
+                "summary": "Yeni öğrenci oluştur (sadece User tablosuna kaydeder)",
+                "operationId": "8c4c63d7c61f00733ae65958487556e0",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreStudentRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Öğrenci başarıyla oluşturuldu"
+                    },
+                    "403": {
+                        "description": "Yetkisiz işlem"
+                    }
+                }
+            }
+        },
+        "/api/schools/{school}/students/{user}/completeprofile": {
+            "post": {
+                "tags": [
+                    "SchoolStudentProfile"
+                ],
+                "summary": "Öğrencinin profil, veli ve sağlık bilgilerini tamamlar",
+                "operationId": "c5e853f2a13d14e78c209f33c5f03a9e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CompleteStudentProfileRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Profil başarıyla oluşturuldu"
+                    }
+                }
+            }
+        },
+        "/api/schools/{school}/students/{id}": {
+            "get": {
+                "tags": [
+                    "SchoolStudentProfile"
+                ],
+                "summary": "Öğrenci detayını getirir",
+                "operationId": "dcffc6ec78227f64de54e390868ce043",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Başarılı"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "SchoolStudentProfile"
+                ],
+                "summary": "Öğrenciyi sistemden siler (User + ilişkili tüm profiller)",
+                "operationId": "4ff097fa8bba45e1f6e4d3bd9ad07ca7",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DeleteStudentRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Öğrenci başarıyla silindi"
+                    },
+                    "403": {
+                        "description": "Yetkisiz işlem"
+                    },
+                    "404": {
+                        "description": "Öğrenci bulunamadı"
+                    }
+                }
+            }
+        },
+        "/api/schools/{school}/students/byclass/{classModel}": {
+            "get": {
+                "tags": [
+                    "SchoolStudentProfile"
+                ],
+                "summary": "Belirli bir sınıfa ait öğrencileri listeler",
+                "operationId": "73649cac1d6f2e581cb6b8f011e29598",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "classModel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Başarılı"
+                    }
+                }
+            }
+        },
+        "/api/schools/{school}/students": {
+            "get": {
+                "tags": [
+                    "SchoolStudentProfile"
+                ],
+                "summary": "Okuldaki tüm öğrencileri listeler",
+                "operationId": "20fe3dac6579cc081a7ab76bdc7d8764",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Başarılı"
+                    }
+                }
+            }
+        },
+        "/api/schools/{school}/students/{id}/update": {
+            "put": {
+                "tags": [
+                    "SchoolStudentProfile"
+                ],
+                "summary": "Öğrenciyi günceller (hem user hem profile)",
+                "operationId": "341becaf177dee86b83d2492aecd45dc",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateStudentRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Öğrenci başarıyla güncellendi"
+                    },
+                    "403": {
+                        "description": "Yetkisiz işlem"
+                    },
+                    "404": {
+                        "description": "Öğrenci bulunamadı"
+                    }
+                }
             }
         },
         "/api/subscriptions": {
@@ -1043,6 +1964,315 @@
                 ]
             }
         },
+        "/api/schools/{school}/teachers": {
+            "get": {
+                "tags": [
+                    "Teachers"
+                ],
+                "summary": "List teachers of a school",
+                "operationId": "b8ea7bedb01440f95f4f6078d5090d7f",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of teachers"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "TeacherProfile"
+                ],
+                "summary": "Create a new teacher",
+                "operationId": "c4ca23240a55629cb49590d7434ca959",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "branch_id"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "userName": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "branch_id": {
+                                        "type": "integer"
+                                    },
+                                    "phone": {
+                                        "type": "string"
+                                    },
+                                    "address": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Teacher created successfully"
+                    }
+                }
+            }
+        },
+        "/api/schools/{school}/teachers/{teacher}": {
+            "get": {
+                "tags": [
+                    "TeacherProfile"
+                ],
+                "summary": "Get teacher by ID",
+                "operationId": "0efa534a42822c7ebe6426d6ab06ce05",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "teacher",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Teacher details"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "TeacherProfile"
+                ],
+                "summary": "Update teacher information",
+                "operationId": "d70676bf8331d24e9e94f9f4b50ad06e",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "teacher",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "phone": {
+                                        "type": "string"
+                                    },
+                                    "address": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Teacher updated successfully"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "TeacherProfile"
+                ],
+                "summary": "Delete teacher",
+                "operationId": "84b5e5054b58ab16bcbcade1434ae8b6",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "teacher",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Teacher deleted successfully"
+                    }
+                }
+            }
+        },
+        "/api/schools/{school}/teachers/{teacher}/permissions": {
+            "get": {
+                "tags": [
+                    "TeacherProfile"
+                ],
+                "summary": "Get teacher permissions",
+                "operationId": "2a931cb6931eb0a1e46f1b46e0c89fa3",
+                "responses": {
+                    "200": {
+                        "description": "List of teacher permissions"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "TeacherProfile"
+                ],
+                "summary": "Update teacher permissions",
+                "operationId": "187798730546bd9b9fc8260f7e75ecc3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permissions updated successfully"
+                    }
+                }
+            }
+        },
+        "/api/me/teacher/getprofilesettings": {
+            "get": {
+                "tags": [
+                    "TeacherProfileSettings"
+                ],
+                "summary": "Öğretmen profil ayarlarını getir",
+                "operationId": "86393e8246c3b5bf351e7b4398b938cb",
+                "responses": {
+                    "200": {
+                        "description": "Profil ayarları bulundu",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TeacherProfile"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Yetkisiz erişim"
+                    },
+                    "404": {
+                        "description": "Profil bulunamadı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/me/teacher/updateprofilesettings": {
+            "put": {
+                "tags": [
+                    "TeacherProfileSettings"
+                ],
+                "summary": "Öğretmen profil ayarlarını güncelle",
+                "operationId": "3caf219c4b952f52cea5a08a60827ffc",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TeacherUpdateProfileSettingRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profil güncellendi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TeacherProfile"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Yetkisiz erişim"
+                    },
+                    "422": {
+                        "description": "Doğrulama hatası"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/users": {
             "get": {
                 "tags": [
@@ -1226,59 +2456,49 @@
     },
     "components": {
         "schemas": {
-            "SchoolStudentProfile": {
-                "title": "SchoolStudentProfile",
-                "description": "Okul öğrencisi profil modeli",
+            "Branch": {
                 "properties": {
                     "id": {
                         "type": "integer",
                         "example": 1
                     },
-                    "user_id": {
-                        "type": "integer",
-                        "example": 10
-                    },
-                    "first_name": {
+                    "name": {
                         "type": "string",
-                        "example": "Ahmet"
+                        "example": "Matematik"
                     },
-                    "last_name": {
+                    "slug": {
                         "type": "string",
-                        "example": "Açıksarı"
+                        "example": "matematik"
                     },
-                    "birth_date": {
+                    "code": {
                         "type": "string",
-                        "format": "date",
-                        "example": "2010-05-01",
+                        "example": "MATH"
+                    },
+                    "description": {
+                        "type": "string",
                         "nullable": true
                     },
-                    "class": {
+                    "color": {
                         "type": "string",
-                        "example": "5/A",
+                        "example": "#1E90FF",
                         "nullable": true
                     },
-                    "notes": {
+                    "icon": {
                         "type": "string",
-                        "example": "Özel not",
+                        "example": "calculator",
                         "nullable": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
                     },
                     "created_at": {
                         "type": "string",
-                        "format": "date-time",
-                        "example": "2025-10-21T12:00:00Z"
+                        "format": "date-time"
                     },
                     "updated_at": {
                         "type": "string",
-                        "format": "date-time",
-                        "example": "2025-10-21T12:00:00Z"
-                    },
-                    "user": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/User"
-                            }
-                        ],
-                        "nullable": true
+                        "format": "date-time"
                     }
                 },
                 "type": "object"
@@ -1334,6 +2554,123 @@
                         "type": "string",
                         "example": "Özel not",
                         "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "BranchStoreRequest": {
+                "title": "Branş Oluşturma İsteği",
+                "description": "Yeni bir branş oluşturmak için kullanılan istek şeması.",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "name": {
+                        "description": "Branşın adı. Bu alan zorunludur.",
+                        "type": "string",
+                        "example": "Matematik"
+                    },
+                    "slug": {
+                        "description": "Branşın kısa adı (slug). Gönderilmezse otomatik oluşturulur.",
+                        "type": "string",
+                        "example": "matematik"
+                    },
+                    "code": {
+                        "description": "Branşın kısa kodu (örneğin ders kısaltması).",
+                        "type": "string",
+                        "example": "MATH"
+                    },
+                    "description": {
+                        "description": "Branş hakkında açıklama (isteğe bağlı).",
+                        "type": "string",
+                        "example": "Matematik branşı sayısal dersleri içerir."
+                    },
+                    "color": {
+                        "description": "Arayüzde kullanılacak renk kodu (isteğe bağlı).",
+                        "type": "string",
+                        "example": "#1E90FF"
+                    },
+                    "icon": {
+                        "description": "Branşı temsil eden ikon adı (isteğe bağlı).",
+                        "type": "string",
+                        "example": "calculator"
+                    },
+                    "is_active": {
+                        "description": "Branş aktif mi? true = aktif, false = pasif.",
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "BranchUpdateRequest": {
+                "title": "Branş Güncelleme İsteği",
+                "description": "Bir branşın bilgilerini güncellemek için kullanılan istek şeması.",
+                "properties": {
+                    "name": {
+                        "description": "Branşın adı. (örnek: Matematik)",
+                        "type": "string",
+                        "example": "Matematik"
+                    },
+                    "slug": {
+                        "description": "Branşın kısa adı (slug). Eğer gönderilmezse otomatik oluşturulur.",
+                        "type": "string",
+                        "example": "matematik"
+                    },
+                    "code": {
+                        "description": "Branş kodu. Genellikle kısa bir kısaltma.",
+                        "type": "string",
+                        "example": "MATH"
+                    },
+                    "description": {
+                        "description": "Branşın açıklaması (isteğe bağlı).",
+                        "type": "string",
+                        "example": "Sayısal alan dersleri için branş."
+                    },
+                    "color": {
+                        "description": "Arayüzde kullanılacak renk kodu (isteğe bağlı).",
+                        "type": "string",
+                        "example": "#1E90FF"
+                    },
+                    "icon": {
+                        "description": "Branşı temsil eden ikon adı (isteğe bağlı).",
+                        "type": "string",
+                        "example": "calculator"
+                    },
+                    "is_active": {
+                        "description": "Branş aktif mi değil mi. true = aktif, false = pasif.",
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "StoreClassRequest": {
+                "required": [
+                    "name",
+                    "teacher_id"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "7-A"
+                    },
+                    "teacher_id": {
+                        "type": "integer",
+                        "example": 12
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateClassRequest": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "8-B"
+                    },
+                    "teacher_id": {
+                        "type": "integer",
+                        "example": 15
                     }
                 },
                 "type": "object"
@@ -1441,6 +2778,322 @@
                     "payment_reminder": {
                         "type": "boolean",
                         "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "SchoolStudentUpdateProfileRequest": {
+                "title": "Okul öğrencisi kendi profilini güncelleme isteği",
+                "description": "Öğrencinin kendi adı veya parolasını güncellemesine olanak tanır.",
+                "required": [],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "Ali Öğrenci",
+                        "nullable": true
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "minLength": 8,
+                        "example": "YeniSifre123",
+                        "nullable": true
+                    },
+                    "password_confirmation": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "YeniSifre123",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "TeacherUpdateProfileSettingRequest": {
+                "title": "Teacher Update Profile Settings",
+                "description": "Öğretmenin profil ayarlarını güncellemek için kullanılan alanlar.",
+                "required": [],
+                "properties": {
+                    "phone": {
+                        "type": "string",
+                        "example": "+905551234567",
+                        "nullable": true
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "İzmir, Türkiye",
+                        "nullable": true
+                    },
+                    "schoolId": {
+                        "type": "integer",
+                        "example": 3,
+                        "nullable": true
+                    },
+                    "branch_id": {
+                        "type": "integer",
+                        "example": 4,
+                        "nullable": true
+                    },
+                    "img_path": {
+                        "type": "string",
+                        "example": "/storage/teachers/avatars/5.png",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active",
+                        "nullable": true
+                    },
+                    "gender": {
+                        "type": "string",
+                        "example": "female",
+                        "nullable": true
+                    },
+                    "birth_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "1990-02-14",
+                        "nullable": true
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2024-09-01",
+                        "nullable": true
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "STEM kulübü sorumlusu",
+                        "nullable": true
+                    },
+                    "color_code": {
+                        "type": "string",
+                        "example": "#ff9800",
+                        "nullable": true
+                    },
+                    "emergency_contact_name": {
+                        "type": "string",
+                        "example": "Ahmet Öğretmen",
+                        "nullable": true
+                    },
+                    "emergency_contact_phone": {
+                        "type": "string",
+                        "example": "+905559998877",
+                        "nullable": true
+                    },
+                    "emergency_contact_relationship": {
+                        "type": "string",
+                        "example": "Kardeşi",
+                        "nullable": true
+                    },
+                    "emergency_contact_description": {
+                        "type": "string",
+                        "example": "Hafta içi 09:00-18:00 arası ulaşılabilir.",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateProfileRequest": {
+                "title": "Kullanıcı temel profil güncelleme isteği",
+                "description": "Ad, kullanıcı adı, e-posta ve şifre güncelleme alanlarını içerir.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "Ayşe Öğretmen"
+                    },
+                    "userName": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "ayse.ogrt"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255,
+                        "example": "ayse@example.com"
+                    },
+                    "current_password": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "Sifre123"
+                    },
+                    "new_password": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "YeniSifre123"
+                    },
+                    "new_password_confirmation": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "YeniSifre123"
+                    }
+                },
+                "type": "object"
+            },
+            "CompleteStudentProfileRequest": {
+                "required": [
+                    "schoolId",
+                    "active_class_model_id",
+                    "birth_date",
+                    "student_number",
+                    "tc_no"
+                ],
+                "properties": {
+                    "schoolId": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "active_class_model_id": {
+                        "type": "integer",
+                        "example": 12
+                    },
+                    "birth_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2012-05-10"
+                    },
+                    "student_number": {
+                        "type": "string",
+                        "example": "2025A12"
+                    },
+                    "tc_no": {
+                        "type": "string",
+                        "example": "12345678901"
+                    },
+                    "parent_name": {
+                        "type": "string",
+                        "example": "Ali Yılmaz"
+                    },
+                    "parent_phone": {
+                        "type": "string",
+                        "example": "05551112233"
+                    },
+                    "gender": {
+                        "type": "string",
+                        "example": "erkek"
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "Ankara, Türkiye"
+                    }
+                },
+                "type": "object"
+            },
+            "DeleteStudentRequest": {
+                "required": [
+                    "confirm"
+                ],
+                "properties": {
+                    "confirm": {
+                        "description": "Silme işlemini onaylamak için true gönderilmelidir.",
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "StoreStudentRequest": {
+                "required": [
+                    "name",
+                    "userName",
+                    "password"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Ahmet Yılmaz"
+                    },
+                    "userName": {
+                        "type": "string",
+                        "example": "ahmetyilmaz"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "ahmet@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "123456"
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateStudentRequest": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Ahmet Can"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "ahmetcan@example.com"
+                    },
+                    "userName": {
+                        "type": "string",
+                        "example": "ahmetcan123"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "YeniŞifre123"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "05554443322"
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "İstanbul"
+                    },
+                    "parent_name": {
+                        "type": "string",
+                        "example": "Ali Can"
+                    },
+                    "parent_phone": {
+                        "type": "string",
+                        "example": "05551112233"
+                    },
+                    "blood_type": {
+                        "type": "string",
+                        "example": "A+"
+                    },
+                    "health_insurance": {
+                        "type": "string",
+                        "example": "SGK"
+                    }
+                },
+                "type": "object"
+            },
+            "ClassModel": {
+                "title": "Class Model",
+                "description": "Sınıf modelini temsil eder",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "9-A"
+                    },
+                    "school_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "teacher_id": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-01T12:00:00.000000Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-01T12:00:00.000000Z"
                     }
                 },
                 "type": "object"
@@ -1579,6 +3232,170 @@
                 },
                 "type": "object"
             },
+            "SchoolStudentProfile": {
+                "title": "SchoolStudentProfile",
+                "description": "Okul öğrencisi profil modeli",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 12
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 45
+                    },
+                    "student_number": {
+                        "type": "string",
+                        "example": "2024-001"
+                    },
+                    "tc_no": {
+                        "type": "string",
+                        "example": "12345678901",
+                        "nullable": true
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+905551234567",
+                        "nullable": true
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "Bursa, Türkiye",
+                        "nullable": true
+                    },
+                    "birth_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2012-06-15",
+                        "nullable": true
+                    },
+                    "active_course_id": {
+                        "type": "integer",
+                        "example": 3,
+                        "nullable": true
+                    },
+                    "active_class_id": {
+                        "type": "integer",
+                        "example": 7,
+                        "nullable": true
+                    },
+                    "active_additional_class_id": {
+                        "type": "integer",
+                        "example": 2,
+                        "nullable": true
+                    },
+                    "parent_name": {
+                        "type": "string",
+                        "example": "Fatma Veli",
+                        "nullable": true
+                    },
+                    "parent_phone": {
+                        "type": "string",
+                        "example": "+905559991122",
+                        "nullable": true
+                    },
+                    "schoolId": {
+                        "type": "integer",
+                        "example": 5,
+                        "nullable": true
+                    },
+                    "gender": {
+                        "type": "string",
+                        "example": "female",
+                        "nullable": true
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Robotik kulübü öğrencisi",
+                        "nullable": true
+                    },
+                    "registered_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-10T09:00:00Z",
+                        "nullable": true
+                    },
+                    "img_path": {
+                        "type": "string",
+                        "example": "/storage/students/12.png",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active",
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "parent_status": {
+                        "type": "string",
+                        "example": "reachable",
+                        "nullable": true
+                    },
+                    "family_notes": {
+                        "type": "string",
+                        "example": "Hafta sonu etkinliklerine katılamaz.",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-21T12:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-21T12:00:00Z"
+                    },
+                    "user": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/User"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "StudentCurriculumOverride": {
+                "title": "StudentCurriculumOverride",
+                "description": "Öğrenci müfredat geçiş (override) modeli",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "school_student_profile_id": {
+                        "description": "Bağlı olduğu öğrenci profil ID",
+                        "type": "integer",
+                        "example": 12
+                    },
+                    "target_grade": {
+                        "description": "Erişim verilecek sınıf seviyesi",
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "unlimited_access": {
+                        "description": "Tüm haftalara erişim izni",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-06T12:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-06T12:00:00Z"
+                    }
+                },
+                "type": "object"
+            },
             "Subscription": {
                 "title": "Subscription",
                 "description": "Abonelik modeli",
@@ -1673,6 +3490,120 @@
                 },
                 "type": "object"
             },
+            "TeacherProfile": {
+                "title": "TeacherProfile",
+                "description": "Öğretmen profil modeli",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+905551234567",
+                        "nullable": true
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "Ankara, Türkiye",
+                        "nullable": true
+                    },
+                    "schoolId": {
+                        "type": "integer",
+                        "example": 3,
+                        "nullable": true
+                    },
+                    "branch_id": {
+                        "type": "integer",
+                        "example": 2,
+                        "nullable": true
+                    },
+                    "img_path": {
+                        "type": "string",
+                        "example": "/storage/teachers/1.png",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active",
+                        "nullable": true
+                    },
+                    "gender": {
+                        "type": "string",
+                        "example": "female",
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "birth_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "1992-03-10",
+                        "nullable": true
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2024-09-01",
+                        "nullable": true
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Matematik öğretmeni",
+                        "nullable": true
+                    },
+                    "color_code": {
+                        "type": "string",
+                        "example": "#3490dc",
+                        "nullable": true
+                    },
+                    "emergency_contact_name": {
+                        "type": "string",
+                        "example": "Veli Öğretmen",
+                        "nullable": true
+                    },
+                    "emergency_contact_phone": {
+                        "type": "string",
+                        "example": "+905559998877",
+                        "nullable": true
+                    },
+                    "emergency_contact_relationship": {
+                        "type": "string",
+                        "example": "Eşi",
+                        "nullable": true
+                    },
+                    "emergency_contact_description": {
+                        "type": "string",
+                        "example": "Hafta içi ulaşılabilir.",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-21T12:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-21T12:00:00Z"
+                    },
+                    "user": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/User"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
             "User": {
                 "title": "User Model",
                 "description": "Kullanıcı modelini temsil eder.",
@@ -1723,17 +3654,49 @@
                 "scheme": "bearer",
                 "bearerFormat": "JWT",
                 "description": "JWT veya Sanctum tokenini \"Bearer {token}\" formatında girin"
+            },
+            "bearer_token": {
+                "type": "http",
+                "scheme": "bearer"
             }
         }
     },
     "tags": [
         {
+            "name": "Branches",
+            "description": "Branch (branş) CRUD operations"
+        },
+        {
             "name": "Auth",
             "description": "Kullanıcı kimlik doğrulama işlemleri"
         },
         {
+            "name": "ClassModels",
+            "description": "Class management endpoints for schools"
+        },
+        {
+            "name": "Packages-Manager",
+            "description": "Paket yönetimi ve satın alma işlemleri"
+        },
+        {
+            "name": "Permissions",
+            "description": "List assignable permissions by role"
+        },
+        {
             "name": "Schools",
             "description": "Okul yönetimi işlemleri (Manager, Teacher, Student, Admin)"
+        },
+        {
+            "name": "SchoolStudentProfile",
+            "description": "Okul öğrencilerinin profil işlemleri"
+        },
+        {
+            "name": "TeacherProfile",
+            "description": "Öğretmenlerin kendi profil işlemleri"
+        },
+        {
+            "name": "TeacherProfileSettings",
+            "description": "Öğretmen profil ayarları"
         },
         {
             "name": "User",
@@ -1744,8 +3707,8 @@
             "description": "ManagerProfile"
         },
         {
-            "name": "Packages",
-            "description": "Packages"
+            "name": "Packages-Admin",
+            "description": "Packages-Admin"
         },
         {
             "name": "Admin - Schools",
@@ -1754,6 +3717,10 @@
         {
             "name": "Subscriptions",
             "description": "Subscriptions"
+        },
+        {
+            "name": "Teachers",
+            "description": "Teachers"
         }
     ],
     "security": {

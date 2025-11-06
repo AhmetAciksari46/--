@@ -19,7 +19,7 @@ use App\Models\SchoolStudentProfile;
  *     name="Schools",
  *     description="Okul yönetimi işlemleri (Manager, Teacher, Student, Admin)",
  * )
- * @OAS\SecurityScheme(
+ * @OA\SecurityScheme(
  *      securityScheme="bearer_token",
  *      type="http",
  *      scheme="bearer"
@@ -30,7 +30,7 @@ class SchoolController extends Controller
     use ApiResponser;
     /**
      * @OA\Get(
-     *     path="/api/schools/info",
+     *     path="/api/school/info",
      *     tags={"Schools"},
      *     summary="Kullanıcının bağlı olduğu okul bilgisini getirir",
      *     description="Manager, teacher veya student rollü kullanıcının okul bilgisini döner.",
@@ -82,7 +82,7 @@ class SchoolController extends Controller
     }
     /**
      * @OA\Get(
-     *     path="/api/schools",
+     *     path="/api/getschool",
      *     tags={"Schools"},
      *     summary="Okul bilgisi (aktif oturumdan alınır)",
      *     security={{"bearerAuth":{}}},
@@ -149,44 +149,44 @@ class SchoolController extends Controller
             return $this->errorResponse('Okul oluşturulurken bir hata oluştu: ' . $e->getMessage(), 500);
         }
     }
-    /**
-     * @OA\Put(
-     *     path="/api/schools/{id}/update",
-     *     tags={"Schools"},
-     *     summary="Okul bilgilerini güncelle (Manager rolü)",
-     *     description="Manager kullanıcı, bağlı olduğu okulun bilgilerini günceller.",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\RequestBody(
-     *         @OA\JsonContent(
-     *             @OA\Property(property="name", type="string", example="Açıksarı Anadolu Lisesi"),
-     *             @OA\Property(property="nickname", type="string", example="ackolej"),
-     *             @OA\Property(property="address", type="string", example="Kahramanmaraş Onikişubat"),
-     *             @OA\Property(property="is_active", type="boolean", example=true)
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="Okul başarıyla güncellendi"),
-     *     @OA\Response(response=403, description="Manager bir okula bağlı değil"),
-     *     @OA\Response(response=500, description="Sunucu hatası")
-     * )
-     */
-    public function update(UpdateSchoolRequest $request, School $school)
-    {
-        $user = $request->user();
+    // /**
+    //  * @OA\Put(
+    //  *     path="/api/schools/{id}/update",
+    //  *     tags={"Schools"},
+    //  *     summary="Okul bilgilerini güncelle (Manager rolü)",
+    //  *     description="Manager kullanıcı, bağlı olduğu okulun bilgilerini günceller.",
+    //  *     security={{"bearerAuth":{}}},
+    //  *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+    //  *     @OA\RequestBody(
+    //  *         @OA\JsonContent(
+    //  *             @OA\Property(property="name", type="string", example="Açıksarı Anadolu Lisesi"),
+    //  *             @OA\Property(property="nickname", type="string", example="ackolej"),
+    //  *             @OA\Property(property="address", type="string", example="Kahramanmaraş Onikişubat"),
+    //  *             @OA\Property(property="is_active", type="boolean", example=true)
+    //  *         )
+    //  *     ),
+    //  *     @OA\Response(response=200, description="Okul başarıyla güncellendi"),
+    //  *     @OA\Response(response=403, description="Manager bir okula bağlı değil"),
+    //  *     @OA\Response(response=500, description="Sunucu hatası")
+    //  * )
+    //  */
+    // public function update(UpdateSchoolRequest $request, School $school)
+    // {
+    //     $user = $request->user();
 
-        // Manager profilini al  
-        $managerProfile = $user->managerProfile;
-        if (!$managerProfile->schoolId) {
-            return $this->errorResponse('Mevcut okulunuz yok, yeni okul oluştur.', 403);
-        }
+    //     // Manager profilini al  
+    //     $managerProfile = $user->managerProfile;
+    //     if (!$managerProfile->schoolId) {
+    //         return $this->errorResponse('Mevcut okulunuz yok, yeni okul oluştur.', 403);
+    //     }
 
-        try {
-            $school->update($request->validated());
-            return $this->successResponse($school->fresh(), 'Okul başarıyla güncellendi.', 200);
-        } catch (\Exception $e) {
-            return $this->errorResponse('Okul güncellenirken bir hata oluştu: ' . $e->getMessage(), 500);
-        }
-    }
+    //     try {
+    //         $school->update($request->validated());
+    //         return $this->successResponse($school->fresh(), 'Okul başarıyla güncellendi.', 200);
+    //     } catch (\Exception $e) {
+    //         return $this->errorResponse('Okul güncellenirken bir hata oluştu: ' . $e->getMessage(), 500);
+    //     }
+    // }
     /**
      * @OA\Post(
      *     path="/api/admin/schools/create",
@@ -226,21 +226,6 @@ class SchoolController extends Controller
             return $this->errorResponse('Okul oluşturulurken bir hata oluştu: ' . $e->getMessage(), 500);
         }
     }
-    /**
-     * @OA\Put(
-     *     path="/api/admin/schools/{id}/update",
-     *     tags={"Admin - Schools"},
-     *     summary="Admin tarafından okul bilgilerini güncelle",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\RequestBody(@OA\JsonContent(
-     *         @OA\Property(property="name", type="string", example="Ede Koleji Güncel"),
-     *         @OA\Property(property="is_active", type="boolean", example=true)
-     *     )),
-     *     @OA\Response(response=201, description="Okul başarıyla güncellendi"),
-     *     @OA\Response(response=500, description="Sunucu hatası")
-     * )
-     */
 
     // Admin için okul güncelleme
     public function updateSchool(UpdateSchoolbyAdminRequest $request, School $school)

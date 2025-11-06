@@ -8,7 +8,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Branch extends Model
 {
     use HasFactory;
-    protected $fillable = ['name'];
+    protected $fillable = [
+        'name',
+        'slug',
+        'code',
+        'description',
+        'color',
+        'icon',
+        'is_active',
+    ];
 
     public function teachers()
     {

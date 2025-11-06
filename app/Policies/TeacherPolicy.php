@@ -2,65 +2,73 @@
 
 namespace App\Policies;
 
-use App\Models\Teacher;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class TeacherPolicy
 {
     /**
-     * Determine whether the user can view any models.
+     * Manager sadece kendi okulundaki öğretmenlerin izinlerini güncelleyebilir.
+     * Admin kullanıcıları bu policy’den otomatik olarak muaf (bypass) olur
+     * çünkü AuthServiceProvider içinde Gate::before() ile tanımladık.
      */
-    public function viewAny(User $user): bool
+    public function updatePermissions(User $manager, User $teacher): bool
     {
-        return false;
+        // Manager değilse doğrudan reddet
+        if ($manager->role !== 'manager') {
+            return false;
+        }
+
+        // Manager'ın öğretmen profili var mı ve bir okula mı bağlı?
+        $managerSchoolId = optional($manager->teacherProfile)->school_id;
+
+        // Öğretmenin profili var mı ve bir okula mı bağlı?
+        $teacherSchoolId = optional($teacher->teacherProfile)->school_id;
+
+        // İki school_id aynı ise izin ver
+        return $managerSchoolId && $teacherSchoolId && $managerSchoolId === $teacherSchoolId;
     }
 
     /**
-     * Determine whether the user can view the model.
+     * Manager yalnızca kendi okulundaki öğretmenleri görebilir.
      */
-    public function view(User $user, Teacher $teacher): bool
+    public function view(User $manager, User $teacher): bool
     {
-        return false;
+        if ($manager->role !== 'manager') {
+            return false;
+        }
+
+        return optional($manager->teacherProfile)->school_id === optional($teacher->teacherProfile)->school_id;
     }
 
     /**
-     * Determine whether the user can create models.
+     * Manager yalnızca kendi okulundaki öğretmenleri güncelleyebilir.
      */
-    public function create(User $user): bool
+    public function update(User $manager, User $teacher): bool
     {
-        return false;
+        if ($manager->role !== 'manager') {
+            return false;
+        }
+
+        return optional($manager->teacherProfile)->school_id === optional($teacher->teacherProfile)->school_id;
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Manager yalnızca kendi okulundaki öğretmenleri silebilir.
      */
-    public function update(User $user, Teacher $teacher): bool
+    public function delete(User $manager, User $teacher): bool
     {
-        return false;
+        if ($manager->role !== 'manager') {
+            return false;
+        }
+
+        return optional($manager->teacherProfile)->school_id === optional($teacher->teacherProfile)->school_id;
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Manager yalnızca kendi okuluna öğretmen ekleyebilir.
      */
-    public function delete(User $user, Teacher $teacher): bool
+    public function create(User $manager): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Teacher $teacher): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Teacher $teacher): bool
-    {
-        return false;
+        return $manager->role === 'manager' && !empty(optional($manager->teacherProfile)->school_id);
     }
 }

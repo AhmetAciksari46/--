@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('branches', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name');              // Matematik, Türkçe vs.
+            $table->string('slug')->unique();    // URL dostu isim
+            $table->string('code', 10)->nullable(); // MATH, TR gibi kısa kod
+            $table->text('description')->nullable();
+            $table->string('color', 20)->nullable(); // UI renk
+            $table->string('icon', 50)->nullable();  // UI ikon adı
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

@@ -33,6 +33,7 @@ class School extends Model
         'is_active',
         'img_path',
         'nickname',
+        'package_id',
     ];
     protected $casts = [
         'is_active' => 'boolean',
@@ -51,19 +52,13 @@ class School extends Model
     {
         return $this->belongsTo(User::class, 'manager_id');
     }
-
-    // Okulun sınıfları
-    public function classes()
-    {
-        return $this->hasMany(ClassModel::class);
-    }
     public function branches()
     {
         return $this->hasMany(Branch::class);
     }
     public function teachers()
     {
-        return $this->hasMany(TeacherProfile::class, 'schoolId');
+        return $this->hasMany(TeacherProfile::class, 'school_id');
     }
 
     public function additionalClassRooms()
@@ -80,6 +75,22 @@ class School extends Model
             ->first();
     }
 
+    public function package()
+    {
+        return $this->belongsTo(Package::class);
+    }
+
+    public function class_models()
+    {
+        return $this->hasMany(ClassModel::class, 'school_id');
+    }
+
+    public function weeks()
+    {
+        return $this->hasMany(SchoolWeek::class);
+    }
+
+
     // 3️⃣ Okulun aktif paketi
     public function activePackage()
     {
@@ -94,6 +105,6 @@ class School extends Model
     }
     public function students()
     {
-        return $this->hasMany(SchoolStudentProfile::class, 'schoolId', 'id');
+        return $this->hasMany(SchoolStudentProfile::class, 'schoolId');
     }
 }

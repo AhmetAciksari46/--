@@ -7,6 +7,21 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
 
+/**
+ * @OA\Schema(
+ *     schema="UpdateProfileRequest",
+ *     type="object",
+ *     title="Kullanıcı temel profil güncelleme isteği",
+ *     description="Ad, kullanıcı adı, e-posta ve şifre güncelleme alanlarını içerir.",
+ *     @OA\Property(property="name", type="string", maxLength=255, example="Ayşe Öğretmen"),
+ *     @OA\Property(property="userName", type="string", maxLength=255, example="ayse.ogrt"),
+ *     @OA\Property(property="email", type="string", format="email", maxLength=255, example="ayse@example.com"),
+ *     @OA\Property(property="current_password", type="string", format="password", example="Sifre123"),
+ *     @OA\Property(property="new_password", type="string", format="password", example="YeniSifre123"),
+ *     @OA\Property(property="new_password_confirmation", type="string", format="password", example="YeniSifre123")
+ * )
+ */
+
 class UpdateProfileRequest extends FormRequest
 {
     public function rules(): array

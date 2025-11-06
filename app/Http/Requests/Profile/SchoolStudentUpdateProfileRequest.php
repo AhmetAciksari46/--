@@ -4,6 +4,18 @@ namespace App\Http\Requests\Profile;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="SchoolStudentUpdateProfileRequest",
+ *     type="object",
+ *     title="Okul öğrencisi kendi profilini güncelleme isteği",
+ *     required={},
+ *     description="Öğrencinin kendi adı veya parolasını güncellemesine olanak tanır.",
+ *     @OA\Property(property="name", type="string", maxLength=255, example="Ali Öğrenci", nullable=true),
+ *     @OA\Property(property="password", type="string", format="password", minLength=8, example="YeniSifre123", nullable=true),
+ *     @OA\Property(property="password_confirmation", type="string", format="password", example="YeniSifre123", nullable=true)
+ * )
+ */
 class SchoolStudentUpdateProfileRequest extends FormRequest
 {
     /**

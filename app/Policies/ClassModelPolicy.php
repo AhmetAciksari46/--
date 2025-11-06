@@ -9,58 +9,60 @@ use Illuminate\Auth\Access\Response;
 class ClassModelPolicy
 {
     /**
-     * Determine whether the user can view any models.
+     * Admin dışındaki kullanıcıların yetkilerini sınırlıyoruz.
+     * Admin Gate::before() ile zaten bypass edilir.
+     */
+
+
+
+    /**
+     * Kullanıcı kendi okulundaki tüm sınıfları görebilir mi?
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return in_array($user->role, ['teacher', 'manager']);
     }
 
     /**
-     * Determine whether the user can view the model.
+     * Kullanıcı belirli bir sınıfı görebilir mi?
      */
     public function view(User $user, ClassModel $classModel): bool
     {
-        return false;
+        return in_array($user->role, ['teacher', 'manager'])
+            && $user->school_id === $classModel->school_id;
     }
 
+
+
     /**
-     * Determine whether the user can create models.
+     * Manager sadece kendi okuluna bağlı sınıfları oluşturabilir.
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->role === 'manager' && !empty(optional($user->teacherProfile)->school_id);
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Manager yalnızca kendi okulundaki sınıfları güncelleyebilir.
      */
     public function update(User $user, ClassModel $classModel): bool
     {
-        return false;
+        if ($user->role !== 'manager') {
+            return false;
+        }
+
+        return optional($user->teacherProfile)->school_id === $classModel->school_id;
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Manager yalnızca kendi okulundaki sınıfları silebilir.
      */
     public function delete(User $user, ClassModel $classModel): bool
     {
-        return false;
-    }
+        if ($user->role !== 'manager') {
+            return false;
+        }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, ClassModel $classModel): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, ClassModel $classModel): bool
-    {
-        return false;
+        return optional($user->teacherProfile)->school_id === $classModel->school_id;
     }
 }

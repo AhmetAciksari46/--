@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('classes', function (Blueprint $table) {
+        Schema::create('school_weeks', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->foreignId('school_id')->constrained()->onDelete('cascade');
-            $table->foreignId('teacher_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('school_id')->constrained()->cascadeOnDelete();
+            $table->unsignedInteger('week_no');
+            $table->date('start_date');
+            $table->boolean('is_holiday')->default(false);
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('classes');
+        Schema::dropIfExists('school_weeks');
     }
 };

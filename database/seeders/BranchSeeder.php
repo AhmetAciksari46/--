@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Branch;
+use Illuminate\Support\Str;
 
 class BranchSeeder extends Seeder
 {
@@ -14,33 +15,31 @@ class BranchSeeder extends Seeder
     public function run(): void
     {
         $branches = [
-            'Türkçe',
-            'Matematik',
-            'Fen Bilimleri',
-            'Sosyal Bilgiler',
-            'İngilizce',
-            'Beden Eğitimi',
-            "Müzik",
-            "Görsel Sanatlar",
-            "Din Kültürü ve Ahlak Bilgisi",
-            "Rehberlik",
-            "Bilgisayar Bilimleri",
-            "Tarih",
-            "Coğrafya",
-            "Felsefe",
-            "Kimya",
-            "Fizik",
-            "Biyoloji",
-            "Edebiyat",
-            "Dil ve Anlatım",
-            "Geometri",
-            "Almanca",
-            "Fransızca",
-            "İspanyolca",
+            [
+                'name' => 'Matematik',
+                'slug' => Str::slug('Matematik', '-', 'tr'),
+                'code' => 'MATH',
+                'color' => '#1E90FF',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Türkçe',
+                'slug' => Str::slug('Türkçe', '-', 'tr'),
+                'code' => 'TR',
+                'color' => '#FF6347',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Fen Bilimleri',
+                'slug' => Str::slug('Fen Bilimleri', '-', 'tr'),
+                'code' => 'SCI',
+                'color' => '#32CD32',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($branches as $branch) {
-            Branch::firstOrCreate(['name' => $branch]);
+            Branch::updateOrCreate(['slug' => $branch['slug']], $branch);
         }
     }
 }

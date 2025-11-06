@@ -8,6 +8,12 @@ use App\Traits\ApiResponser;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Profile\TeacherUpdateProfileSettingRequest;
 
+/**
+ * @OA\Tag(
+ *     name="TeacherProfileSettings",
+ *     description="Öğretmen profil ayarları"
+ * )
+ */
 class TeacherProfileController extends Controller
 {
     use ApiResponser;
@@ -34,6 +40,23 @@ class TeacherProfileController extends Controller
 
         return response()->json($profile);
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/me/teacher/getprofilesettings",
+     *     tags={"TeacherProfileSettings"},
+     *     summary="Öğretmen profil ayarlarını getir",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Profil ayarları bulundu",
+     *         @OA\JsonContent(ref="#/components/schemas/TeacherProfile")
+     *     ),
+     *     @OA\Response(response=401, description="Yetkisiz erişim"),
+     *     @OA\Response(response=404, description="Profil bulunamadı")
+     * )
+     */
+
     public function getprofilesettings(Request $request)
     {
         $user = Auth::user();
@@ -43,7 +66,25 @@ class TeacherProfileController extends Controller
 
         return $this->successResponse($profile);
     }
-
+    /**
+     * @OA\Put(
+     *     path="/api/me/teacher/updateprofilesettings",
+     *     tags={"TeacherProfileSettings"},
+     *     summary="Öğretmen profil ayarlarını güncelle",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/TeacherUpdateProfileSettingRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Profil güncellendi",
+     *         @OA\JsonContent(ref="#/components/schemas/TeacherProfile")
+     *     ),
+     *     @OA\Response(response=401, description="Yetkisiz erişim"),
+     *     @OA\Response(response=422, description="Doğrulama hatası")
+     * )
+     */
     public function updateprofilesettings(TeacherUpdateProfileSettingRequest $request)
     {
         $user = Auth::user();

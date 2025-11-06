@@ -15,13 +15,14 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->integer('max_students')->default(0);
-            $table->integer('max_teachers')->default(0);
             $table->integer('duration_days'); // ör: 365 gün
             $table->decimal('price', 10, 2);
             $table->enum('type', ['school', 'student', 'other'])->default('school');
             $table->boolean('is_active')->default(true);
             $table->boolean('has_homework_module')->default(false);
+            $table->boolean('has_schedule_module')->default(false);
+            $table->unsignedInteger('week_count');
+
             $table->boolean('has_exam_module')->default(false);
             $table->boolean('has_chat_module')->default(false);
             $table->boolean('has_analytics_module')->default(false);
