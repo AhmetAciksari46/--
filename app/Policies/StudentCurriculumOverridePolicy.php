@@ -8,59 +8,64 @@ use Illuminate\Auth\Access\Response;
 
 class StudentCurriculumOverridePolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    // Yüksek yetkili roller için hızlı geçiş (Süper Admin)
+    public function before(User $user, string $ability): bool|null
     {
-        return false;
+        if ($user->hasRole('admin')) {
+            return true;
+        }
+        return null;
     }
 
     /**
-     * Determine whether the user can view the model.
+     * Override listesini görüntüleme yetkisi
      */
-    public function view(User $user, StudentCurriculumOverride $studentCurriculumOverride): bool
+    public function viewAny(User $user): Response
     {
-        return false;
+        return $user->hasRole('manager')
+            ? Response::allow()
+            : Response::deny('Müfredat geçersiz kılma listesini görüntüleme yetkiniz yok.');
     }
 
     /**
-     * Determine whether the user can create models.
+     * Tek bir override kaydını görüntüleme yetkisi
      */
-    public function create(User $user): bool
+    public function view(User $user, StudentCurriculumOverride $studentCurriculumOverride): Response
     {
-        return false;
+        // Manager ve Admin görebilir. Öğretmenler, kendi okullarındaki kaydı görebilir.
+        return $user->hasRole('manager') || $user->isSchoolTeacher()
+            ? Response::allow()
+            : Response::deny('Bu müfredat geçersiz kılma kaydını görüntüleme yetkiniz yok.');
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Yeni bir override kaydı oluşturma yetkisi
      */
-    public function update(User $user, StudentCurriculumOverride $studentCurriculumOverride): bool
+    public function create(User $user): Response
     {
-        return false;
+        return $user->hasRole('manager')
+            ? Response::allow()
+            : Response::deny('Müfredat geçersiz kılma oluşturma yetkiniz yok.');
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Mevcut bir override kaydını güncelleme yetkisi
      */
-    public function delete(User $user, StudentCurriculumOverride $studentCurriculumOverride): bool
+    public function update(User $user, StudentCurriculumOverride $studentCurriculumOverride): Response
     {
-        return false;
+        return $user->hasRole('manager')
+            ? Response::allow()
+            : Response::deny('Müfredat geçersiz kılma kaydını güncelleme yetkiniz yok.');
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Bir override kaydını silme yetkisi
      */
-    public function restore(User $user, StudentCurriculumOverride $studentCurriculumOverride): bool
+    public function delete(User $user, StudentCurriculumOverride $studentCurriculumOverride): Response
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, StudentCurriculumOverride $studentCurriculumOverride): bool
-    {
-        return false;
+        // Silme işlemi daha hassastır, sadece Manager yapabilir.
+        return $user->hasRole('manager')
+            ? Response::allow()
+            : Response::deny('Müfredat geçersiz kılma kaydını silme yetkiniz yok.');
     }
 }

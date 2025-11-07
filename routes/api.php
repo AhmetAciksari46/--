@@ -27,7 +27,15 @@ use App\Http\Controllers\{
     SubscriptionController,
     IndividualStudentProfileController,
     IndividualStudentController,
-    AdditionalClassRoomController
+    SchoolWeekController,
+    AdditionalClassRoomController,
+    StudentCurriculumOverrideController,
+    AttendanceController,
+    ContentController,
+    SchoolWeekDayController,
+    SubjectController,
+    PackageWeekGradeRuleController,
+    PackageWeekSubjectRuleController
 };
 
 Route::post("/register", [AuthController::class, "register"]);
@@ -92,6 +100,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/packages', [PackageController::class, 'create']);
         Route::put('/packages/{id}', [PackageController::class, 'update']);
         Route::delete('/packages/{id}', [PackageController::class, 'delete']);
+
+        Route::resource('contents', ContentController::class)->only(['index', 'store', 'update', 'destroy']);
     });
 
     // PURCHASE (Manager tarafı için) PAKET SATIN ALMA
@@ -176,7 +186,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::prefix("manager")->group(function () {
             Route::prefix("school")->group(function () {
                 Route::get('/info', [SchoolController::class, 'info']);  // okula bağlı userlar için okul bilgisi çekme
-
                 Route::post('/createschool', [SchoolController::class, 'create']);
                 Route::put('/updateschool', [SchoolController::class, 'update']);
             });
@@ -191,6 +200,16 @@ Route::middleware('auth:sanctum')->group(function () {
                 // Öğretmen işlemleri
 
                 Route::middleware(['role:manager'])->group(function () {
+                    Route::prefix('manager')->group(function () {
+                        Route::resource('weeks', SchoolWeekController::class)->only(['index', 'update']);
+                        Route::resource('overrides', StudentCurriculumOverrideController::class)->only(['index', 'store', 'destroy']);
+                        Route::resource('days', SchoolWeekDayController::class)->only(['index', 'update']);
+                        Route::resource('subjects', SubjectController::class)->except(['create']); //TODO: ADMİN OLABİLİR
+                        Route::resource('grade-rules', PackageWeekGradeRuleController::class)->except(['create']);
+                        Route::resource('subject-rules', PackageWeekSubjectRuleController::class)->except(['create']);
+                        //TODO: BUNLARIN BAZILARI ADMİN OLABİLİR
+                    });
+
                     Route::prefix('teachers')->group(function () {
                         Route::get('/', [TeacherController::class, 'index']); // teacherList
                         Route::get('/{teacher}', [TeacherController::class, 'show']); // getTeacherById
@@ -202,6 +221,12 @@ Route::middleware('auth:sanctum')->group(function () {
                         // Permissions
                         Route::get('/{teacher}/permissions', [TeacherController::class, 'getPermissions']); // getTeacherPermissions
                         Route::put('/{teacher}/permissions', [TeacherController::class, 'updatePermissions']); // updateTeacherPermissions
+
+
+                        // Yoklama Yönetimi (Session'a bağlı kaynak)
+                        // Permission: 'record_attendance'
+                        Route::get('sessions/{session}/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+                        Route::post('sessions/{session}/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
                     });
                     Route::prefix("classrooms")->group(function () {
                         Route::post('/', [ClassModelController::class, 'store']);
@@ -220,6 +245,10 @@ Route::middleware('auth:sanctum')->group(function () {
                     Route::get('/', [SchoolStudentController::class, 'index']); // o okuldaki öğrencilerin tamamını getir
                     Route::delete('/{id}', [SchoolStudentController::class, 'destroy']); //id ye göre öğrenci ve tüm profile bilgileri sil
                     Route::put('/{id}/update', [SchoolStudentController::class, 'update']); //  id ye göre öğrenci güncelle (user ve parent vs modeldeki bilgiler)
+
+                    // Müfredat İçeriğini Görme (Kısıtlamalı)
+                    // Rol Kontrolü: 'schoolstudent'
+                    Route::get('curriculum/contents', [ContentController::class, 'studentIndex'])->name('curriculum.contents.index');
                 });
 
 

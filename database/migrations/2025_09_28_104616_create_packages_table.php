@@ -32,6 +32,8 @@ return new class extends Migration
             $table->integer('trial_days')->default(0);
             $table->integer('sort_order')->nullable();
             $table->string('img_path')->nullable();
+            $table->boolean('is_sequential_content_required')->default(false)
+                ->comment('Önceki ödev tamamlanmadan sonraki içerik açılmasın kuralı.');
             $table->timestamps();
         });
     }

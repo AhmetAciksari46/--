@@ -39,6 +39,7 @@ class Package extends Model
         'trial_days',
         'sort_order',
         'img_path',
+        'is_sequential_content_required',
     ];
     protected $casts = [
         'is_active' => 'boolean',
@@ -50,6 +51,7 @@ class Package extends Model
         'has_analytics_module' => 'boolean',
         'has_certificate_module' => 'boolean',
         'is_trial' => 'boolean',
+        'is_sequential_content_required' => 'boolean',
     ];
     /* ======================
      |   Relationships

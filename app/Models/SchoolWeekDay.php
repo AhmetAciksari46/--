@@ -5,6 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * @OA\Schema(
+ * schema="SchoolDay",
+ * title="School Day Model",
+ * description="Okulun Haftalık Çalışma Günlerini Temsil Eder.",
+ * @OA\Property(property="id", type="integer", example=1),
+ * @OA\Property(property="school_id", type="integer", example=1),
+ * @OA\Property(property="day_of_week_no", type="integer", description="Haftanın sayısal günü (1=Pazartesi, 7=Pazar)", example=1),
+ * @OA\Property(property="name", type="string", example="Pazartesi", description="Günün adı"),
+ * @OA\Property(property="is_open", type="boolean", example=true, description="Bu gün okulun açık olup olmadığı"),
+ * @OA\Property(property="start_time", type="string", format="time", example="08:30:00", description="Günlük başlangıç saati", nullable=true),
+ * @OA\Property(property="end_time", type="string", format="time", example="17:30:00", description="Günlük bitiş saati", nullable=true),
+ * @OA\Property(property="created_at", type="string", format="date-time"),
+ * @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class SchoolWeekDay extends Model
 {
     use HasFactory;
