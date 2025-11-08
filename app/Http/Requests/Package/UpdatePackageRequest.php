@@ -57,7 +57,12 @@ class UpdatePackageRequest extends FormRequest
             'has_analytics_module' => ['sometimes', 'boolean'],
             'has_certificate_module' => ['sometimes', 'boolean'],
             'is_trial' => ['sometimes', 'boolean'],
-            'trial_days' => ['nullable', 'integer', 'min:0'],
+            'trial_days' => [
+                'nullable',
+                Rule::requiredIf(fn() => $this->boolean('is_trial')),
+                'integer',
+                'min:0'
+            ],
             'is_sequential_content_required' => ['sometimes', 'boolean'],
             'sort_order' => ['nullable', 'integer'],
             'img_path' => ['nullable', 'string', 'max:255'],

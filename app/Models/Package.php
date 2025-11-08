@@ -23,8 +23,28 @@ use Illuminate\Database\Eloquent\Model;
  * @OA\Property(property="week_count", type="integer", example=40, description="Müfredat hafta sayısı"),
  * @OA\Property(property="has_homework_module", type="boolean", example=true),
  * @OA\Property(property="has_exam_module", type="boolean", example=true),
+ * @OA\Property(property="has_chat_module", type="boolean", example=false),
+ * @OA\Property(property="has_analytics_module", type="boolean", example=true),
+ * @OA\Property(property="has_certificate_module", type="boolean", example=false),
+ * @OA\Property(property="is_visible", type="boolean", example=true),
  * @OA\Property(property="is_trial", type="boolean", example=false),
  * @OA\Property(property="trial_days", type="integer", example=0, description="Deneme süresi (gün)"),
+ * @OA\Property(property="is_sequential_content_required", type="boolean", example=false, description="Sıralı içerik zorunlu mu"),
+ * @OA\Property(property="sort_order", type="integer", example=1, nullable=true),
+ * @OA\Property(property="img_path", type="string", example="/img/package-basic.png", nullable=true),
+ * @OA\Property(property="subscriptions_count", type="integer", example=3, nullable=true, description="Pakete bağlı abonelik sayısı"),
+ * @OA\Property(
+ *     property="grade_rules",
+ *     type="array",
+ *     @OA\Items(ref="#/components/schemas/PackageWeekGradeRule"),
+ *     description="Paketin haftalık sınıf kuralları"
+ * ),
+ * @OA\Property(
+ *     property="subject_rules",
+ *     type="array",
+ *     @OA\Items(ref="#/components/schemas/PackageWeekSubjectRule"),
+ *     description="Paketin haftalık ders kuralları"
+ * ),
  * @OA\Property(property="created_at", type="string", format="date-time"),
  * @OA\Property(property="updated_at", type="string", format="date-time")
  * )

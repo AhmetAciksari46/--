@@ -205,16 +205,29 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Paket listesi başarıyla getirildi."
+                                        },
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Package"
-                                            }
-                                        },
-                                        "links": {
-                                            "type": "object"
-                                        },
-                                        "meta": {
+                                            "properties": {
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/Package"
+                                                    }
+                                                },
+                                                "links": {
+                                                    "type": "object"
+                                                },
+                                                "meta": {
+                                                    "type": "object"
+                                                }
+                                            },
                                             "type": "object"
                                         }
                                     },
@@ -256,11 +269,15 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
                                         "message": {
                                             "type": "string",
                                             "example": "Paket başarıyla oluşturuldu."
                                         },
-                                        "package": {
+                                        "data": {
                                             "$ref": "#/components/schemas/Package"
                                         }
                                     },
@@ -307,7 +324,20 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Package"
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Paket detayı başarıyla getirildi."
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Package"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -359,11 +389,15 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
                                         "message": {
                                             "type": "string",
                                             "example": "Paket başarıyla güncellendi."
                                         },
-                                        "package": {
+                                        "data": {
                                             "$ref": "#/components/schemas/Package"
                                         }
                                     },
@@ -412,9 +446,18 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
                                         "message": {
                                             "type": "string",
                                             "example": "Paket ve ilişkili kuralları başarıyla silindi."
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": "null",
+                                            "nullable": true
                                         }
                                     },
                                     "type": "object"
@@ -429,7 +472,34 @@
                         "description": "Yetkisiz Erişim"
                     },
                     "409": {
-                        "description": "Çakışma (Aktif abonelikler mevcut)"
+                        "description": "Çakışma (Aktif abonelikler mevcut)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Paketin aktif veya geçmiş abonelikleri olduğu için silinemez."
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": "null",
+                                            "nullable": true
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": "null",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1332,7 +1402,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/StorePackageWeekSubjectRuleRequest"
+                                "$ref": "#/components/schemas/StorePackageWeekGradeRuleRequest"
                             }
                         }
                     }
@@ -4438,19 +4508,25 @@
             "StorePackageWeekGradeRuleRequest": {
                 "title": "Sınıf Kuralı Oluşturma İsteği",
                 "required": [
-                    "grade_id",
-                    "max_weeks"
+                    "grade",
+                    "week_no",
+                    "days_required"
                 ],
                 "properties": {
-                    "grade_id": {
-                        "description": "Kuralın uygulanacağı sınıf ID'si.",
+                    "grade": {
+                        "description": "Kuralın uygulanacağı sınıf seviyesi.",
                         "type": "integer",
                         "example": 5
                     },
-                    "max_weeks": {
-                        "description": "Bu sınıf için maksimum izin verilen hafta sayısı (Package week_count'tan küçük veya eşit olmalı).",
+                    "week_no": {
+                        "description": "Kuralın geçerli olduğu müfredat haftası.",
                         "type": "integer",
-                        "example": 40
+                        "example": 10
+                    },
+                    "days_required": {
+                        "description": "Bu haftada gerekli minimum gün sayısı (1-7 arası).",
+                        "type": "integer",
+                        "example": 4
                     }
                 },
                 "type": "object"
@@ -4458,64 +4534,80 @@
             "StorePackageWeekSubjectRuleRequest": {
                 "title": "Ders Kuralı Oluşturma İsteği",
                 "required": [
-                    "grade_rule_id",
+                    "grade",
+                    "week_no",
                     "subject_id",
-                    "max_weeks"
+                    "hours"
                 ],
                 "properties": {
-                    "grade_rule_id": {
-                        "description": "Kuralın bağlı olduğu Sınıf Kuralı (PackageWeekGradeRule) ID'si. Bu ID, mevcut pakete ait olmalıdır.",
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "subject_id": {
-                        "description": "Kuralın uygulanacağı ders ID'si.",
+                    "grade": {
+                        "description": "Kuralın uygulanacağı sınıf seviyesi.",
                         "type": "integer",
                         "example": 5
                     },
-                    "max_weeks": {
-                        "description": "Bu ders için maksimum izin verilen hafta sayısı.",
+                    "week_no": {
+                        "description": "Kuralın geçerli olduğu müfredat haftası.",
                         "type": "integer",
                         "example": 10
+                    },
+                    "subject_id": {
+                        "description": "Kuralın uygulanacağı dersin ID'si.",
+                        "type": "integer",
+                        "example": 7
+                    },
+                    "hours": {
+                        "description": "Hafta için planlanan ders saati.",
+                        "type": "integer",
+                        "example": 6
                     }
                 },
                 "type": "object"
             },
             "UpdatePackageWeekGradeRuleRequest": {
                 "title": "Sınıf Kuralı Güncelleme İsteği",
-                "description": "Bir paketin mevcut sınıf kuralını (Grade Rule) güncellemek için kullanılır. Alanlar isteğe bağlıdır.",
+                "description": "Bir paketin mevcut sınıf kuralını güncellemek için kullanılır. Alanlar isteğe bağlıdır.",
                 "properties": {
-                    "grade_id": {
-                        "description": "Kuralın uygulanacağı yeni sınıf ID'si.",
+                    "grade": {
+                        "description": "Kuralın uygulanacağı yeni sınıf seviyesi.",
                         "type": "integer",
                         "example": 6
                     },
-                    "max_weeks": {
-                        "description": "Bu sınıf için maksimum izin verilen yeni hafta sayısı.",
+                    "week_no": {
+                        "description": "Kuralın geçerli olduğu müfredat haftası.",
                         "type": "integer",
-                        "example": 45
+                        "example": 12
+                    },
+                    "days_required": {
+                        "description": "Bu haftada gerekli minimum gün sayısı (1-7 arası).",
+                        "type": "integer",
+                        "example": 5
                     }
                 },
                 "type": "object"
             },
             "UpdatePackageWeekSubjectRuleRequest": {
                 "title": "Ders Kuralı Güncelleme İsteği",
-                "description": "Bir paketin mevcut ders kuralını (Subject Rule) güncellemek için kullanılır. Alanlar isteğe bağlıdır.",
+                "description": "Bir paketin mevcut ders kuralını güncellemek için kullanılır. Alanlar isteğe bağlıdır.",
                 "properties": {
-                    "grade_rule_id": {
-                        "description": "Kuralın bağlı olduğu Sınıf Kuralı (PackageWeekGradeRule) ID'si.",
+                    "grade": {
+                        "description": "Kuralın uygulanacağı sınıf seviyesi.",
                         "type": "integer",
-                        "example": 1
+                        "example": 6
+                    },
+                    "week_no": {
+                        "description": "Kuralın geçerli olduğu müfredat haftası.",
+                        "type": "integer",
+                        "example": 12
                     },
                     "subject_id": {
-                        "description": "Kuralın uygulanacağı ders ID'si.",
+                        "description": "Kuralın uygulanacağı dersin ID'si.",
                         "type": "integer",
-                        "example": 5
+                        "example": 8
                     },
-                    "max_weeks": {
-                        "description": "Bu ders için maksimum izin verilen hafta sayısı.",
+                    "hours": {
+                        "description": "Hafta için planlanan ders saati.",
                         "type": "integer",
-                        "example": 10
+                        "example": 4
                     }
                 },
                 "type": "object"
@@ -5609,6 +5701,22 @@
                         "type": "boolean",
                         "example": true
                     },
+                    "has_chat_module": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "has_analytics_module": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "has_certificate_module": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "is_visible": {
+                        "type": "boolean",
+                        "example": true
+                    },
                     "is_trial": {
                         "type": "boolean",
                         "example": false
@@ -5617,6 +5725,41 @@
                         "description": "Deneme süresi (gün)",
                         "type": "integer",
                         "example": 0
+                    },
+                    "is_sequential_content_required": {
+                        "description": "Sıralı içerik zorunlu mu",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "img_path": {
+                        "type": "string",
+                        "example": "/img/package-basic.png",
+                        "nullable": true
+                    },
+                    "subscriptions_count": {
+                        "description": "Pakete bağlı abonelik sayısı",
+                        "type": "integer",
+                        "example": 3,
+                        "nullable": true
+                    },
+                    "grade_rules": {
+                        "description": "Paketin haftalık sınıf kuralları",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PackageWeekGradeRule"
+                        }
+                    },
+                    "subject_rules": {
+                        "description": "Paketin haftalık ders kuralları",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PackageWeekSubjectRule"
+                        }
                     },
                     "created_at": {
                         "type": "string",

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Package\CreatePackageRequest;
-use App\Http\Requests\UpdatePackageRequest;
+use App\Http\Requests\Package\UpdatePackageRequest;
 use Illuminate\Http\Request;
 use App\Models\Package;
 use Illuminate\Support\Facades\Auth;
@@ -30,14 +30,20 @@ class PackageController extends Controller
      * tags={"Admin Packages"},
      * security={{"sanctum": {}}},
      * @OA\Response(
-     * response=200,
-     * description="Paketler başarıyla listelendi.",
-     * @OA\JsonContent(
-     * type="object",
-     * @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Package")),
-     * @OA\Property(property="links", type="object"),
-     * @OA\Property(property="meta", type="object")
-     * )
+     *     response=200,
+     *     description="Paketler başarıyla listelendi.",
+     *     @OA\JsonContent(
+     *         type="object",
+     *         @OA\Property(property="status", type="string", example="success"),
+     *         @OA\Property(property="message", type="string", example="Paket listesi başarıyla getirildi."),
+     *         @OA\Property(
+     *             property="data",
+     *             type="object",
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Package")),
+     *             @OA\Property(property="links", type="object"),
+     *             @OA\Property(property="meta", type="object")
+     *         )
+     *     )
      * ),
      * @OA\Response(response=403, description="Yetkisiz Erişim")
      * )
@@ -45,7 +51,10 @@ class PackageController extends Controller
     public function index()
     {
         // Tüm paketleri paginated olarak çekiyoruz.
-        $packages = Package::paginate(15);
+        $packages = Package::with(['gradeRules', 'subjectRules'])
+            ->paginate(15);
+        //TODO: EKLENEBİLİR            ->withCount('subscriptions') 
+
         return $this->successResponse($packages);
     }
     /**
@@ -59,12 +68,14 @@ class PackageController extends Controller
      * @OA\JsonContent(ref="#/components/schemas/CreatePackageRequest")
      * ),
      * @OA\Response(
-     * response=201,
-     * description="Paket başarıyla oluşturuldu.",
-     * @OA\JsonContent(
-     * @OA\Property(property="message", type="string", example="Paket başarıyla oluşturuldu."),
-     * @OA\Property(property="package", ref="#/components/schemas/Package")
-     * )
+     *     response=201,
+     *     description="Paket başarıyla oluşturuldu.",
+     *     @OA\JsonContent(
+     *         type="object",
+     *         @OA\Property(property="status", type="string", example="success"),
+     *         @OA\Property(property="message", type="string", example="Paket başarıyla oluşturuldu."),
+     *         @OA\Property(property="data", ref="#/components/schemas/Package")
+     *     )
      * ),
      * @OA\Response(response=403, description="Yetkisiz Erişim"),
      * @OA\Response(response=422, description="Doğrulama Hatası")
@@ -74,7 +85,11 @@ class PackageController extends Controller
     {
         // StorePackageRequest, yetkilendirme ve doğrulamayı halletti.
         $package = Package::create($request->validated());
-        return $this->successResponse($package->fresh(), 'Paket başarıyla oluşturuldu.', 201);
+        return $this->successResponse(
+            $package->load(['gradeRules', 'subjectRules'])->loadCount('subscriptions'),
+            'Paket başarıyla oluşturuldu.',
+            201
+        );
     }
     /**
      * @OA\Get(
@@ -84,9 +99,14 @@ class PackageController extends Controller
      * security={{"sanctum": {}}},
      * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer"), description="Paket ID"),
      * @OA\Response(
-     * response=200,
-     * description="Paket detayı başarıyla getirildi.",
-     * @OA\JsonContent(ref="#/components/schemas/Package")
+     *     response=200,
+     *     description="Paket detayı başarıyla getirildi.",
+     *     @OA\JsonContent(
+     *         type="object",
+     *         @OA\Property(property="status", type="string", example="success"),
+     *         @OA\Property(property="message", type="string", example="Paket detayı başarıyla getirildi."),
+     *         @OA\Property(property="data", ref="#/components/schemas/Package")
+     *     )
      * ),
      * @OA\Response(response=404, description="Paket bulunamadı."),
      * @OA\Response(response=403, description="Yetkisiz Erişim")
@@ -95,8 +115,10 @@ class PackageController extends Controller
     public function show(Package $package)
     {
         // Paketin kurallarını da eager load ederek tam bir detay sunuyoruz.
-        $package->load(['gradeRules', 'subjectRules']);
-        return $this->successResponse($package);
+        return $this->successResponse(
+            $package->load(['gradeRules', 'subjectRules'])->loadCount('subscriptions'),
+            'Paket detayı başarıyla getirildi.'
+        );
     }
 
     /**
@@ -111,12 +133,14 @@ class PackageController extends Controller
      * @OA\JsonContent(ref="#/components/schemas/UpdatePackageRequest")
      * ),
      * @OA\Response(
-     * response=200,
-     * description="Paket başarıyla güncellendi.",
-     * @OA\JsonContent(
-     * @OA\Property(property="message", type="string", example="Paket başarıyla güncellendi."),
-     * @OA\Property(property="package", ref="#/components/schemas/Package")
-     * )
+     *     response=200,
+     *     description="Paket başarıyla güncellendi.",
+     *     @OA\JsonContent(
+     *         type="object",
+     *         @OA\Property(property="status", type="string", example="success"),
+     *         @OA\Property(property="message", type="string", example="Paket başarıyla güncellendi."),
+     *         @OA\Property(property="data", ref="#/components/schemas/Package")
+     *     )
      * ),
      * @OA\Response(response=404, description="Paket bulunamadı."),
      * @OA\Response(response=403, description="Yetkisiz Erişim"),
@@ -138,7 +162,10 @@ class PackageController extends Controller
     public function update(UpdatePackageRequest $request, Package $package)
     {
         $package->update($request->validated());
-        return $this->successResponse($package->fresh(), 'Paket başarıyla güncellendi.');
+        return $this->successResponse(
+            $package->load(['gradeRules', 'subjectRules'])->loadCount('subscriptions'),
+            'Paket başarıyla güncellendi.'
+        );
     }
 
     /**
@@ -149,20 +176,35 @@ class PackageController extends Controller
      * security={{"sanctum": {}}},
      * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer"), description="Paket ID"),
      * @OA\Response(
-     * response=200,
-     * description="Paket başarıyla silindi.",
-     * @OA\JsonContent(@OA\Property(property="message", type="string", example="Paket ve ilişkili kuralları başarıyla silindi."))
+     *     response=200,
+     *     description="Paket başarıyla silindi.",
+     *     @OA\JsonContent(
+     *         type="object",
+     *         @OA\Property(property="status", type="string", example="success"),
+     *         @OA\Property(property="message", type="string", example="Paket ve ilişkili kuralları başarıyla silindi."),
+     *         @OA\Property(property="data", type="object", nullable=true, example="null")
+     *     )
      * ),
      * @OA\Response(response=404, description="Paket bulunamadı."),
      * @OA\Response(response=403, description="Yetkisiz Erişim"),
-     * @OA\Response(response=409, description="Çakışma (Aktif abonelikler mevcut)")
+     * @OA\Response(
+     *     response=409,
+     *     description="Çakışma (Aktif abonelikler mevcut)",
+     *     @OA\JsonContent(
+     *         type="object",
+     *         @OA\Property(property="status", type="string", example="error"),
+     *         @OA\Property(property="message", type="string", example="Paketin aktif veya geçmiş abonelikleri olduğu için silinemez."),
+     *         @OA\Property(property="errors", type="object", nullable=true, example="null"),
+     *         @OA\Property(property="data", type="object", nullable=true, example="null")
+     *     )
+     * )
      * )
      */
     public function destroy(Package $package)
     {
         // Kural: Aktif abonelikleri olan paket silinemez.
         if ($package->subscriptions()->exists()) {
-            return $this->errorResponse('Paketin aktif veya geçmiş abonelikleri olduğu için silinemez. Lütfen sadece pasif yapın.', 409);
+            return $this->errorResponse('package_has_subscriptions', 409);
         }
 
         // İlişkili kuralları siliyoruz (Veritabanında CASCADE yoksa gereklidir)

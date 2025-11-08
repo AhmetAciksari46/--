@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\PackageWeekSubjectRule;
 use App\Http\Requests\Curriculum\StorePackageWeekSubjectRuleRequest;
 use App\Http\Requests\Curriculum\UpdatePackageWeekSubjectRuleRequest;
 use App\Traits\ApiResponser;
-use App\Models\School;
 use App\Models\Package;
 
 /**
@@ -29,11 +27,9 @@ class PackageWeekSubjectRuleController extends Controller
      */
     public function index(Package $package)
     {
-        // İlişkili GradeRule'lar üzerinden SubjectRule'ları getiriyoruz.
-        $subjectRules = PackageWeekSubjectRule::whereHas('gradeRule', function ($query) use ($package) {
-            $query->where('package_id', $package->id);
-        })->with('gradeRule.grade', 'subject')->get();
-        return $this->successResponse('Ders kuralları listelendi.', $subjectRules);
+        $subjectRules = $package->subjectRules()->with('subject')->get();
+
+        return $this->successResponse($subjectRules, 'Ders kuralları listelendi.');
     }
 
     /**
@@ -43,15 +39,15 @@ class PackageWeekSubjectRuleController extends Controller
      * tags={"Admin Package Rules"},
      * security={{"sanctum": {}}},
      * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer"), description="Paket ID"),
-     * @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/StorePackageWeekSubjectRuleRequest")),
+     * @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/StorePackageWeekGradeRuleRequest")),
      * @OA\Response(response=201, description="Ders kuralı başarıyla eklendi.")
      * )
      */
     public function store(StorePackageWeekSubjectRuleRequest $request, Package $package)
     {
-        // StorePackageWeekSubjectRuleRequest içinde grade_rule_id'nin bu pakete ait olduğu kontrol ediliyor.
-        $rule = PackageWeekSubjectRule::create($request->validated());
-        return $this->successResponse(null, 201, 'Ders kuralı başarıyla eklendi.');
+        $rule = $package->subjectRules()->create($request->validated());
+
+        return $this->successResponse($rule->load('subject'), 'Ders kuralı başarıyla eklendi.', 201);
     }
 
     /**
@@ -68,12 +64,11 @@ class PackageWeekSubjectRuleController extends Controller
     public function update(UpdatePackageWeekSubjectRuleRequest $request, Package $package, PackageWeekSubjectRule $subject_rule)
     {
         // Kuralın gerçekten bu pakete ait olup olmadığını kontrol et
-        if ($subject_rule->gradeRule->package_id !== $package->id) {
-            return $this->errorResponse('Kural bu pakete ait değil.', 404);
+        if ($subject_rule->package_id !== $package->id) {
+            return $this->errorResponse('not_found', 404);
         }
-
         $subject_rule->update($request->validated());
-        return $this->successResponse('Ders kuralı başarıyla güncellendi.');
+        return $this->successResponse($subject_rule->refresh()->load('subject'), 'Ders kuralı başarıyla güncellendi.');
     }
 
     /**
@@ -89,11 +84,11 @@ class PackageWeekSubjectRuleController extends Controller
      */
     public function destroy(Package $package, PackageWeekSubjectRule $subject_rule)
     {
-        if ($subject_rule->gradeRule->package_id !== $package->id) {
-            return $this->errorResponse('Kural bu pakete ait değil.', 404);
+        if ($subject_rule->package_id !== $package->id) {
+            return $this->errorResponse('not_found', 404);
         }
 
         $subject_rule->delete();
-        return $this->successResponse('Ders kuralı başarıyla silindi.');
+        return $this->successResponse(null, 'Ders kuralı başarıyla silindi.');
     }
 }

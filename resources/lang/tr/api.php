@@ -31,6 +31,7 @@ return [
     'resource_update_failed' => 'Kayıt güncellenemedi.',
     'resource_delete_failed' => 'Kayıt silinemedi.',
     'already_exists'        => 'Bu kayıt zaten mevcut.',
+    'package_has_subscriptions' => 'Paketin aktif veya geçmiş abonelikleri olduğu için silinemez. Lütfen yalnızca pasif duruma getirin.',
     'profile_fetched' => 'Profil bilgileri başarıyla getirildi.',
     'profile_updated' => 'Profil başarıyla güncellendi.',
     'success' => 'İşlem başarılı.',
@@ -39,7 +40,7 @@ return [
     'validation_failed' => 'Doğrulama hatası oluştu.',
     'unknown_error' => 'Bilinmeyen bir hata meydana geldi.',
 
-     // Hata mesajları
+    // Hata mesajları
     'validation_error' => 'Gönderilen veriler geçerli değil.',
     'unauthenticated' => 'Oturumunuz bulunamadı. Lütfen giriş yapın.',
     'unauthorized' => 'Bu işlem için yetkiniz yok.',

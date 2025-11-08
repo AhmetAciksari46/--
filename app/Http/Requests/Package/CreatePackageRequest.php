@@ -44,7 +44,6 @@ class CreatePackageRequest extends FormRequest
             'name' => ['required', 'string', 'max:255', 'unique:packages,name'],
             'price' => ['required', 'numeric', 'min:0'],
             'duration_days' => ['required', 'integer', 'min:1'],
-            'price' => 'required|numeric|min:0',
             'week_count' => ['required', 'integer', 'min:1', 'max:52'],
             'type' => ['required', 'in:school,student,other'],
 

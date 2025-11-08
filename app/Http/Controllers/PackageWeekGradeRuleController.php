@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\PackageWeekGradeRule;
-use Illuminate\Http\Request;
 use App\Http\Requests\Curriculum\StorePackageWeekGradeRuleRequest;
 use App\Http\Requests\Curriculum\UpdatePackageWeekGradeRuleRequest;
 use App\Traits\ApiResponser;
-use App\Models\School;
 use App\Models\Package;
 
 /**
@@ -28,7 +26,7 @@ class PackageWeekGradeRuleController extends Controller
      */
     public function index(Package $package)
     {
-        return $this->successResponse($package->gradeRules()->with('grade')->get());
+        return $this->successResponse($package->gradeRules, 'Sınıf kuralları listelendi.');
     }
 
     /**
@@ -46,7 +44,7 @@ class PackageWeekGradeRuleController extends Controller
     {
         $rule = $package->gradeRules()->create($request->validated());
 
-        return $this->successResponse($rule->load('grade'), "Sınıf kuralı başarıyla eklendi", 201);
+        return $this->successResponse($rule, 'Sınıf kuralı başarıyla eklendi.', 201);
     }
 
     /**
@@ -64,11 +62,11 @@ class PackageWeekGradeRuleController extends Controller
     {
         // Route Model Binding ile gelen kuralın gerçekten bu pakete ait olup olmadığını kontrol et
         if ($grade_rule->package_id !== $package->id) {
-            return $this->errorResponse('Kural bu pakete ait değil.', 404);
+            return $this->errorResponse('not_found', 404);
         }
 
         $grade_rule->update($request->validated());
-        return $this->successResponse($grade_rule->load('grade'), 'Sınıf kuralı başarıyla güncellendi.');
+        return $this->successResponse($grade_rule->refresh(), 'Sınıf kuralı başarıyla güncellendi.');
     }
 
     /**
@@ -85,7 +83,7 @@ class PackageWeekGradeRuleController extends Controller
     public function destroy(Package $package, PackageWeekGradeRule $grade_rule)
     {
         if ($grade_rule->package_id !== $package->id) {
-            return $this->errorResponse('Kural bu pakete ait değil.', 404);
+            return $this->errorResponse('not_found', 404);
         }
 
         $grade_rule->delete();
