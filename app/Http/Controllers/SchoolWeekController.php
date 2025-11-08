@@ -37,9 +37,12 @@ class SchoolWeekController extends Controller
      */
     public function index(School $school)
     {
-        $this->authorize('viewAny', SchoolWeek::class, $school);
+        $this->authorize('viewAny', [SchoolWeek::class, $school]);
 
-        $weeks = $school->weeks()->orderBy('week_no')->get();
+        $weeks = $school->weeks()
+            ->with('days')
+            ->orderBy('week_no')
+            ->get();
         return $this->successResponse($weeks);
     }
 
@@ -58,12 +61,12 @@ class SchoolWeekController extends Controller
      */
     public function show(School $school, SchoolWeek $week)
     {
-        $this->authorize('view', $week);
+        $this->authorize('viewAny', [SchoolWeek::class, $school]);
 
         if ($week->school_id !== $school->id) {
             return response()->json(['message' => 'Hafta kaydı belirtilen okula ait değil.'], 404);
         }
-        return $this->successResponse($week);
+        return $this->successResponse($week->load('days'));
     }
 
     /**
@@ -83,8 +86,19 @@ class SchoolWeekController extends Controller
     {
         $this->authorize('create', SchoolWeek::class);
 
-        $week = $school->weeks()->create($request->validated());
-        return $this->successResponse($week, 201);
+        $data = $request->validated();
+
+        if ($package = $school->activePackage()) {
+            if ($data['week_no'] > $package->week_count) {
+                return response()->json([
+                    'message' => 'Seçilen hafta numarası, aktif paketin izin verdiği toplam haftayı aşıyor.',
+                ], 422);
+            }
+        }
+
+        $week = $school->weeks()->create($data);
+
+        return $this->successResponse($week->load('days'), null, 201);
     }
 
     /**
@@ -109,8 +123,19 @@ class SchoolWeekController extends Controller
             return response()->json(['message' => 'Hafta kaydı belirtilen okula ait değil.'], 404);
         }
 
-        $week->update($request->validated());
-        return response()->json($week);
+        $data = $request->validated();
+
+        if (array_key_exists('week_no', $data) && ($package = $school->activePackage())) {
+            if ($data['week_no'] > $package->week_count) {
+                return response()->json([
+                    'message' => 'Seçilen hafta numarası, aktif paketin izin verdiği toplam haftayı aşıyor.',
+                ], 422);
+            }
+        }
+
+        $week->update($data);
+
+        return $this->successResponse($week->refresh()->load('days'));
     }
 
     /**
@@ -131,10 +156,11 @@ class SchoolWeekController extends Controller
         $this->authorize('delete', $week);
 
         if ($week->school_id !== $school->id) {
+
             return response()->json(['message' => 'Hafta kaydı belirtilen okula ait değil.'], 404);
         }
 
         $week->delete();
-        return response()->json(null, 204);
+        return $this->successResponse();
     }
 }

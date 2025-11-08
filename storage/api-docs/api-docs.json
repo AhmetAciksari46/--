@@ -5048,25 +5048,34 @@
             },
             "StoreSchoolDayRequest": {
                 "title": "Okul Günü Oluşturma İsteği",
+                "description": "SchoolDay şemasındaki alanlarla uyumlu gün oluşturma isteği.",
                 "required": [
-                    "day_of_week_no",
-                    "name"
+                    "class_model_id",
+                    "week_no",
+                    "day_index",
+                    "date"
                 ],
                 "properties": {
-                    "day_of_week_no": {
-                        "description": "Haftanın sayısal günü (1=Pazartesi, 7=Pazar)",
+                    "class_model_id": {
+                        "description": "Sınıf modeli ID'si",
                         "type": "integer",
-                        "example": 6
+                        "example": 12
                     },
-                    "name": {
-                        "description": "Günün adı",
+                    "week_no": {
+                        "description": "Müfredat haftası numarası",
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "day_index": {
+                        "description": "Haftanın günü (1=Pazartesi, 7=Pazar)",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "date": {
+                        "description": "Takvim tarihi",
                         "type": "string",
-                        "example": "Cumartesi"
-                    },
-                    "is_open": {
-                        "description": "Bu günün açık olup olmadığı",
-                        "type": "boolean",
-                        "example": true
+                        "format": "date",
+                        "example": "2025-10-06"
                     }
                 },
                 "type": "object"
@@ -5126,10 +5135,10 @@
             },
             "StoreSchoolWeekRequest": {
                 "title": "Hafta Oluşturma İsteği",
+                "description": "SchoolWeek şemasındaki alanlarla uyumlu veri gönderimi.",
                 "required": [
                     "week_no",
-                    "start_date",
-                    "end_date"
+                    "start_date"
                 ],
                 "properties": {
                     "week_no": {
@@ -5150,9 +5159,10 @@
                         "example": "2025-11-30"
                     },
                     "is_holiday": {
-                        "description": "Bu haftanın tatil olup olmadığı",
+                        "description": "Bu haftanın tatil olup olmadığını belirtir",
                         "type": "boolean",
-                        "example": false
+                        "example": false,
+                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -5210,14 +5220,28 @@
             },
             "UpdateSchoolDayRequest": {
                 "title": "Okul Günü Güncelleme İsteği",
-                "required": [
-                    "is_open"
-                ],
+                "description": "SchoolDay şemasındaki alanların güncellenmesi için istek gövdesi.",
                 "properties": {
-                    "is_open": {
-                        "description": "Bu günün açık olup olmadığı",
-                        "type": "boolean",
-                        "example": true
+                    "class_model_id": {
+                        "description": "Sınıf modeli ID'si",
+                        "type": "integer",
+                        "example": 12
+                    },
+                    "week_no": {
+                        "description": "Müfredat haftası numarası",
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "day_index": {
+                        "description": "Haftanın günü (1=Pazartesi, 7=Pazar)",
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "date": {
+                        "description": "Takvim tarihi",
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-10-07"
                     }
                 },
                 "type": "object"
@@ -5241,6 +5265,7 @@
             },
             "UpdateSchoolWeekRequest": {
                 "title": "Hafta Güncelleme İsteği",
+                "description": "SchoolWeek şemasındaki alanların parça parça güncellenmesi için istek gövdesi.",
                 "properties": {
                     "week_no": {
                         "description": "Müfredat haftası numarası",
@@ -5254,9 +5279,10 @@
                         "example": "2025-11-24"
                     },
                     "is_holiday": {
-                        "description": "Bu haftanın tatil olup olmadığı",
+                        "description": "Bu haftanın tatil olup olmadığını belirtir",
                         "type": "boolean",
-                        "example": true
+                        "example": true,
+                        "nullable": true
                     }
                 },
                 "type": "object"
@@ -5774,7 +5800,7 @@
             },
             "PackageWeekGradeRule": {
                 "title": "Package Week Grade Rule Model",
-                "description": "Bir Paketin Belirli Bir Haftasında İzin Verilen Derece Seviyesi Kuralı.",
+                "description": "Bir paketin belirli bir haftasında uygulanacak sınıf bazlı kural.",
                 "properties": {
                     "id": {
                         "type": "integer",
@@ -5784,20 +5810,20 @@
                         "type": "integer",
                         "example": 1
                     },
+                    "grade": {
+                        "description": "Kuralın uygulandığı sınıf seviyesi",
+                        "type": "integer",
+                        "example": 5
+                    },
                     "week_no": {
                         "description": "Müfredat haftası numarası",
                         "type": "integer",
                         "example": 3
                     },
-                    "grade_level": {
-                        "description": "İzin verilen derece/seviye",
-                        "type": "string",
-                        "example": "HighSchoolGrade10"
-                    },
-                    "is_mandatory": {
-                        "description": "Bu kuralın zorunlu olup olmadığı",
-                        "type": "boolean",
-                        "example": true
+                    "days_required": {
+                        "description": "Bu haftada gerekli minimum gün sayısı",
+                        "type": "integer",
+                        "example": 4
                     },
                     "created_at": {
                         "type": "string",
@@ -5812,7 +5838,7 @@
             },
             "PackageWeekSubjectRule": {
                 "title": "Package Week Subject Rule Model",
-                "description": "Bir Paketin Belirli Bir Haftasında Yer Alması Gereken Ders Kuralı.",
+                "description": "Bir paketin belirli bir haftasında planlanan ders kuralı.",
                 "properties": {
                     "id": {
                         "type": "integer",
@@ -5822,20 +5848,25 @@
                         "type": "integer",
                         "example": 1
                     },
+                    "grade": {
+                        "description": "Kuralın uygulandığı sınıf seviyesi",
+                        "type": "integer",
+                        "example": 5
+                    },
                     "week_no": {
                         "description": "Müfredat haftası numarası",
                         "type": "integer",
                         "example": 3
                     },
                     "subject_id": {
-                        "description": "İzin verilen dersin ID'si",
+                        "description": "Planlanan dersin ID'si",
                         "type": "integer",
-                        "example": 5
+                        "example": 7
                     },
-                    "is_mandatory": {
-                        "description": "Bu kuralın zorunlu olup olmadığı",
-                        "type": "boolean",
-                        "example": true
+                    "hours": {
+                        "description": "Hafta için toplam ders saati",
+                        "type": "integer",
+                        "example": 6
                     },
                     "created_at": {
                         "type": "string",
@@ -6112,21 +6143,10 @@
                         "format": "date",
                         "example": "2025-11-24"
                     },
-                    "end_date": {
-                        "description": "Haftanın bitiş tarihi",
-                        "type": "string",
-                        "format": "date",
-                        "example": "2025-11-30"
-                    },
                     "is_holiday": {
                         "description": "Bu haftanın tatil olup olmadığı",
                         "type": "boolean",
                         "example": false
-                    },
-                    "note": {
-                        "type": "string",
-                        "example": "Ara tatil haftası",
-                        "nullable": true
                     },
                     "created_at": {
                         "type": "string",
@@ -6151,34 +6171,26 @@
                         "type": "integer",
                         "example": 1
                     },
-                    "day_of_week_no": {
-                        "description": "Haftanın sayısal günü (1=Pazartesi, 7=Pazar)",
+                    "class_model_id": {
+                        "description": "Haftalık planın ait olduğu sınıf modeli",
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "week_no": {
+                        "description": "Müfredat haftası numarası",
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "day_index": {
+                        "description": "Haftanın günü (1=Pazartesi, 7=Pazar)",
                         "type": "integer",
                         "example": 1
                     },
-                    "name": {
-                        "description": "Günün adı",
+                    "date": {
+                        "description": "Takvim tarihi",
                         "type": "string",
-                        "example": "Pazartesi"
-                    },
-                    "is_open": {
-                        "description": "Bu gün okulun açık olup olmadığı",
-                        "type": "boolean",
-                        "example": true
-                    },
-                    "start_time": {
-                        "description": "Günlük başlangıç saati",
-                        "type": "string",
-                        "format": "time",
-                        "example": "08:30:00",
-                        "nullable": true
-                    },
-                    "end_time": {
-                        "description": "Günlük bitiş saati",
-                        "type": "string",
-                        "format": "time",
-                        "example": "17:30:00",
-                        "nullable": true
+                        "format": "date",
+                        "example": "2025-10-06"
                     },
                     "created_at": {
                         "type": "string",

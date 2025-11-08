@@ -28,7 +28,7 @@ class SchoolWeekDayController extends Controller
      * @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer"), description="Okul ID"),
      * @OA\Parameter(name="week", in="path", required=true, @OA\Schema(type="integer"), description="SchoolWeek ID"),
      * @OA\Response(response=200, description="Başarılı", @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/SchoolDay"))),
-     * @OA\Response(response=403, description="Yetkisiz Erişim")
+     * @OA\Response(response=403, description="Yetkisiz Erişim"),
      * )
      */
     public function index(School $school)

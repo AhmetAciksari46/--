@@ -85,7 +85,10 @@ class School extends Model
         return $this->hasMany(SchoolWeek::class);
     }
 
-
+    public function days()
+    {
+        return $this->hasMany(SchoolWeekDay::class);
+    }
     // 3️⃣ Okulun aktif paketi
     public function activePackage()
     {

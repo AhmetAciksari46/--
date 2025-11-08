@@ -10,9 +10,10 @@ use Illuminate\Validation\Rule;
  * @OA\Schema(
  * schema="UpdateSchoolWeekRequest",
  * title="Hafta Güncelleme İsteği",
+ * description="SchoolWeek şemasındaki alanların parça parça güncellenmesi için istek gövdesi.",
  * @OA\Property(property="week_no", type="integer", description="Müfredat haftası numarası", example=5),
  * @OA\Property(property="start_date", type="string", format="date", example="2025-11-24", description="Haftanın başlangıç tarihi"),
- * @OA\Property(property="is_holiday", type="boolean", example=true, description="Bu haftanın tatil olup olmadığı"),
+ * @OA\Property(property="is_holiday", type="boolean", example=true, nullable=true, description="Bu haftanın tatil olup olmadığını belirtir"),
  * )
  */
 class UpdateSchoolWeekRequest extends FormRequest
@@ -43,9 +44,7 @@ class UpdateSchoolWeekRequest extends FormRequest
                 })->ignore($weekId),
             ],
             'start_date' => ['sometimes', 'required', 'date'],
-            'end_date' => ['sometimes', 'required', 'date', 'after_or_equal:start_date'],
             'is_holiday' => ['sometimes', 'nullable', 'boolean'],
-            'note' => ['sometimes', 'nullable', 'string', 'max:500'],
         ];
     }
 
@@ -55,8 +54,6 @@ class UpdateSchoolWeekRequest extends FormRequest
             'week_no.unique' => 'Bu hafta numarası, bu okul için zaten tanımlanmış.',
             'week_no.required' => 'Hafta numarası zorunludur.',
             'start_date.required' => 'Başlangıç tarihi zorunludur.',
-            'end_date.required' => 'Bitiş tarihi zorunludur.',
-            'end_date.after_or_equal' => 'Bitiş tarihi başlangıç tarihine eşit veya daha sonra olmalıdır.',
             'is_holiday.boolean' => 'Tatil durumu doğru veya yanlış olmalıdır.',
         ];
     }

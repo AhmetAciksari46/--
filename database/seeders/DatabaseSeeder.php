@@ -2,9 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Branch;
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -18,8 +15,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RolePermissionSeeder::class,
             AdminUserSeeder::class,
-            //PackageSeeder::class,
             BranchSeeder::class,
+            SubjectSeeder::class,
+            PackageSeeder::class,
+            PackageWeekGradeRuleSeeder::class,
+            PackageWeekSubjectRuleSeeder::class,
         ]);
     }
 }
