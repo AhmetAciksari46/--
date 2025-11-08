@@ -8,146 +8,88 @@ use App\Http\Requests\Curriculum\StorePackageWeekGradeRuleRequest;
 use App\Http\Requests\Curriculum\UpdatePackageWeekGradeRuleRequest;
 use App\Traits\ApiResponser;
 use App\Models\School;
+use App\Models\Package;
 
 /**
- * @OA\Tag(
- * name="Package Grade Rules",
- * description="Paket Hafta Derece Kuralı Yönetimi (Admin/Manager)"
- * )
+ * @OA\Tag(name="Admin Package Rules", description="Paketlere Sınıf ve Ders Kuralı Ekleme/Yönetimi")
  */
 class PackageWeekGradeRuleController extends Controller
 {
     use ApiResponser;
-    //TODO:ERROR MESAJLARI İÇİN TRAIT OLUŞTURULACAK
-
-
-    // --- CRUD METOTLARI ---
     /**
      * @OA\Get(
-     * path="/api/schools/{school}/manager/grade-rules",
-     * operationId="listPackageWeekGradeRules",
-     * tags={"Package Grade Rules"},
-     * summary="Okulun kullandığı pakete ait tüm derece kurallarını listeler",
+     * path="/api/admin/packages/{package}/grade-rules",
+     * summary="Paketin Sınıf Kurallarını Listeleme",
+     * tags={"Admin Package Rules"},
      * security={{"sanctum": {}}},
-     * @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer"), description="Okul ID"),
-     * @OA\Response(response=200, description="Başarılı", @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/PackageWeekGradeRule"))),
-     * @OA\Response(response=403, description="Yetkisiz Erişim")
+     * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer"), description="Paket ID"),
+     * @OA\Response(response=200, description="Sınıf kuralları listelendi.")
      * )
      */
-    public function index(School $school)
+    public function index(Package $package)
     {
-        // Policy: Manager, kendi okulunun paketiyle ilgili kuralları görebilir.
-        $this->authorize('viewAny', PackageWeekGradeRule::class, $school);
-
-        $packageId = $school->package_id;
-
-        $rules = PackageWeekGradeRule::where('package_id', $packageId)
-            ->orderBy('week_no')
-            ->get();
-        return $this->successResponse($rules);
-    }
-    /**
-     * @OA\Get(
-     * path="/api/schools/{school}/manager/grade-rules/{rule}",
-     * operationId="showPackageWeekGradeRule",
-     * tags={"Package Grade Rules"},
-     * summary="Belirli bir derece kuralını detayını getirir",
-     * security={{"sanctum": {}}},
-     * @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer"), description="Okul ID"),
-     * @OA\Parameter(name="rule", in="path", required=true, @OA\Schema(type="integer"), description="Kural ID"),
-     * @OA\Response(response=200, description="Başarılı", @OA\JsonContent(ref="#/components/schemas/PackageWeekGradeRule")),
-     * @OA\Response(response=404, description="Kural bulunamadı veya okula ait değil")
-     * )
-     */
-    public function show(School $school, PackageWeekGradeRule $rule)
-    {
-        $this->authorize('view', $rule);
-
-        // Ek Kontrol: Kuralın, URL'deki okulun paketine ait olup olmadığı
-        if ($rule->package_id !== $school->package_id) {
-            return response()->json(['message' => 'Kural, belirtilen okulun paketine ait değil.'], 404);
-        }
-        return $this->successResponse($rule);
+        return $this->successResponse($package->gradeRules()->with('grade')->get());
     }
 
     /**
      * @OA\Post(
-     * path="/api/schools/{school}/manager/grade-rules",
-     * operationId="storePackageWeekGradeRule",
-     * tags={"Package Grade Rules"},
-     * summary="Paket için yeni bir derece kuralı oluşturur",
+     * path="/api/admin/packages/{package}/grade-rules",
+     * summary="Pakete Yeni Sınıf Kuralı Ekleme",
+     * tags={"Admin Package Rules"},
      * security={{"sanctum": {}}},
-     * @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer"), description="Okul ID"),
+     * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer"), description="Paket ID"),
      * @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/StorePackageWeekGradeRuleRequest")),
-     * @OA\Response(response=201, description="Başarılı", @OA\JsonContent(ref="#/components/schemas/PackageWeekGradeRule")),
-     * @OA\Response(response=403, description="Yetkisiz Erişim")
+     * @OA\Response(response=201, description="Kural başarıyla eklendi.")
      * )
      */
-
-    public function store(StorePackageWeekGradeRuleRequest $request, School $school)
+    public function store(StorePackageWeekGradeRuleRequest $request, Package $package)
     {
-        $this->authorize('create', PackageWeekGradeRule::class);
+        $rule = $package->gradeRules()->create($request->validated());
 
-        $data = $request->validated();
-
-        // Paket ID'sini Request'ten alıyoruz.
-        // NOT: Kurallar pakete atanır. Request'te gelen package_id, Manager'ın okulunun package_id'si olmalıdır!
-        if ($data['package_id'] !== $school->package_id) {
-            return response()->json(['message' => 'Oluşturulacak kural, yöneticisi olduğunuz okulun paketine ait olmalıdır.'], 403);
-        }
-
-        $rule = PackageWeekGradeRule::create($data);
-        return $this->successResponse($rule, null, 201);
+        return $this->successResponse($rule->load('grade'), "Sınıf kuralı başarıyla eklendi", 201);
     }
+
     /**
      * @OA\Put(
-     * path="/api/schools/{school}/manager/grade-rules/{rule}",
-     * operationId="updatePackageWeekGradeRule",
-     * tags={"Package Grade Rules"},
-     * summary="Belirli bir derece kuralını günceller",
+     * path="/api/admin/packages/{package}/grade-rules/{rule}",
+     * summary="Paket Sınıf Kuralını Güncelleme",
+     * tags={"Admin Package Rules"},
      * security={{"sanctum": {}}},
-     * @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer"), description="Okul ID"),
+     * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer")),
      * @OA\Parameter(name="rule", in="path", required=true, @OA\Schema(type="integer"), description="Kural ID"),
-     * @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/UpdatePackageWeekGradeRuleRequest")),
-     * @OA\Response(response=200, description="Başarılı", @OA\JsonContent(ref="#/components/schemas/PackageWeekGradeRule")),
-     * @OA\Response(response=404, description="Kural bulunamadı veya okula ait değil")
+     * @OA\Response(response=200, description="Kural başarıyla güncellendi.")
      * )
      */
-    public function update(UpdatePackageWeekGradeRuleRequest $request, School $school, PackageWeekGradeRule $rule)
+    public function update(UpdatePackageWeekGradeRuleRequest $request, Package $package, PackageWeekGradeRule $grade_rule)
     {
-        $this->authorize('update', $rule);
-
-        // Ek Kontrol
-        if ($rule->package_id !== $school->package_id) {
-            return response()->json(['message' => 'Güncellenecek kural, belirtilen okulun paketine ait değil.'], 404);
+        // Route Model Binding ile gelen kuralın gerçekten bu pakete ait olup olmadığını kontrol et
+        if ($grade_rule->package_id !== $package->id) {
+            return $this->errorResponse('Kural bu pakete ait değil.', 404);
         }
 
-        $rule->update($request->validated());
-        return $this->successResponse($rule);
+        $grade_rule->update($request->validated());
+        return $this->successResponse($grade_rule->load('grade'), 'Sınıf kuralı başarıyla güncellendi.');
     }
+
     /**
      * @OA\Delete(
-     * path="/api/schools/{school}/manager/grade-rules/{rule}",
-     * operationId="deletePackageWeekGradeRule",
-     * tags={"Package Grade Rules"},
-     * summary="Belirli bir derece kuralını siler",
+     * path="/api/admin/packages/{package}/grade-rules/{rule}",
+     * summary="Paket Sınıf Kuralını Silme",
+     * tags={"Admin Package Rules"},
      * security={{"sanctum": {}}},
-     * @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer"), description="Okul ID"),
+     * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer")),
      * @OA\Parameter(name="rule", in="path", required=true, @OA\Schema(type="integer"), description="Kural ID"),
-     * @OA\Response(response=204, description="Başarılı (İçerik Yok)"),
-     * @OA\Response(response=404, description="Kural bulunamadı veya okula ait değil")
+     * @OA\Response(response=200, description="Kural başarıyla silindi.")
      * )
      */
-    public function destroy(School $school, PackageWeekGradeRule $rule)
+    public function destroy(Package $package, PackageWeekGradeRule $grade_rule)
     {
-        $this->authorize('delete', $rule);
-
-        // Ek Kontrol
-        if ($rule->package_id !== $school->package_id) {
-            return response()->json(['message' => 'Silinecek kural, belirtilen okulun paketine ait değil.'], 404);
+        if ($grade_rule->package_id !== $package->id) {
+            return $this->errorResponse('Kural bu pakete ait değil.', 404);
         }
 
-        $rule->delete();
-        return $this->successResponse(null, 204);
+        $grade_rule->delete();
+
+        return $this->successResponse(null, 'Sınıf kuralı başarıyla silindi.');
     }
 }

@@ -7,31 +7,39 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * @OA\Schema(
  * schema="StorePackageWeekGradeRuleRequest",
- * title="Derece Kuralı Oluşturma İsteği",
- * required={"package_id", "week_no", "grade_level"},
- * @OA\Property(property="package_id", type="integer", example=1),
- * @OA\Property(property="week_no", type="integer", description="Hafta Numarası", example=3),
- * @OA\Property(property="grade_level", type="string", description="İzin verilen derece/seviye", example="HighSchoolGrade10"),
+ * title="Sınıf Kuralı Oluşturma İsteği",
+ * required={"grade_id", "max_weeks"},
+ * @OA\Property(property="grade_id", type="integer", example=5, description="Kuralın uygulanacağı sınıf ID'si."),
+ * @OA\Property(property="max_weeks", type="integer", example=40, description="Bu sınıf için maksimum izin verilen hafta sayısı (Package week_count'tan küçük veya eşit olmalı)."),
  * )
  */
 class StorePackageWeekGradeRuleRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return true;
+        return $this->user() && $this->user()->role === 'admin';
     }
 
     public function rules(): array
     {
+        // Paketin ID'sini route'tan alıyoruz.
+        $packageId = $this->route('package');
+
         return [
-            'package_id' => ['required', 'integer', 'exists:packages,id'],
-            'week_no' => ['required', 'integer', 'min:1'],
-            // grade_level sizin tanımladığınız enum veya sabitler listesinden gelmelidir.
-            'grade_level' => ['required', 'string', 'max:50'],
-            'is_mandatory' => ['boolean'], // İsteğe bağlı
+            'grade_id' => [
+                'required',
+                'integer',
+                'exists:grades,id',
+                // Aynı paket ve aynı sınıf için tekrar kural oluşturulmasını engeller (unique key)
+                'unique:package_week_grade_rules,grade_id,NULL,id,package_id,' . $packageId
+            ],
+            'max_weeks' => [
+                'required',
+                'integer',
+                'min:1',
+                // Paketin toplam hafta sayısını aşmamalı
+                'max:' . $this->route('package')->week_count
+            ],
         ];
     }
     public function messages(): array

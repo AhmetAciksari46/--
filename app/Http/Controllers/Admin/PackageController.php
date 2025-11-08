@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CreatePackageRequest;
+use App\Http\Requests\Package\CreatePackageRequest;
 use App\Http\Requests\UpdatePackageRequest;
 use Illuminate\Http\Request;
 use App\Models\Package;
@@ -15,156 +15,164 @@ use App\Http\Requests\Package\PurchasePackageRequest;
 
 /**
  * @OA\Tag(
- *     name="Packages-Admin",
- *     description="Paket yönetimi ve satın alma işlemleri"
+ * name="Admin Packages",
+ * description="Admin yetkisine sahip kullanıcılar için Paket (Abonelik Şablonu) yönetimi"
  * )
  */
 
-/**
- * @OA\Tag(
- *     name="Packages-Manager",
- *     description="Paket yönetimi ve satın alma işlemleri"
- * )
- */
 class PackageController extends Controller
 {
     use ApiResponser;
     /**
      * @OA\Get(
-     *     path="api/packages",
-     *     tags={"Packages-Admin"},
-     *     summary="Tüm paketleri listele",
-     *     description="tüm paketleri listeler.",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Paket listesi başarıyla getirildi"),
-     *     @OA\Response(response=403, description="Yetkiniz yok")
+     * path="/api/admin/packages",
+     * summary="Paket Listesi",
+     * tags={"Admin Packages"},
+     * security={{"sanctum": {}}},
+     * @OA\Response(
+     * response=200,
+     * description="Paketler başarıyla listelendi.",
+     * @OA\JsonContent(
+     * type="object",
+     * @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Package")),
+     * @OA\Property(property="links", type="object"),
+     * @OA\Property(property="meta", type="object")
+     * )
+     * ),
+     * @OA\Response(response=403, description="Yetkisiz Erişim")
      * )
      */
-
-
-    public function getpackages()
+    public function index()
     {
-
-        $packages = Package::all();
+        // Tüm paketleri paginated olarak çekiyoruz.
+        $packages = Package::paginate(15);
         return $this->successResponse($packages);
     }
-
     /**
-     * @OA\Get(
-     *     path="api/packages/{id}",
-     *     tags={"Packages-Admin"},
-     *     summary="Paket ID ile paket görüntüle ",
-     *     description="İdsi girilen paketi getirir.",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Paket detayı başarıyla getirildi"),
-     *     @OA\Response(response=403, description="Yetkiniz yok")
+     * @OA\Post(
+     * path="/api/admin/packages",
+     * summary="Yeni Paket Oluşturma",
+     * tags={"Admin Packages"},
+     * security={{"sanctum": {}}},
+     * @OA\RequestBody(
+     * required=true,
+     * @OA\JsonContent(ref="#/components/schemas/CreatePackageRequest")
+     * ),
+     * @OA\Response(
+     * response=201,
+     * description="Paket başarıyla oluşturuldu.",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Paket başarıyla oluşturuldu."),
+     * @OA\Property(property="package", ref="#/components/schemas/Package")
+     * )
+     * ),
+     * @OA\Response(response=403, description="Yetkisiz Erişim"),
+     * @OA\Response(response=422, description="Doğrulama Hatası")
      * )
      */
-    public function getpackagebyid($id)
+    public function store(CreatePackageRequest $request)
     {
-        if (!auth()->user()->can('package.view')) {
-            return $this->errorResponse('unauthorized', 403);
-        }
-        $this->authorizeRole(['admin']);
-        return Package::with('subscriptions')->findOrFail($id);
-
-        $package = Package::findOrFail($id);
+        // StorePackageRequest, yetkilendirme ve doğrulamayı halletti.
+        $package = Package::create($request->validated());
+        return $this->successResponse($package->fresh(), 'Paket başarıyla oluşturuldu.', 201);
+    }
+    /**
+     * @OA\Get(
+     * path="/api/admin/packages/{package}",
+     * summary="Paket Detayı",
+     * tags={"Admin Packages"},
+     * security={{"sanctum": {}}},
+     * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer"), description="Paket ID"),
+     * @OA\Response(
+     * response=200,
+     * description="Paket detayı başarıyla getirildi.",
+     * @OA\JsonContent(ref="#/components/schemas/Package")
+     * ),
+     * @OA\Response(response=404, description="Paket bulunamadı."),
+     * @OA\Response(response=403, description="Yetkisiz Erişim")
+     * )
+     */
+    public function show(Package $package)
+    {
+        // Paketin kurallarını da eager load ederek tam bir detay sunuyoruz.
+        $package->load(['gradeRules', 'subjectRules']);
         return $this->successResponse($package);
     }
 
     /**
-     * @OA\Post(
-     *     path="api/packages",
-     *     tags={"Packages-Admin"},
-     *     summary="Yeni Paket oluştur ",
-     *     description="Paket Oluşturma işlemi.",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"name", "duration_days","price", "type"},
-     *             @OA\Property(property="name", type="string", example="Kış 40 Hafta Paketi"),
-     *             @OA\Property(property="duration_days", type="integer", example=365),
-     *             @OA\Property(property="price", type="integer", example=499.99),
-     *             @OA\Property(property="type", type="string", example="school"),
-     *             @OA\Property(property="description", type="string", example="yoğun içerikli paket"),
-     *             @OA\Property(property="is_active", type="boolen", example=true),
-     *             @OA\Property(property="is_visible", type="boolen", example=true),
-     *             @OA\Property(property="is_trial", type="boolen", example=false),
-     *             @OA\Property(property="has_homework_module", type="boolen", example=true),
-     *             @OA\Property(property="has_exam_module", type="boolen", example=true),
-     *             @OA\Property(property="has_chat_module", type="boolen", example=true),
-     *             @OA\Property(property="has_analytics_module", type="boolen", example=true),
-     *             @OA\Property(property="has_certificate_module", type="boolen", example=true),
-     *             @OA\Property(property="trial_days", type="integer", example=15),
-     *             @OA\Property(property="sort_order", type="integer", example=1),
-     *             @OA\Property(property="img_path", type="string", example="uploads/packages/package1.png")    
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="Paket başarıyla oluşturuldu"),
-     *     @OA\Response(response=403, description="yetki hatası"),
-     *     @OA\Response(response=500, description="Sunucu hatası")
-     * )
-     */
-
-    public function create(CreatePackageRequest $request)
-    {
-        $package = Package::create($request->validated());
-        return $this->successResponse($package->fresh(), 'Paket başarıyla oluşturuldu.');
-    }
-    //TODO: UpdatePackageRequest kullanılacak
-    /**
      * @OA\Put(
-     *     path="api/packages/{id}",
-     *     tags={"Packages-Admin"},
-     *     summary="Paket bilgilerini güncelle",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\RequestBody(@OA\JsonContent(
-     *         @OA\Property(property="name", type="string", example="Ede Koleji Güncel"),
-     *         @OA\Property(property="is_active", type="boolean", example=true)
-     *     )),
-     *     @OA\Response(response=201, description="Okul başarıyla güncellendi"),
-     *     @OA\Response(response=500, description="Sunucu hatası")
+     * path="/api/admin/packages/{package}",
+     * summary="Paket Güncelleme",
+     * tags={"Admin Packages"},
+     * security={{"sanctum": {}}},
+     * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer"), description="Paket ID"),
+     * @OA\RequestBody(
+     * required=true,
+     * @OA\JsonContent(ref="#/components/schemas/UpdatePackageRequest")
+     * ),
+     * @OA\Response(
+     * response=200,
+     * description="Paket başarıyla güncellendi.",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Paket başarıyla güncellendi."),
+     * @OA\Property(property="package", ref="#/components/schemas/Package")
+     * )
+     * ),
+     * @OA\Response(response=404, description="Paket bulunamadı."),
+     * @OA\Response(response=403, description="Yetkisiz Erişim"),
+     * @OA\Response(response=422, description="Doğrulama Hatası")
+     * )
+     * @OA\Patch(
+     * path="/api/admin/packages/{package}",
+     * summary="Paket Kısmi Güncelleme (PATCH)",
+     * tags={"Admin Packages"},
+     * security={{"sanctum": {}}},
+     * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer"), description="Paket ID"),
+     * @OA\RequestBody(
+     * required=true,
+     * @OA\JsonContent(ref="#/components/schemas/UpdatePackageRequest")
+     * ),
+     * @OA\Response(response=200, description="Paket başarıyla güncellendi.")
      * )
      */
-    public function update(UpdatePackageRequest $request, $id)
+    public function update(UpdatePackageRequest $request, Package $package)
     {
-        $package = Package::findOrFail($id);
-
         $package->update($request->validated());
-        $message = "Paket başarıyla güncellendi.";
-        return $this->successResponse($package->fresh(), $message);
+        return $this->successResponse($package->fresh(), 'Paket başarıyla güncellendi.');
     }
+
     /**
      * @OA\Delete(
-     *     path="api/packages/{id}",
-     *     tags={"Packages-Admin"},
-     *     summary="Paket silme",
-     *     description="ID ile paketi silme işlemi.",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         description="Silinecek paketin ID'si",
-     *         required=true,
-     *         @OA\Schema(type="integer", example=1)
-     *     ),
-     *     @OA\Response(response=200, description="Paket başarıyla silindi"),
-     *     @OA\Response(response=403, description="Yetkiniz yok"),
-     *     @OA\Response(response=404, description="Paket bulunamadı")
+     * path="/api/admin/packages/{package}",
+     * summary="Paket Silme",
+     * tags={"Admin Packages"},
+     * security={{"sanctum": {}}},
+     * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer"), description="Paket ID"),
+     * @OA\Response(
+     * response=200,
+     * description="Paket başarıyla silindi.",
+     * @OA\JsonContent(@OA\Property(property="message", type="string", example="Paket ve ilişkili kuralları başarıyla silindi."))
+     * ),
+     * @OA\Response(response=404, description="Paket bulunamadı."),
+     * @OA\Response(response=403, description="Yetkisiz Erişim"),
+     * @OA\Response(response=409, description="Çakışma (Aktif abonelikler mevcut)")
      * )
      */
-    public function delete($id)
+    public function destroy(Package $package)
     {
-        if (!auth()->user()->can('package.delete')) {
-            return $this->errorResponse('unauthorized', 403);
+        // Kural: Aktif abonelikleri olan paket silinemez.
+        if ($package->subscriptions()->exists()) {
+            return $this->errorResponse('Paketin aktif veya geçmiş abonelikleri olduğu için silinemez. Lütfen sadece pasif yapın.', 409);
         }
-        $package = Package::findOrFail($id);
-        $package->delete();
 
-        return $this->successResponse('Paket başarıyla silindi.');
+        // İlişkili kuralları siliyoruz (Veritabanında CASCADE yoksa gereklidir)
+        $package->gradeRules()->delete();
+        $package->subjectRules()->delete();
+
+        $package->delete();
+        return $this->successResponse(null, 'Paket ve ilişkili kuralları başarıyla silindi.');
     }
+
 
     //*********************-Admin Kısmı bitti-*************************** */
 

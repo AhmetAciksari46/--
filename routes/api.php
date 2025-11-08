@@ -95,11 +95,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ADMIN
     Route::middleware('role:admin')->prefix('admin')->group(function () {
-        Route::get('/packages', [PackageController::class, 'getpackages']);
-        Route::get('/packages/{id}', [PackageController::class, 'getpackagebyid']);
-        Route::post('/packages', [PackageController::class, 'create']);
-        Route::put('/packages/{id}', [PackageController::class, 'update']);
-        Route::delete('/packages/{id}', [PackageController::class, 'delete']);
 
         Route::resource('contents', ContentController::class)->only(['index', 'store', 'update', 'destroy']);
     });
@@ -160,13 +155,13 @@ Route::middleware('auth:sanctum')->group(function () {
         //----------------------------------------------admin----------------------------------------------------
         Route::prefix("admin")->group(function () {
 
-            Route::prefix("package")->group(function () {
-                Route::get('/getpackages', [PackageController::class, 'getpackages']);
-                Route::get('/getpackagebyid/{id}', [PackageController::class, 'getpackagebyid']);
-                Route::post('/createpackage', [PackageController::class, 'create']);
-                Route::put('/updatepackagebyid/{id}', [PackageController::class, 'updatepackagebyid']);
-                Route::delete('/deletepackagebyid/{id}', [PackageController::class, 'delete']);
-            });
+            Route::apiResource('packages', PackageController::class);
+            // 🏆 Sınıf (Grade) Kuralları CRUD
+            Route::apiResource('packages.grade-rules', PackageWeekGradeRuleController::class)->except(['show']);
+
+            // 📚 Ders (Subject) Kuralları CRUD
+            Route::apiResource('packages.subject-rules', PackageWeekSubjectRuleController::class)->except(['show']);
+
             Route::prefix("school")->group(function () {
                 Route::get('/getschools', [SchoolController::class, 'schoollist']);
                 Route::get('/getschoolbyid/{school}', [SchoolController::class, 'getSchool']);
@@ -205,9 +200,6 @@ Route::middleware('auth:sanctum')->group(function () {
                         Route::resource('overrides', StudentCurriculumOverrideController::class)->only(['index', 'store', 'destroy']);
                         Route::resource('days', SchoolWeekDayController::class)->only(['index', 'update']);
                         Route::resource('subjects', SubjectController::class)->except(['create']); //TODO: ADMİN OLABİLİR
-                        Route::resource('grade-rules', PackageWeekGradeRuleController::class)->except(['create']);
-                        Route::resource('subject-rules', PackageWeekSubjectRuleController::class)->except(['create']);
-                        //TODO: BUNLARIN BAZILARI ADMİN OLABİLİR
                     });
 
                     Route::prefix('teachers')->group(function () {

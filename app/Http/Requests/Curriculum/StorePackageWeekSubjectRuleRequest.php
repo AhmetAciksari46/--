@@ -2,50 +2,86 @@
 
 namespace App\Http\Requests\Curriculum;
 
+use App\Models\PackageWeekGradeRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 /**
  * @OA\Schema(
  * schema="StorePackageWeekSubjectRuleRequest",
  * title="Ders Kuralı Oluşturma İsteği",
- * required={"package_id", "week_no", "subject_id"},
- * @OA\Property(property="package_id", type="integer", example=1),
- * @OA\Property(property="week_no", type="integer", description="Hafta Numarası", example=3),
- * @OA\Property(property="subject_id", type="integer", description="İzin verilen ders ID'si", example=5),
+ * required={"grade_rule_id", "subject_id", "max_weeks"},
+ * @OA\Property(property="grade_rule_id", type="integer", example=1, description="Kuralın bağlı olduğu Sınıf Kuralı (PackageWeekGradeRule) ID'si. Bu ID, mevcut pakete ait olmalıdır."),
+ * @OA\Property(property="subject_id", type="integer", example=5, description="Kuralın uygulanacağı ders ID'si."),
+ * @OA\Property(property="max_weeks", type="integer", example=10, description="Bu ders için maksimum izin verilen hafta sayısı."),
  * )
  */
 class StorePackageWeekSubjectRuleRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return true;
+        return $this->user() && $this->user()->role === 'admin';
     }
 
     public function rules(): array
     {
+        $packageId = $this->route('package')->id;
+
         return [
-            'package_id' => ['required', 'integer', 'exists:packages,id'],
-            'week_no' => ['required', 'integer', 'min:1'],
-            'subject_id' => ['required', 'integer', 'exists:subjects,id'],
-            'is_mandatory' => ['boolean'], // İsteğe bağlı
+            'grade_rule_id' => [
+                'required',
+                'integer',
+                // Kuralın mevcut pakete bağlı olup olmadığını kontrol et
+                'exists:package_week_grade_rules,id,package_id,' . $packageId
+            ],
+            'subject_id' => [
+                'required',
+                'integer',
+                'exists:subjects,id',
+                // Aynı sınıf kuralı altında aynı dersin tekrarını engeller.
+                'unique:package_week_subject_rules,subject_id,NULL,id,grade_rule_id,' . $this->input('grade_rule_id')
+            ],
+            'max_weeks' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
         ];
     }
     public function messages(): array
     {
         return [
-            'package_id.required' => 'Paket ID zorunludur.',
-            'package_id.integer' => 'Paket ID bir tamsayı olmalıdır.',
-            'package_id.exists' => 'Belirtilen paket bulunamadı.',
-            'week_no.required' => 'Hafta numarası zorunludur.',
-            'week_no.integer' => 'Hafta numarası bir tamsayı olmalıdır.',
-            'week_no.min' => 'Hafta numarası en az 1 olmalıdır.',
-            'subject_id.required' => 'Ders ID zorunludur.',
-            'subject_id.integer' => 'Ders ID bir tamsayı olmalıdır.',
-            'subject_id.exists' => 'Belirtilen ders bulunamadı.',
-            'is_mandatory.boolean' => 'is_mandatory alanı boolean (true/false) olmalıdır.',
+            'grade_rule_id.required' => 'Ders kuralının hangi sınıf kuralına bağlı olduğu belirtilmelidir.',
+            'grade_rule_id.exists' => 'Belirtilen sınıf kuralı ID\'si geçersiz veya bu pakete ait değil.',
+            'subject_id.required' => 'Ders ID\'si zorunludur.',
+            'subject_id.exists' => 'Belirtilen Ders ID\'si sistemde mevcut değil.',
+            'subject_id.unique' => 'Bu sınıf kuralı altında bu ders zaten tanımlanmış.',
+            'max_weeks.required' => 'Maksimum hafta sayısı zorunludur.',
+            'max_weeks.min' => 'Maksimum hafta sayısı en az 1 olmalıdır.',
+        ];
+    }
+    /**
+     * Doğrulama tamamlandıktan sonra ek kontrolleri yapar (Max Hafta Kontrolü).
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator) {
+                // grade_rule_id doğrulama hatası varsa kontrolü atla
+                if ($validator->errors()->has('grade_rule_id') || !$this->input('grade_rule_id')) {
+                    return;
+                }
+
+                $gradeRule = PackageWeekGradeRule::find($this->input('grade_rule_id'));
+                $maxWeeks = $this->input('max_weeks');
+
+                if ($gradeRule && $maxWeeks > $gradeRule->max_weeks) {
+                    $validator->errors()->add(
+                        'max_weeks',
+                        'Maksimum hafta sayısı (' . $maxWeeks . '), bağlı olduğu Sınıf Kuralının (Max: ' . $gradeRule->max_weeks . ') izin verdiği süreyi aşamaz.'
+                    );
+                }
+            }
         ];
     }
 }

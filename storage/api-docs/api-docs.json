@@ -191,167 +191,151 @@
                 }
             }
         },
-        "api/packages": {
+        "/api/admin/packages": {
             "get": {
                 "tags": [
-                    "Packages-Admin"
+                    "Admin Packages"
                 ],
-                "summary": "Tüm paketleri listele",
-                "description": "tüm paketleri listeler.",
-                "operationId": "b222209596000d369863ca958050fc5f",
+                "summary": "Paket Listesi",
+                "operationId": "a2b9cbb5ff6b3a4210447a3803071d9f",
                 "responses": {
                     "200": {
-                        "description": "Paket listesi başarıyla getirildi"
+                        "description": "Paketler başarıyla listelendi.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Package"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "403": {
-                        "description": "Yetkiniz yok"
+                        "description": "Yetkisiz Erişim"
                     }
                 },
                 "security": [
                     {
-                        "bearerAuth": []
+                        "sanctum": []
                     }
                 ]
             },
             "post": {
                 "tags": [
-                    "Packages-Admin"
+                    "Admin Packages"
                 ],
-                "summary": "Yeni Paket oluştur ",
-                "description": "Paket Oluşturma işlemi.",
-                "operationId": "94ee9cb57e4275b462627365650701de",
+                "summary": "Yeni Paket Oluşturma",
+                "operationId": "10f505800ce8ab1c8d75c0e174defba5",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "name",
-                                    "duration_days",
-                                    "price",
-                                    "type"
-                                ],
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Kış 40 Hafta Paketi"
-                                    },
-                                    "duration_days": {
-                                        "type": "integer",
-                                        "example": 365
-                                    },
-                                    "price": {
-                                        "type": "integer",
-                                        "example": 499.99
-                                    },
-                                    "type": {
-                                        "type": "string",
-                                        "example": "school"
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "example": "yoğun içerikli paket"
-                                    },
-                                    "is_active": {
-                                        "type": "boolen",
-                                        "example": true
-                                    },
-                                    "is_visible": {
-                                        "type": "boolen",
-                                        "example": true
-                                    },
-                                    "is_trial": {
-                                        "type": "boolen",
-                                        "example": false
-                                    },
-                                    "has_homework_module": {
-                                        "type": "boolen",
-                                        "example": true
-                                    },
-                                    "has_exam_module": {
-                                        "type": "boolen",
-                                        "example": true
-                                    },
-                                    "has_chat_module": {
-                                        "type": "boolen",
-                                        "example": true
-                                    },
-                                    "has_analytics_module": {
-                                        "type": "boolen",
-                                        "example": true
-                                    },
-                                    "has_certificate_module": {
-                                        "type": "boolen",
-                                        "example": true
-                                    },
-                                    "trial_days": {
-                                        "type": "integer",
-                                        "example": 15
-                                    },
-                                    "sort_order": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "img_path": {
-                                        "type": "string",
-                                        "example": "uploads/packages/package1.png"
-                                    }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/CreatePackageRequest"
                             }
                         }
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "Paket başarıyla oluşturuldu"
+                    "201": {
+                        "description": "Paket başarıyla oluşturuldu.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Paket başarıyla oluşturuldu."
+                                        },
+                                        "package": {
+                                            "$ref": "#/components/schemas/Package"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "403": {
-                        "description": "yetki hatası"
+                        "description": "Yetkisiz Erişim"
                     },
-                    "500": {
-                        "description": "Sunucu hatası"
+                    "422": {
+                        "description": "Doğrulama Hatası"
                     }
                 },
                 "security": [
                     {
-                        "bearerAuth": []
+                        "sanctum": []
                     }
                 ]
             }
         },
-        "api/packages/{id}": {
+        "/api/admin/packages/{package}": {
             "get": {
                 "tags": [
-                    "Packages-Admin"
+                    "Admin Packages"
                 ],
-                "summary": "Paket ID ile paket görüntüle ",
-                "description": "İdsi girilen paketi getirir.",
-                "operationId": "72f48a9fc2fe327183557b6c61c63954",
+                "summary": "Paket Detayı",
+                "operationId": "52f496582da7c53f15c0b99b92dbf2f9",
+                "parameters": [
+                    {
+                        "name": "package",
+                        "in": "path",
+                        "description": "Paket ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Paket detayı başarıyla getirildi"
+                        "description": "Paket detayı başarıyla getirildi.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Package"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Paket bulunamadı."
                     },
                     "403": {
-                        "description": "Yetkiniz yok"
+                        "description": "Yetkisiz Erişim"
                     }
                 },
                 "security": [
                     {
-                        "bearerAuth": []
+                        "sanctum": []
                     }
                 ]
             },
             "put": {
                 "tags": [
-                    "Packages-Admin"
+                    "Admin Packages"
                 ],
-                "summary": "Paket bilgilerini güncelle",
-                "operationId": "1e25e20b717ac5290001329875eb4de8",
+                "summary": "Paket Güncelleme",
+                "operationId": "ff33293c39065af50599e0dd4ec8cbaf",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "package",
                         "in": "path",
+                        "description": "Paket ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -359,71 +343,136 @@
                     }
                 ],
                 "requestBody": {
+                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Ede Koleji Güncel"
-                                    },
-                                    "is_active": {
-                                        "type": "boolean",
-                                        "example": true
-                                    }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/UpdatePackageRequest"
                             }
                         }
                     }
                 },
                 "responses": {
-                    "201": {
-                        "description": "Okul başarıyla güncellendi"
+                    "200": {
+                        "description": "Paket başarıyla güncellendi.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Paket başarıyla güncellendi."
+                                        },
+                                        "package": {
+                                            "$ref": "#/components/schemas/Package"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
-                    "500": {
-                        "description": "Sunucu hatası"
+                    "404": {
+                        "description": "Paket bulunamadı."
+                    },
+                    "403": {
+                        "description": "Yetkisiz Erişim"
+                    },
+                    "422": {
+                        "description": "Doğrulama Hatası"
                     }
                 },
                 "security": [
                     {
-                        "bearerAuth": []
+                        "sanctum": []
                     }
                 ]
             },
             "delete": {
                 "tags": [
-                    "Packages-Admin"
+                    "Admin Packages"
                 ],
-                "summary": "Paket silme",
-                "description": "ID ile paketi silme işlemi.",
-                "operationId": "0336bbe4d3df283681ee02ff5f3aea44",
+                "summary": "Paket Silme",
+                "operationId": "d3f8117dc8b396b0788c9def2b6e246d",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "package",
                         "in": "path",
-                        "description": "Silinecek paketin ID'si",
+                        "description": "Paket ID",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "example": 1
+                            "type": "integer"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Paket başarıyla silindi"
-                    },
-                    "403": {
-                        "description": "Yetkiniz yok"
+                        "description": "Paket başarıyla silindi.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Paket ve ilişkili kuralları başarıyla silindi."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "404": {
-                        "description": "Paket bulunamadı"
+                        "description": "Paket bulunamadı."
+                    },
+                    "403": {
+                        "description": "Yetkisiz Erişim"
+                    },
+                    "409": {
+                        "description": "Çakışma (Aktif abonelikler mevcut)"
                     }
                 },
                 "security": [
                     {
-                        "bearerAuth": []
+                        "sanctum": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Admin Packages"
+                ],
+                "summary": "Paket Kısmi Güncelleme (PATCH)",
+                "operationId": "6a56557dc381a395a20d9cccf6e7e182",
+                "parameters": [
+                    {
+                        "name": "package",
+                        "in": "path",
+                        "description": "Paket ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdatePackageRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Paket başarıyla güncellendi."
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
                     }
                 ]
             }
@@ -1090,18 +1139,18 @@
                 ]
             }
         },
-        "/api/schools/{school}/manager/grade-rules": {
+        "/api/admin/packages/{package}/grade-rules": {
             "get": {
                 "tags": [
-                    "Package Grade Rules"
+                    "Admin Package Rules"
                 ],
-                "summary": "Okulun kullandığı pakete ait tüm derece kurallarını listeler",
-                "operationId": "listPackageWeekGradeRules",
+                "summary": "Paketin Sınıf Kurallarını Listeleme",
+                "operationId": "d2ad2341595ff1fbf13d2d3cbe7b0961",
                 "parameters": [
                     {
-                        "name": "school",
+                        "name": "package",
                         "in": "path",
-                        "description": "Okul ID",
+                        "description": "Paket ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1110,20 +1159,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Başarılı",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/PackageWeekGradeRule"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Yetkisiz Erişim"
+                        "description": "Sınıf kuralları listelendi."
                     }
                 },
                 "security": [
@@ -1134,15 +1170,15 @@
             },
             "post": {
                 "tags": [
-                    "Package Grade Rules"
+                    "Admin Package Rules"
                 ],
-                "summary": "Paket için yeni bir derece kuralı oluşturur",
-                "operationId": "storePackageWeekGradeRule",
+                "summary": "Pakete Yeni Sınıf Kuralı Ekleme",
+                "operationId": "abfdb4d50864684660ed80ed2e7ad3de",
                 "parameters": [
                     {
-                        "name": "school",
+                        "name": "package",
                         "in": "path",
-                        "description": "Okul ID",
+                        "description": "Paket ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1161,17 +1197,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Başarılı",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PackageWeekGradeRule"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Yetkisiz Erişim"
+                        "description": "Kural başarıyla eklendi."
                     }
                 },
                 "security": [
@@ -1181,65 +1207,17 @@
                 ]
             }
         },
-        "/api/schools/{school}/manager/grade-rules/{rule}": {
-            "get": {
-                "tags": [
-                    "Package Grade Rules"
-                ],
-                "summary": "Belirli bir derece kuralını detayını getirir",
-                "operationId": "showPackageWeekGradeRule",
-                "parameters": [
-                    {
-                        "name": "school",
-                        "in": "path",
-                        "description": "Okul ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "rule",
-                        "in": "path",
-                        "description": "Kural ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Başarılı",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PackageWeekGradeRule"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Kural bulunamadı veya okula ait değil"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
+        "/api/admin/packages/{package}/grade-rules/{rule}": {
             "put": {
                 "tags": [
-                    "Package Grade Rules"
+                    "Admin Package Rules"
                 ],
-                "summary": "Belirli bir derece kuralını günceller",
-                "operationId": "updatePackageWeekGradeRule",
+                "summary": "Paket Sınıf Kuralını Güncelleme",
+                "operationId": "ba47990851d9e2f032e96210e0709ef3",
                 "parameters": [
                     {
-                        "name": "school",
+                        "name": "package",
                         "in": "path",
-                        "description": "Okul ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1255,29 +1233,9 @@
                         }
                     }
                 ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UpdatePackageWeekGradeRuleRequest"
-                            }
-                        }
-                    }
-                },
                 "responses": {
                     "200": {
-                        "description": "Başarılı",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PackageWeekGradeRule"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Kural bulunamadı veya okula ait değil"
+                        "description": "Kural başarıyla güncellendi."
                     }
                 },
                 "security": [
@@ -1288,15 +1246,14 @@
             },
             "delete": {
                 "tags": [
-                    "Package Grade Rules"
+                    "Admin Package Rules"
                 ],
-                "summary": "Belirli bir derece kuralını siler",
-                "operationId": "deletePackageWeekGradeRule",
+                "summary": "Paket Sınıf Kuralını Silme",
+                "operationId": "6d96f47bbff8af4017792b280e9e6644",
                 "parameters": [
                     {
-                        "name": "school",
+                        "name": "package",
                         "in": "path",
-                        "description": "Okul ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1313,11 +1270,8 @@
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "Başarılı (İçerik Yok)"
-                    },
-                    "404": {
-                        "description": "Kural bulunamadı veya okula ait değil"
+                    "200": {
+                        "description": "Kural başarıyla silindi."
                     }
                 },
                 "security": [
@@ -1327,18 +1281,18 @@
                 ]
             }
         },
-        "/api/schools/{school}/manager/subject-rules": {
+        "/api/admin/packages/{package}/subject-rules": {
             "get": {
                 "tags": [
-                    "Package Subject Rules"
+                    "Admin Package Rules"
                 ],
-                "summary": "Okulun kullandığı pakete ait tüm ders kurallarını listeler",
-                "operationId": "listPackageWeekSubjectRules",
+                "summary": "Paketin Ders Kurallarını Listeleme",
+                "operationId": "3231eea9d4e0ca79ce050c79bee36253",
                 "parameters": [
                     {
-                        "name": "school",
+                        "name": "package",
                         "in": "path",
-                        "description": "Okul ID",
+                        "description": "Paket ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1347,20 +1301,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Başarılı",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/PackageWeekSubjectRule"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Yetkisiz Erişim"
+                        "description": "Ders kuralları listelendi."
                     }
                 },
                 "security": [
@@ -1371,15 +1312,15 @@
             },
             "post": {
                 "tags": [
-                    "Package Subject Rules"
+                    "Admin Package Rules"
                 ],
-                "summary": "Paket için yeni bir ders kuralı oluşturur",
-                "operationId": "storePackageWeekSubjectRule",
+                "summary": "Pakete Yeni Ders Kuralı Ekleme",
+                "operationId": "3f61eb0c10e2cee20d0d796dd1c66313",
                 "parameters": [
                     {
-                        "name": "school",
+                        "name": "package",
                         "in": "path",
-                        "description": "Okul ID",
+                        "description": "Paket ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1398,17 +1339,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Başarılı",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PackageWeekSubjectRule"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Yetkisiz Erişim"
+                        "description": "Ders kuralı başarıyla eklendi."
                     }
                 },
                 "security": [
@@ -1418,65 +1349,17 @@
                 ]
             }
         },
-        "/api/schools/{school}/manager/subject-rules/{rule}": {
-            "get": {
-                "tags": [
-                    "Package Subject Rules"
-                ],
-                "summary": "Belirli bir ders kuralını detayını getirir",
-                "operationId": "showPackageWeekSubjectRule",
-                "parameters": [
-                    {
-                        "name": "school",
-                        "in": "path",
-                        "description": "Okul ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "rule",
-                        "in": "path",
-                        "description": "Kural ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Başarılı",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PackageWeekSubjectRule"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Kural bulunamadı veya okula ait değil"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
+        "/api/admin/packages/{package}/subject-rules/{rule}": {
             "put": {
                 "tags": [
-                    "Package Subject Rules"
+                    "Admin Package Rules"
                 ],
-                "summary": "Belirli bir ders kuralını günceller",
-                "operationId": "updatePackageWeekSubjectRule",
+                "summary": "Paket Ders Kuralını Güncelleme",
+                "operationId": "cc0e64c2463dfe9a0ba9316246591606",
                 "parameters": [
                     {
-                        "name": "school",
+                        "name": "package",
                         "in": "path",
-                        "description": "Okul ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1492,29 +1375,9 @@
                         }
                     }
                 ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UpdatePackageWeekSubjectRuleRequest"
-                            }
-                        }
-                    }
-                },
                 "responses": {
                     "200": {
-                        "description": "Başarılı",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PackageWeekSubjectRule"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Kural bulunamadı veya okula ait değil"
+                        "description": "Kural başarıyla güncellendi."
                     }
                 },
                 "security": [
@@ -1525,15 +1388,14 @@
             },
             "delete": {
                 "tags": [
-                    "Package Subject Rules"
+                    "Admin Package Rules"
                 ],
-                "summary": "Belirli bir ders kuralını siler",
-                "operationId": "deletePackageWeekSubjectRule",
+                "summary": "Paket Ders Kuralını Silme",
+                "operationId": "5820f2be76d00167b6b9b0cca96a547e",
                 "parameters": [
                     {
-                        "name": "school",
+                        "name": "package",
                         "in": "path",
-                        "description": "Okul ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1550,11 +1412,8 @@
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "Başarılı (İçerik Yok)"
-                    },
-                    "404": {
-                        "description": "Kural bulunamadı veya okula ait değil"
+                    "200": {
+                        "description": "Kural başarıyla silindi."
                     }
                 },
                 "security": [
@@ -4577,26 +4436,21 @@
                 "type": "object"
             },
             "StorePackageWeekGradeRuleRequest": {
-                "title": "Derece Kuralı Oluşturma İsteği",
+                "title": "Sınıf Kuralı Oluşturma İsteği",
                 "required": [
-                    "package_id",
-                    "week_no",
-                    "grade_level"
+                    "grade_id",
+                    "max_weeks"
                 ],
                 "properties": {
-                    "package_id": {
+                    "grade_id": {
+                        "description": "Kuralın uygulanacağı sınıf ID'si.",
                         "type": "integer",
-                        "example": 1
+                        "example": 5
                     },
-                    "week_no": {
-                        "description": "Hafta Numarası",
+                    "max_weeks": {
+                        "description": "Bu sınıf için maksimum izin verilen hafta sayısı (Package week_count'tan küçük veya eşit olmalı).",
                         "type": "integer",
-                        "example": 3
-                    },
-                    "grade_level": {
-                        "description": "İzin verilen derece/seviye",
-                        "type": "string",
-                        "example": "HighSchoolGrade10"
+                        "example": 40
                     }
                 },
                 "type": "object"
@@ -4604,46 +4458,64 @@
             "StorePackageWeekSubjectRuleRequest": {
                 "title": "Ders Kuralı Oluşturma İsteği",
                 "required": [
-                    "package_id",
-                    "week_no",
-                    "subject_id"
+                    "grade_rule_id",
+                    "subject_id",
+                    "max_weeks"
                 ],
                 "properties": {
-                    "package_id": {
+                    "grade_rule_id": {
+                        "description": "Kuralın bağlı olduğu Sınıf Kuralı (PackageWeekGradeRule) ID'si. Bu ID, mevcut pakete ait olmalıdır.",
                         "type": "integer",
                         "example": 1
                     },
-                    "week_no": {
-                        "description": "Hafta Numarası",
-                        "type": "integer",
-                        "example": 3
-                    },
                     "subject_id": {
-                        "description": "İzin verilen ders ID'si",
+                        "description": "Kuralın uygulanacağı ders ID'si.",
                         "type": "integer",
                         "example": 5
+                    },
+                    "max_weeks": {
+                        "description": "Bu ders için maksimum izin verilen hafta sayısı.",
+                        "type": "integer",
+                        "example": 10
                     }
                 },
                 "type": "object"
             },
             "UpdatePackageWeekGradeRuleRequest": {
-                "title": "Derece Kuralı Güncelleme İsteği",
+                "title": "Sınıf Kuralı Güncelleme İsteği",
+                "description": "Bir paketin mevcut sınıf kuralını (Grade Rule) güncellemek için kullanılır. Alanlar isteğe bağlıdır.",
                 "properties": {
-                    "grade_level": {
-                        "description": "İzin verilen derece/seviye",
-                        "type": "string",
-                        "example": "HighSchoolGrade10"
+                    "grade_id": {
+                        "description": "Kuralın uygulanacağı yeni sınıf ID'si.",
+                        "type": "integer",
+                        "example": 6
+                    },
+                    "max_weeks": {
+                        "description": "Bu sınıf için maksimum izin verilen yeni hafta sayısı.",
+                        "type": "integer",
+                        "example": 45
                     }
                 },
                 "type": "object"
             },
             "UpdatePackageWeekSubjectRuleRequest": {
                 "title": "Ders Kuralı Güncelleme İsteği",
+                "description": "Bir paketin mevcut ders kuralını (Subject Rule) güncellemek için kullanılır. Alanlar isteğe bağlıdır.",
                 "properties": {
+                    "grade_rule_id": {
+                        "description": "Kuralın bağlı olduğu Sınıf Kuralı (PackageWeekGradeRule) ID'si.",
+                        "type": "integer",
+                        "example": 1
+                    },
                     "subject_id": {
-                        "description": "İzin verilen ders ID'si",
+                        "description": "Kuralın uygulanacağı ders ID'si.",
                         "type": "integer",
                         "example": 5
+                    },
+                    "max_weeks": {
+                        "description": "Bu ders için maksimum izin verilen hafta sayısı.",
+                        "type": "integer",
+                        "example": 10
                     }
                 },
                 "type": "object"
@@ -4709,6 +4581,183 @@
                         "type": "string",
                         "example": "Özel not",
                         "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "CreatePackageRequest": {
+                "title": "Yeni Paket Oluşturma İsteği",
+                "description": "Admin panelinde yeni bir paket oluşturmak için kullanılan şema.",
+                "required": [
+                    "name",
+                    "price",
+                    "duration_days",
+                    "week_count",
+                    "type"
+                ],
+                "properties": {
+                    "name": {
+                        "description": "Paketin Adı",
+                        "type": "string",
+                        "example": "40 Haftalık Temel Eğitim Paketi"
+                    },
+                    "price": {
+                        "description": "Paketin Fiyatı",
+                        "type": "number",
+                        "format": "float",
+                        "example": 2499.99
+                    },
+                    "duration_days": {
+                        "description": "Paketin geçerlilik süresi (gün olarak)",
+                        "type": "integer",
+                        "example": 365
+                    },
+                    "week_count": {
+                        "description": "Paketin içerdiği müfredat hafta sayısı",
+                        "type": "integer",
+                        "example": 40
+                    },
+                    "type": {
+                        "description": "Paketin Tipi",
+                        "type": "string",
+                        "enum": [
+                            "school",
+                            "student",
+                            "other"
+                        ],
+                        "example": "school"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Bu paket temel eğitim modüllerini kapsar.",
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "description": "Paket aktif mi?",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "is_visible": {
+                        "description": "Kullanıcılara görünür mü?",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "has_homework_module": {
+                        "description": "Ödev modülü var mı?",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "has_schedule_module": {
+                        "description": "Ders programı modülü var mı?",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "has_exam_module": {
+                        "description": "Sınav modülü var mı?",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "has_chat_module": {
+                        "description": "Canlı sohbet modülü var mı?",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "has_analytics_module": {
+                        "description": "Analitik rapor modülü var mı?",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "has_certificate_module": {
+                        "description": "Sertifika modülü var mı?",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "is_trial": {
+                        "description": "Deneme paketi mi?",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "trial_days": {
+                        "description": "Deneme gün sayısı (is_trial true ise zorunlu)",
+                        "type": "integer",
+                        "example": 7
+                    },
+                    "is_sequential_content_required": {
+                        "description": "Sıralı içerik tamamlama kuralı var mı?",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "sort_order": {
+                        "description": "Listeleme sırası.",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "img_path": {
+                        "description": "Paket görsel yolu.",
+                        "type": "string",
+                        "example": "/img/package-basic.png",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "UpdatePackageRequest": {
+                "title": "Paket Güncelleme İsteği",
+                "description": "Admin panelinde mevcut bir paketi güncellemek için kullanılan şema. Alanlar isteğe bağlıdır (Sadece güncellenmek istenen alanlar gönderilir).",
+                "properties": {
+                    "name": {
+                        "description": "Paketin Adı",
+                        "type": "string",
+                        "example": "40 Haftalık Premium Paket"
+                    },
+                    "price": {
+                        "description": "Paketin Fiyatı",
+                        "type": "number",
+                        "format": "float",
+                        "example": 3499.99
+                    },
+                    "duration_days": {
+                        "description": "Paketin geçerlilik süresi (gün olarak)",
+                        "type": "integer",
+                        "example": 365
+                    },
+                    "week_count": {
+                        "description": "Paketin içerdiği müfredat hafta sayısı",
+                        "type": "integer",
+                        "example": 40
+                    },
+                    "type": {
+                        "description": "Paketin Tipi",
+                        "type": "string",
+                        "enum": [
+                            "school",
+                            "student",
+                            "other"
+                        ],
+                        "example": "school"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Tüm modüllerin en kapsamlı versiyonu.",
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "description": "Paket aktif mi?",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "has_homework_module": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "is_trial": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "trial_days": {
+                        "description": "Deneme süresi (sadece is_trial true ise geçerli)",
+                        "type": "integer",
+                        "example": 7
                     }
                 },
                 "type": "object"
@@ -5497,9 +5546,14 @@
             },
             "Package": {
                 "title": "Package",
+                "description": "Admin tarafından tanımlanan abonelik paketi şablonu.",
                 "required": [
                     "id",
-                    "name"
+                    "name",
+                    "price",
+                    "duration_days",
+                    "week_count",
+                    "type"
                 ],
                 "properties": {
                     "id": {
@@ -5508,12 +5562,69 @@
                     },
                     "name": {
                         "type": "string",
-                        "example": "Full Paket"
+                        "example": "Komple Eğitim Paketi"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Tüm modülleri içeren yıllık paket",
+                        "nullable": true
+                    },
+                    "duration_days": {
+                        "description": "Paketin geçerlilik süresi (gün)",
+                        "type": "integer",
+                        "example": 365
                     },
                     "price": {
                         "type": "number",
                         "format": "float",
-                        "example": 199.99
+                        "example": 2499.99
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "school",
+                            "student",
+                            "other"
+                        ],
+                        "example": "school"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "has_schedule_module": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "week_count": {
+                        "description": "Müfredat hafta sayısı",
+                        "type": "integer",
+                        "example": 40
+                    },
+                    "has_homework_module": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "has_exam_module": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "is_trial": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "trial_days": {
+                        "description": "Deneme süresi (gün)",
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 },
                 "type": "object"
@@ -6289,8 +6400,8 @@
             "description": "Branch (branş) CRUD operations"
         },
         {
-            "name": "Packages-Manager",
-            "description": "Paket yönetimi ve satın alma işlemleri"
+            "name": "Admin Packages",
+            "description": "Admin yetkisine sahip kullanıcılar için Paket (Abonelik Şablonu) yönetimi"
         },
         {
             "name": "Auth",
@@ -6301,12 +6412,8 @@
             "description": "Ders Oturumuna Ait Yoklama Yönetimi (Teacher/Manager)"
         },
         {
-            "name": "Package Grade Rules",
-            "description": "Paket Hafta Derece Kuralı Yönetimi (Admin/Manager)"
-        },
-        {
-            "name": "Package Subject Rules",
-            "description": "Paket Hafta Ders Kuralı Yönetimi (Admin/Manager)"
+            "name": "Admin Package Rules",
+            "description": "Paketlere Sınıf ve Ders Kuralı Ekleme/Yönetimi"
         },
         {
             "name": "Permissions",
@@ -6353,8 +6460,8 @@
             "description": "Kullanıcı işlemleri"
         },
         {
-            "name": "Packages-Admin",
-            "description": "Packages-Admin"
+            "name": "Packages-Manager",
+            "description": "Packages-Manager"
         },
         {
             "name": "Admin - Schools",

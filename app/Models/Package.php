@@ -7,13 +7,26 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @OA\Schema(
- *     schema="Package",
- *     type="object",
- *     title="Package",
- *     required={"id", "name"},
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Full Paket"),
- *     @OA\Property(property="price", type="number", format="float", example=199.99),
+ * schema="Package",
+ * type="object",
+ * title="Package",
+ * description="Admin tarafından tanımlanan abonelik paketi şablonu.",
+ * required={"id", "name", "price", "duration_days", "week_count", "type"},
+ * @OA\Property(property="id", type="integer", example=1),
+ * @OA\Property(property="name", type="string", example="Komple Eğitim Paketi"),
+ * @OA\Property(property="description", type="string", example="Tüm modülleri içeren yıllık paket", nullable=true),
+ * @OA\Property(property="duration_days", type="integer", example=365, description="Paketin geçerlilik süresi (gün)"),
+ * @OA\Property(property="price", type="number", format="float", example=2499.99),
+ * @OA\Property(property="type", type="string", enum={"school", "student", "other"}, example="school"),
+ * @OA\Property(property="is_active", type="boolean", example=true),
+ * @OA\Property(property="has_schedule_module", type="boolean", example=true),
+ * @OA\Property(property="week_count", type="integer", example=40, description="Müfredat hafta sayısı"),
+ * @OA\Property(property="has_homework_module", type="boolean", example=true),
+ * @OA\Property(property="has_exam_module", type="boolean", example=true),
+ * @OA\Property(property="is_trial", type="boolean", example=false),
+ * @OA\Property(property="trial_days", type="integer", example=0, description="Deneme süresi (gün)"),
+ * @OA\Property(property="created_at", type="string", format="date-time"),
+ * @OA\Property(property="updated_at", type="string", format="date-time")
  * )
  */
 class Package extends Model

@@ -19,8 +19,6 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->foreignId('manager_id')->constrained('users')->onDelete('cascade');
             $table->boolean('is_active')->default(false);
-            $table->foreignId('package_id')->constrained()->cascadeOnDelete();
-
             $table->string('img_path')->nullable();
             $table->timestamps();
         });

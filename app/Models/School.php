@@ -33,7 +33,6 @@ class School extends Model
         'is_active',
         'img_path',
         'nickname',
-        'package_id',
     ];
     protected $casts = [
         'is_active' => 'boolean',
@@ -75,10 +74,6 @@ class School extends Model
             ->first();
     }
 
-    public function package()
-    {
-        return $this->belongsTo(Package::class);
-    }
 
     public function class_models()
     {
