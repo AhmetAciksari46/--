@@ -103,6 +103,6 @@ class School extends Model
     }
     public function students()
     {
-        return $this->hasMany(SchoolStudentProfile::class, 'schoolId');
+        return $this->hasMany(SchoolStudentProfile::class, 'school_id');
     }
 }

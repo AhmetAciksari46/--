@@ -22,8 +22,6 @@ use App\Http\Controllers\School\General\ClassModelController;
 use App\Http\Controllers\{
     UserController,
     PermissionController,
-    CourseController,
-    AssignmentController,
     SubscriptionController,
     IndividualStudentProfileController,
     IndividualStudentController,
@@ -41,17 +39,7 @@ use App\Http\Controllers\{
 Route::post("/register", [AuthController::class, "register"]);
 Route::post("/login", [AuthController::class, "login"]);
 
-Route::post("/managerregister", [AuthController::class, "managerregister"]);
-Route::post("/teacherregister", [AuthController::class, "teacherregister"]);
-Route::post("/schoolstudentregister", [AuthController::class, "schoolstudentregister"]);
-//Route::post("/invidualstudentregister", [AuthController::class, "invidualstudentregister"]);
 
-//TODO: V2.0 da eklenecek
-//Route::get('/getpublicpackages', [PackageController::class, 'publicIndex']);
-//Route::get('/publicpackage/{id}', [PackageController::class, 'publicShow']);
-// PUBLIC
-//Route::get('/packages/public', [PackageController::class, 'publicIndex']);
-//Route::get('/packages/public/{id}', [PackageController::class, 'publicShow']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::prefix("me")->group(function () {
@@ -61,80 +49,81 @@ Route::middleware('auth:sanctum')->group(function () {
         });
         Route::post("/logout", [AuthController::class, "logout"]);
 
-        Route::prefix("manager")->middleware("role:manager")->group(function () {
-            Route::put("/updateprofile", [ManagerController::class, "update"]);
-            Route::put("/updateprofilesettings", [ManagerProfileController::class, "updateprofilesettings"]);
-            Route::get("/getprofilesettings", [ManagerProfileController::class, "getprofilesettings"]);
-        });
+        // Route::prefix("teacher")->middleware("role:teacher")->group(function () {
+        //     Route::put("/updateprofile", [TeacherController::class, "update"]);
+        //     Route::put("/updateprofilesettings", [TeacherProfileController::class, "updateprofilesettings"]);
+        //     Route::get("/getprofilesettings", [TeacherProfileController::class, "getprofilesettings"]);
+        // });
 
-        // Teacher kendi profili
-        //TODO : MANAGER TARAFLI KONTROL EDİLECEK
-        Route::prefix("teacher")->middleware("role:teacher")->group(function () {
-            Route::put("/updateprofile", [TeacherController::class, "update"]);
-            Route::put("/updateprofilesettings", [TeacherProfileController::class, "updateprofilesettings"]);
-            Route::get("/getprofilesettings", [TeacherProfileController::class, "getprofilesettings"]);
-        });
-        //TODO : MANAGER TARAFLI KONTROL EDİLECEK
+        // // School Student kendi profili ->Sadece ad syad ve şifre değişebilir// diğer bilgileri manager yada teacher değiştirir
+        // Route::prefix("schoolstudent")->middleware("role:schoolstudent")->group(function () {
+        //     Route::put("/updateprofile", [SchoolStudentController::class, "updateprofile"]);
+        //     Route::get("/getprofilesettings", [SchoolStudentProfileController::class, "getprofilesettings"]);
+        // });
 
-        // School Student kendi profili ->Sadece ad syad ve şifre değişebilir// diğer bilgileri manager yada teacher değiştirir
-        Route::prefix("schoolstudent")->middleware("role:schoolstudent")->group(function () {
-            Route::put("/updateprofile", [SchoolStudentController::class, "updateprofile"]);
-            Route::get("/getprofilesettings", [SchoolStudentProfileController::class, "getprofilesettings"]);
-        });
-
-        // individual Student kendi profili
-        Route::prefix("individualstudent")->middleware("role:individualstudent")->group(function () {
-            Route::put("/updateprofile", [IndividualStudentController::class, "updateprofile"]);
-            Route::put("/updateprofilesettings", [IndividualStudentProfileController::class, "updateprofilesettings"]);
-            Route::get("/getprofilesettings", [IndividualStudentProfileController::class, "getprofilesettings"]);
-        });
+        // // individual Student kendi profili
+        // Route::prefix("individualstudent")->middleware("role:individualstudent")->group(function () {
+        //     Route::put("/updateprofile", [IndividualStudentController::class, "updateprofile"]);
+        //     Route::put("/updateprofilesettings", [IndividualStudentProfileController::class, "updateprofilesettings"]);
+        //     Route::get("/getprofilesettings", [IndividualStudentProfileController::class, "getprofilesettings"]);
+        // });
     });
 
 
+    Route::middleware('role:manager')->prefix('manager')->group(function () {
+        Route::get('/me', [ManagerController::class, 'getManagerUser']); //kendi user tür bilgilerini getir
+        Route::put('/me', [ManagerController::class, 'updateManagerUser']); //kendi user tür bilgilerini getir
+        Route::get('/profile/me', [ManagerProfileController::class, 'getManagerProfile']); //kendi managerprofil tür bilgilerini getir
+        Route::put('/profile/me', [ManagerProfileController::class, 'updateManagerProfile']); //kendi managerprofil tür bilgilerini güncelle
+        Route::post('/profile', [ManagerProfileController::class, 'storeManagerProfile']); //kendi managerprofil tür bilgilerini oluştur
+    });
 
 
-    // ADMIN
     Route::middleware('role:admin')->prefix('admin')->group(function () {
+        Route::post("/managerregister", [AuthController::class, "managerregister"]);
+        Route::get('/manager/{user_id}/profile', [ManagerProfileController::class, 'getManagerProfileById']);
+        Route::put('/manager/{user_id}/profile', [ManagerProfileController::class, 'updateManagerProfileById']);
+        Route::get('/manager/{id}', [ManagerController::class, 'getManagerUserById']);
+        Route::put('/manager/{id}', [ManagerController::class, 'updateManagerUserById']);
+        Route::post('/manager/{user_id}/profile', [ManagerProfileController::class, 'storeManagerProfileById']);
+
 
         Route::resource('contents', ContentController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::post('/subscriptions/{subscription}/approve', [PackageController::class, 'approvePayment']);
+        Route::apiResource('branches', BranchController::class);
+        Route::get('/users', [UserController::class, 'index']);
+        Route::get('/users/{id}', [UserController::class, 'show']);
+        Route::post('/users', [UserController::class, 'store']);
+        Route::put('/users/{id}', [UserController::class, 'update']);
+        Route::delete('/users/{id}', [UserController::class, 'destroy']);
+        Route::apiResource('packages', PackageController::class);
+        // 🏆 Sınıf (Grade) Kuralları CRUD
+        Route::apiResource('packages.grade-rules', PackageWeekGradeRuleController::class)->except(['show']);
+
+        // 📚 Ders (Subject) Kuralları CRUD
+        Route::apiResource('packages.subject-rules', PackageWeekSubjectRuleController::class)->except(['show']);
+
+        Route::apiResource('subjects', SubjectController::class);
+
+
+        Route::prefix("school")->group(function () {
+            Route::get('/getschools', [SchoolController::class, 'schoollist']);
+            Route::get('/getschoolbyid/{school}', [SchoolController::class, 'getSchool']);
+            Route::post('/createschool', [SchoolController::class, 'createschool']);
+            Route::put('/updateschool/{school}', [SchoolController::class, 'updateschool']);
+            Route::delete('/deleteschool/{school}', [SchoolController::class, 'deleteschool']);
+        });
+        Route::prefix("subscription")->group(function () {});
+        //Route::prefix('admin')->middleware(['auth:sanctum', 'can:admin-access'])->group(function () {
+        Route::get('subscriptions', [SubscriptionController::class, 'adminIndex']);
+        Route::get('subscriptions/{id}', [SubscriptionController::class, 'show']);
+        // admin update/delete vs.
+        Route::post('/subscriptions/{subscription}/approve', [PackageController::class, 'approvePayment'])
+            ->middleware('role:admin') // Admin rolü zorunlu
+            ->name('subscriptions.approve');
+        Route::get('/getschool', [SchoolController::class, 'index']);  // okula bağlı userlar için okul bilgisi çekme
+
     });
-
-    // PURCHASE (Manager tarafı için) PAKET SATIN ALMA
-    // Route::middleware('role:manager')->prefix('manager')->group(function () {
-    //     Route::post('/packages/{package}/purchase', [PackageController::class, 'purchase']);
-    // });
-
-    // ADMIN PAYMENT APPROVAL
-    Route::middleware('role:admin')->post('/subscriptions/{subscription}/approve', [PackageController::class, 'approvePayment']);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     Route::middleware(CheckUserProfile::class)->group(function () {
         // Paket satın alma
@@ -142,41 +131,11 @@ Route::middleware('auth:sanctum')->group(function () {
             ->name('packages.purchase');
 
         // Admin tarafından ödeme onayı
-        Route::post('/subscriptions/{subscription}/approve', [PackageController::class, 'approvePayment'])
-            ->middleware('role:admin') // Admin rolü zorunlu
-            ->name('subscriptions.approve');
 
-        // Users
-        Route::get('/users', [UserController::class, 'index']);
-        Route::get('/users/{id}', [UserController::class, 'show']);
-        Route::post('/users', [UserController::class, 'store']);
-        Route::put('/users/{id}', [UserController::class, 'update']);
-        Route::delete('/users/{id}', [UserController::class, 'destroy']);
-        //----------------------------------------------admin----------------------------------------------------
-        Route::prefix("admin")->group(function () {
 
-            Route::apiResource('packages', PackageController::class);
-            // 🏆 Sınıf (Grade) Kuralları CRUD
-            Route::apiResource('packages.grade-rules', PackageWeekGradeRuleController::class)->except(['show']);
 
-            // 📚 Ders (Subject) Kuralları CRUD
-            Route::apiResource('packages.subject-rules', PackageWeekSubjectRuleController::class)->except(['show']);
 
-            Route::prefix("school")->group(function () {
-                Route::get('/getschools', [SchoolController::class, 'schoollist']);
-                Route::get('/getschoolbyid/{school}', [SchoolController::class, 'getSchool']);
-                Route::post('/createschool', [SchoolController::class, 'createschool']);
-                Route::put('/updateschool/{school}', [SchoolController::class, 'updateschool']);
-                Route::delete('/deleteschool/{school}', [SchoolController::class, 'deleteschool']);
-            });
-            Route::prefix("subscription")->group(function () {});
-            //Route::prefix('admin')->middleware(['auth:sanctum', 'can:admin-access'])->group(function () {
-            Route::get('subscriptions', [SubscriptionController::class, 'adminIndex']);
-            Route::get('subscriptions/{id}', [SubscriptionController::class, 'show']);
-            // admin update/delete vs.
-        });
         //------------------------------------------------admin-----------------------------------------------
-        Route::get('/getschool', [SchoolController::class, 'index']);  // okula bağlı userlar için okul bilgisi çekme
         //Managerın yapacağı işlemler
         Route::prefix("manager")->group(function () {
             Route::prefix("school")->group(function () {
@@ -199,7 +158,6 @@ Route::middleware('auth:sanctum')->group(function () {
                         Route::resource('weeks', SchoolWeekController::class)->only(['index', 'update']);
                         Route::resource('overrides', StudentCurriculumOverrideController::class)->only(['index', 'store', 'destroy']);
                         Route::resource('days', SchoolWeekDayController::class)->only(['index', 'update']);
-                        Route::resource('subjects', SubjectController::class)->except(['create']); //TODO: ADMİN OLABİLİR
                     });
 
                     Route::prefix('teachers')->group(function () {
@@ -262,7 +220,16 @@ Route::middleware('auth:sanctum')->group(function () {
                 });
             });
 
+
+
+
+
         // Subscriptions
+
+
+
+
+
         Route::get('subscriptions', [SubscriptionController::class, 'index']); // kullanıcının abonelikleri
         Route::get('subscriptions/{id}', [SubscriptionController::class, 'show']);
         Route::post('subscriptions', [SubscriptionController::class, 'store']);
@@ -275,39 +242,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
         Route::apiResource('subscriptions', SubscriptionController::class)->only(['index', 'show', 'store']);
-        Route::get('/subscriptions/check/{schoolId}', [SubscriptionController::class, 'checkActive']);
-    });
-
-
-    Route::prefix("admin")->middleware("role:admin")->group(function () {
-        Route::apiResource('branches', BranchController::class);
+        Route::get('/subscriptions/check/{school_id}', [SubscriptionController::class, 'checkActive']);
     });
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // // Schools
-        // Route::apiResource('schools', SchoolController::class)->only(['index', 'show', 'store']);
-
-        // // Classes
-        // Route::apiResource('classes', ClassModelController::class)->only(['index', 'show', 'store']);
-
-        // // Courses
-        // Route::apiResource('courses', CourseController::class)->only(['index', 'show', 'store']);
-
-        // // Assignments
-        // Route::apiResource('assignments', AssignmentController::class)->only(['index', 'show', 'store']);
-
-        // Packages
-        //Route::apiResource('packages', PackageController::class)->only(['index', 'show', 'store']);

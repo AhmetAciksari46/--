@@ -22,7 +22,7 @@ class TeacherUpdateProfileRequest extends FormRequest
             'referance' => ['nullable', 'string', 'max:255'],
 
             // sadece gönderildiyse kontrol et
-            'schoolId' => ['sometimes', 'nullable', 'integer', 'exists:schools,id'],
+            'school_id' => ['sometimes', 'nullable', 'integer', 'exists:schools,id'],
 
             // ödeme/paket bilgisi sonradan güncellenecek, o yüzden optional
             'payment_reminder' => ['sometimes', 'boolean'],

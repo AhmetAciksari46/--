@@ -21,11 +21,6 @@ use App\Models\SchoolStudentProfile;
  *     name="Schools",
  *     description="Okul yönetimi işlemleri (Manager, Teacher, Student, Admin)",
  * )
- * @OA\SecurityScheme(
- *      securityScheme="bearer_token",
- *      type="http",
- *      scheme="bearer"
- * )
  */
 class SchoolController extends Controller
 {
@@ -48,13 +43,13 @@ class SchoolController extends Controller
         if ($user->hasRole('manager')) {
 
             $profile = ManagerProfile::where('user_id', $user->id)->first();
-            $schoolId = $profile?->schoolId;
+            $schoolId = $profile?->school_id;
         } else if ($user->hasRole('teacher')) {
             $profile = TeacherProfile::where('user_id', $user->id)->first();
             $schoolId = $profile?->school_id;
         } else if ($user->hasRole('schoolstudent')) {
             $profile = SchoolStudentProfile::where('user_id', $user->id)->first();
-            $schoolId = $profile?->schoolId;
+            $schoolId = $profile?->school_id;
         }
 
 
@@ -68,19 +63,6 @@ class SchoolController extends Controller
                 return $this->errorResponse('Okul bilgisi bulunamadı.', 404);
             }
         }
-
-
-
-        // $profile = ManagerProfile::where('user_id', $user->id)
-        //     ->with('user')
-        //     ->first();
-        // $school =  School::findOrFail($profile->schoolId);
-        // if ($school) {
-
-        //     return $this->successResponse($school, 'Okul bilgisi başarıyla getirildi', 200);
-        // } else {
-        //     return $this->errorResponse('Okul bilgisi bulunamadı.', 404);
-        // }
     }
     /**
      * @OA\Get(
@@ -131,7 +113,7 @@ class SchoolController extends Controller
 
         // Manager profilini al
         $managerProfile = $user->managerProfile;
-        if ($managerProfile->schoolId) {
+        if ($managerProfile->school_id) {
             return $this->errorResponse('Mevcut okulunuz var, yeni okul oluşturamazsınız.', 403);
         }
         try {
@@ -144,73 +126,13 @@ class SchoolController extends Controller
                 'manager_id' => $request->user()->id, // otomatik atanıyor
             ]);
 
-            $managerProfile->update(['schoolId' => $school->id]);
+            $managerProfile->update(['school_id' => $school->id]);
 
             return $this->successResponse($school->fresh(), 'Okul başarıyla oluşturuldu.', 200);
         } catch (\Exception $e) {
             return $this->errorResponse('Okul oluşturulurken bir hata oluştu: ' . $e->getMessage(), 500);
         }
     }
-    // /**
-    //  * @OA\Put(
-    //  *     path="/api/schools/{id}/update",
-    //  *     tags={"Schools"},
-    //  *     summary="Okul bilgilerini güncelle (Manager rolü)",
-    //  *     description="Manager kullanıcı, bağlı olduğu okulun bilgilerini günceller.",
-    //  *     security={{"bearerAuth":{}}},
-    //  *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-    //  *     @OA\RequestBody(
-    //  *         @OA\JsonContent(
-    //  *             @OA\Property(property="name", type="string", example="Açıksarı Anadolu Lisesi"),
-    //  *             @OA\Property(property="nickname", type="string", example="ackolej"),
-    //  *             @OA\Property(property="address", type="string", example="Kahramanmaraş Onikişubat"),
-    //  *             @OA\Property(property="is_active", type="boolean", example=true)
-    //  *         )
-    //  *     ),
-    //  *     @OA\Response(response=200, description="Okul başarıyla güncellendi"),
-    //  *     @OA\Response(response=403, description="Manager bir okula bağlı değil"),
-    //  *     @OA\Response(response=500, description="Sunucu hatası")
-    //  * )
-    //  */
-    // public function update(UpdateSchoolRequest $request, School $school)
-    // {
-    //     $user = $request->user();
-
-    //     // Manager profilini al  
-    //     $managerProfile = $user->managerProfile;
-    //     if (!$managerProfile->schoolId) {
-    //         return $this->errorResponse('Mevcut okulunuz yok, yeni okul oluştur.', 403);
-    //     }
-
-    //     try {
-    //         $school->update($request->validated());
-    //         return $this->successResponse($school->fresh(), 'Okul başarıyla güncellendi.', 200);
-    //     } catch (\Exception $e) {
-    //         return $this->errorResponse('Okul güncellenirken bir hata oluştu: ' . $e->getMessage(), 500);
-    //     }
-    // }
-    /**
-     * @OA\Post(
-     *     path="/api/admin/schools/create",
-     *     tags={"Admin - Schools"},
-     *     summary="Admin tarafından okul oluştur",
-     *     description="Admin kullanıcılar, istediği manager_id’ye bağlı yeni okul oluşturabilir.",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         @OA\JsonContent(
-     *             required={"name", "nickname", "manager_id"},
-     *             @OA\Property(property="name", type="string", example="Ede Koleji"),
-     *             @OA\Property(property="nickname", type="string", example="edekolej"),
-     *             @OA\Property(property="manager_id", type="integer", example=2),
-     *             @OA\Property(property="address", type="string", example="Maraş Dulkadiroğlu"),
-     *             @OA\Property(property="is_active", type="boolean", example=true)
-     *         )
-     *     ),
-     *     @OA\Response(response=201, description="Okul başarıyla oluşturuldu"),
-     *     @OA\Response(response=500, description="Sunucu hatası")
-     * )
-     */
-
     // Admin için okul oluşturma
     public function createSchool(CreateSchoolbyAdminRequest $request)
     {

@@ -19,7 +19,7 @@ class EnsureSchoolIsActive
         // Eğer öğrenci ise öğrenci -> schoolId ile kontrol
         if (!$schoolId) {
             if ($user->role === 'manager' || $user->role === 'teacher') {
-                $schoolId = $user->school_id ?? $user->manager_profile?->schoolId ?? null;
+                $schoolId = $user->school_id ?? $user->manager_profile?->school_id ?? null;
             } elseif ($user->role === 'schoolstudent' || $user->role === 'individualstudent') {
                 $schoolId = $user->student_profile?->school_id ?? null;
             }

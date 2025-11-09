@@ -28,7 +28,7 @@ class PackageController extends Controller
      * path="/api/admin/packages",
      * summary="Paket Listesi",
      * tags={"Admin Packages"},
-     * security={{"sanctum": {}}},
+     * security={{"bearerAuth": {}}},
      * @OA\Response(
      *     response=200,
      *     description="Paketler başarıyla listelendi.",
@@ -62,7 +62,7 @@ class PackageController extends Controller
      * path="/api/admin/packages",
      * summary="Yeni Paket Oluşturma",
      * tags={"Admin Packages"},
-     * security={{"sanctum": {}}},
+     * security={{"bearerAuth": {}}},
      * @OA\RequestBody(
      * required=true,
      * @OA\JsonContent(ref="#/components/schemas/CreatePackageRequest")
@@ -96,7 +96,7 @@ class PackageController extends Controller
      * path="/api/admin/packages/{package}",
      * summary="Paket Detayı",
      * tags={"Admin Packages"},
-     * security={{"sanctum": {}}},
+     * security={{"bearerAuth": {}}},
      * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer"), description="Paket ID"),
      * @OA\Response(
      *     response=200,
@@ -126,7 +126,7 @@ class PackageController extends Controller
      * path="/api/admin/packages/{package}",
      * summary="Paket Güncelleme",
      * tags={"Admin Packages"},
-     * security={{"sanctum": {}}},
+     * security={{"bearerAuth": {}}},
      * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer"), description="Paket ID"),
      * @OA\RequestBody(
      * required=true,
@@ -150,7 +150,7 @@ class PackageController extends Controller
      * path="/api/admin/packages/{package}",
      * summary="Paket Kısmi Güncelleme (PATCH)",
      * tags={"Admin Packages"},
-     * security={{"sanctum": {}}},
+     * security={{"bearerAuth": {}}},
      * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer"), description="Paket ID"),
      * @OA\RequestBody(
      * required=true,
@@ -173,7 +173,7 @@ class PackageController extends Controller
      * path="/api/admin/packages/{package}",
      * summary="Paket Silme",
      * tags={"Admin Packages"},
-     * security={{"sanctum": {}}},
+     * security={{"bearerAuth": {}}},
      * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer"), description="Paket ID"),
      * @OA\Response(
      *     response=200,
@@ -364,7 +364,7 @@ class PackageController extends Controller
                 ]);
 
                 // School varsa ve paket aktifse school.is_active = true
-                if ($profile->schoolId) {
+                if ($profile->school_id) {
                     $school = $profile->school; // Eğer School modeli relation varsa
                     if ($school) {
                         $school->update([

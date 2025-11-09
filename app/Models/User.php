@@ -26,15 +26,7 @@ use Spatie\Permission\Traits\HasRoles;
  */
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasRoles, HasApiTokens, HasFactory, Notifiable;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    //TODO : EMAİL UNİQUE AYARI REQUEST RULELARA EKLENECEK
     protected $fillable = [
         'name',
         'userName',
@@ -43,22 +35,10 @@ class User extends Authenticatable
         'role',
         'is_active',
     ];
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -69,7 +49,24 @@ class User extends Authenticatable
         ];
     }
 
+    /* ========================================
+     |  🔄 Rol Senkronizasyonu (Spatie)
+     ======================================== */
+    protected static function booted()
+    {
+        static::created(function ($user) {
+            if ($user->role && !$user->hasRole($user->role)) {
+                $user->assignRole($user->role);
+            }
+        });
 
+        static::updating(function ($user) {
+            // Eğer rol kolonunda değişiklik varsa, Spatie tablosuna da uygula
+            if ($user->isDirty('role') && $user->role) {
+                $user->syncRoles([$user->role]);
+            }
+        });
+    }
 
     // Öğretmen profili ilişkisi
     public function teacherProfile()

@@ -17,6 +17,7 @@ use App\Http\Requests\SchoolStudentRegisterRequest;
 use App\Traits\ApiResponser; // <<< Bu satırı ekleyin!
 use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // Bunu ekle
+use Spatie\Permission\Models\Role;
 
 /**
  * @OA\Tag(
@@ -70,162 +71,100 @@ class AuthController extends Controller
     }
     /**
      * @OA\Post(
-     *     path="/api/managerregister",
-     *     summary="Manager kullanıcı kaydı",
+     *     path="/api/admin/managerregister",
      *     tags={"Auth"},
+     *     summary="Yeni Manager kaydı oluştur (Sadece Admin)",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"name","userName","password"},
-     *             @OA\Property(property="name", type="string"),
-     *             @OA\Property(property="email", type="string", format="email"),
-     *             @OA\Property(property="userName", type="string"),
-     *             @OA\Property(property="password", type="string")
+     *             required={"name","userName","email","password"},
+     *             @OA\Property(property="name", type="string", example="Yönetici Adı"),
+     *             @OA\Property(property="userName", type="string", example="manager1"),
+     *             @OA\Property(property="email", type="string", example="manager@okul.com"),
+     *             @OA\Property(property="password", type="string", example="123456"),
+     *             @OA\Property(property="password_confirmation", type="string", example="123456"),
+     *             @OA\Property(property="phone", type="string", example="+905551234567"),
+     *             @OA\Property(property="address", type="string", example="İstanbul, Türkiye"),
+     *             @OA\Property(property="birth_date", type="string", format="date", example="1985-05-10"),
+     *             @OA\Property(property="referance", type="string", example="REF001")
      *         )
      *     ),
-     *     @OA\Response(response=201, description="Manager kaydı başarıyla oluşturuldu"),
-     *     @OA\Response(response=500, description="Kayıt başarısız")
+     *      @OA\Response(
+     *         response=201,
+     *         description="Manager başarıyla oluşturuldu.",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Yeni Manager başarıyla oluşturuldu."),
+     *             @OA\Property(
+     *                 property="data",
+     *                 ref="#/components/schemas/ManagerProfile"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=403, description="Yetkisiz erişim"),
+     *     @OA\Response(response=422, description="Doğrulama hatası")
      * )
      */
+
 
     public function managerregister(RegisterRequest $request)
     {
-        DB::beginTransaction();
-        try {
-            $user = User::create([
-                "name" => $request->name,
-                "email" => $request->email,
-                "userName" => $request->userName,
-                "password" => Hash::make($request->password),
-                "role" => 'manager'
-            ]);
-            DB::commit();
-            $token = $user->createToken("api_token")->plainTextToken;
-            return response()->json([
-                "user" => $user,
-                "token" => $token
-            ], 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(["message" => "Yönetici kaydı başarısız oldu."], 500);
-        }
-    }
-    /**
-     * @OA\Post(
-     *     path="/api/teacherregister",
-     *     summary="Teacher kullanıcı kaydı",
-     *     tags={"Auth"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"name","userName","password"},
-     *             @OA\Property(property="name", type="string"),
-     *             @OA\Property(property="email", type="string", format="email"),
-     *             @OA\Property(property="userName", type="string"),
-     *             @OA\Property(property="password", type="string")
-     *         )
-     *     ),
-     *     @OA\Response(response=201, description="Teacher kaydı başarıyla oluşturuldu"),
-     *     @OA\Response(response=500, description="Kayıt başarısız")
-     * )
-     */
-    public function teacherregister(RegisterRequest $request)
-    {
+        $this->authorizeRole(['admin']); // sadece admin
 
-        DB::beginTransaction();
-
-        try {
-            $user = User::create([
-                "name" => $request->name,
-                "email" => $request->email,
-                "userName" => $request->userName,
-                "password" => Hash::make($request->password),
-                "role" => 'teacher'
-            ]);
-            DB::commit();
-            $token = $user->createToken("api_token")->plainTextToken;
-            return response()->json([
-                "user" => $user,
-                "token" => $token
-            ], 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(["message" => "Öğretmen kaydı başarısız oldu."], 500);
-        }
-    }
-
-    public function createTeacher(RegisterRequest $request)
-    {
-        $this->authorize('createTeacher', [User::class, $request]);
-    }
-
-    /**
-     * @OA@Post(
-     *     path="/api/schoolstudentregister",
-     *     summary="School Student kaydı",
-     *     tags={"Auth"},  
-     *     @OA\Response(response=201, description="School student kaydı başarıyla oluşturuldu"),
-     *     @OA\Response(response=500, description="Kayıt başarısız")
-     * )
-     */
-    public function schoolstudentregister(SchoolStudentRegisterRequest $request)
-    {
-        DB::beginTransaction();
-        try {
-            $user = User::create([
-                "name" => $request->name,
-                "userName" => $request->userName,
-                "password" => Hash::make($request->password),
-                "role" => 'schoolstudent'
-            ]);
-            DB::commit();
-            $token = $user->createToken("api_token")->plainTextToken;
-            return response()->json([
-                "user" => $user,
-                "token" => $token
-            ], 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(["message" => "Öğrenci kaydı başarısız oldu."], 500);
-        }
-    }
-
-
-    /**
-     * @OA\Post(
-     *     path="/api/invidualstudentregister",
-     *     summary="Individual Student kaydı",
-     *     tags={"Auth"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"name","userName","password"},
-     *             @OA\Property(property="name", type="string"),
-     *             @OA\Property(property="email", type="string", format="email"),
-     *             @OA\Property(property="userName", type="string"),
-     *             @OA\Property(property="password", type="string")
-     *         )
-     *     ),
-     *     @OA\Response(response=201, description="Individual student kaydı başarıyla oluşturuldu"),
-     *     @OA\Response(response=500, description="Kayıt başarısız")
-     * )
-     */
-    public function invidualstudentregister(RegisterRequest $request)
-    {
-        DB::beginTransaction();
-        $user = User::create([
-            "name" => $request->name,
-            "email" => $request->email,
-            "userName" => $request->userName,
-            "password" => Hash::make($request->password),
-            "role" => 'individualstudent'
+        // İstersen buraya ayrı bir FormRequest de koyabiliriz
+        $request->validate([
+            'name'      => 'required|string|max:255',
+            'userName'  => 'required|string|max:255|unique:users,userName',
+            'email'     => 'required|email|unique:users,email',
+            'password'  => 'required|string|min:6',
+            'phone'     => 'nullable|string|max:20',
+            'address'   => 'nullable|string|max:255',
+            'birth_date' => 'nullable|date|before:today',
+            'referance' => 'nullable|string|max:255',
         ]);
 
-        $token = $user->createToken("api_token")->plainTextToken;
-        return response()->json([
-            "user" => $user,
-            "token" => $token
-        ], 201);
+        DB::beginTransaction();
+
+        try {
+            // 1) User
+            $user = User::create([
+                'name'      => $request->name,
+                'userName'  => $request->userName,
+                'email'     => $request->email,
+                'password'  => Hash::make($request->password),
+                'role'      => 'manager',
+                'is_active' => true,
+            ]);
+
+            // 2) Spatie rol
+            if (Role::where('name', 'manager')->exists()) {
+                $user->assignRole('manager');
+            }
+
+            // 3) ManagerProfile
+            ManagerProfile::create([
+                'user_id'          => $user->id,
+                'phone'            => $request->phone,
+                'address'          => $request->address,
+                'referance'        => $request->referance,
+                'birth_date'       => $request->birth_date,
+                'payment_reminder' => false,
+                // 'school_id' => null, // nullable; istersen burada hiç göndermeyelim
+            ]);
+
+            DB::commit();
+
+            return $this->successResponse(
+                $user->load('managerProfile'),
+                'Yeni Manager başarıyla oluşturuldu.',
+                201
+            );
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return $this->errorResponse('Manager oluşturulurken hata: ' . $e->getMessage(), 500);
+        }
     }
 
 

@@ -13,23 +13,12 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Profile\ManagerUpdateProfileSettingRequest;
 
+
 /**
  * @OA\Tag(
  *     name="ManagerProfile",
- *     description="Yönetici profil yönetimi"
+ *     description="Manager profil bilgileri yönetimi (ManagerProfile tablosu)"
  * )
- * @OA\SecurityScheme(
- *      securityScheme="bearer_token",
- *      type="http",
- *      scheme="bearer"
- * )
- */
-
-
-/**
- * ---------------------------
- * Swagger Schemas
- * ---------------------------
  */
 
 
@@ -40,98 +29,260 @@ class ManagerProfileController extends Controller
     use ApiResponser;
     /**
      * @OA\Get(
-     *     path="/api/me/manager/getprofilesettings",
+     *     path="/api/manager/profile/me",
      *     tags={"ManagerProfile"},
-     *     summary="Yönetici profil ayarlarını getir",
-     *     security={{"bearerAuth": {}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Profil ayarları bulundu",
-     *         @OA\JsonContent(ref="#/components/schemas/ManagerProfile")
-     *     ),
-     *     @OA\Response(response=401, description="Yetkisiz erişim"),
-     *     @OA\Response(response=404, description="Profil ayarları bulunamadı")
-     * )
-     */
-    public function getprofilesettings(Request $request)
-    {
-        $user = Auth::user();
-        $profile = ManagerProfile::where('user_id', $user->id)
-            ->with('user')
-            ->first();
-        if (!$profile) {
-            return $this->errorResponse('Profil Ayarları Bulunamadı', 404);
-        }
-        return $this->successResponse($profile);
-        //return $this->successResponse($profile, __('api.profile_fetched'));
-
-    }
-    /**
-     * @OA\Put(
-     *     path="/api/me/manager/updateprofilesettings",
-     *     tags={"ManagerProfile"},
-     *     summary="Yönetici profil ayarlarını güncelle",
-     *     security={{"bearerAuth": {}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/ManagerUpdateProfileSettingRequest")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Profil güncellendi",
-     *         @OA\JsonContent(ref="#/components/schemas/ManagerProfile")
-     *     ),
-     *     @OA\Response(response=401, description="Yetkisiz erişim"),
-     *     @OA\Response(response=422, description="Doğrulama hatası")
-     * )
-     */
-
-
-    public function updateprofilesettings(ManagerUpdateProfileSettingRequest $request)
-    {
-        $user = Auth::user();
-        $profile = ManagerProfile::firstOrCreate(
-            ['user_id' => $user->id],
-            ['payment_reminder' => false]
-        );
-        $profile->fill($request->validated());
-        $profile->save();
-        return $this->successResponse($profile->fresh(), __('api.profile_fetched'));
-    }
-
-
-    /**
-     * @OA\Get(
-     *     path="/manager/profile/{user_id}",
-     *     path="/api/manager/profile/{user_id}",
-     *     tags={"ManagerProfile"},
-     *     summary="Belirli kullanıcıya ait öğrenci profilini getir",
-     *     security={{"bearerAuth": {}}},
-     *     @OA\Parameter(
-     *         name="user_id",
-     *         in="path",
-     *         required=true,
-     *         description="Kullanıcı ID",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Profil bulundu",
-     *         @OA\JsonContent(ref="#/components/schemas/SchoolStudentProfile")
-     *     ),
-     *     @OA\Response(response=401, description="Yetkisiz erişim"),
-     *     @OA\Response(response=403, description="Yetkiniz yok"),
+     *     summary="(Manager) Kendi profilini getir",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Profil bilgileri"),
      *     @OA\Response(response=404, description="Profil bulunamadı")
      * )
      */
-
-    //getbyid gibi ->manager kullanacak
-    public function show($user_id)
+    public function getManagerProfile(Request $request)
     {
-        $this->authorizeRole(['admin', 'manager', 'teacher', 'student']);
-        $profile = SchoolStudentProfile::where('user_id', $user_id)
-            ->with('user') // Profile ait user bilgilerini de yükle
-            ->firstOrFail();
-        return response()->json($profile);
+        $user = Auth::user(); // role: manager
+        $profile = ManagerProfile::with('user')->where('user_id', $user->id)->first();
+
+        if (!$profile) {
+            return $this->errorResponse('Manager profili bulunamadı.', 404);
+        }
+
+        return $this->successResponse($profile, 'Profil bilgileri başarıyla getirildi.');
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/api/manager/profile/me",
+     *     tags={"ManagerProfile"},
+     *     summary="(Manager) Kendi profilini güncelle",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="phone", type="string", example="+905551234567"),
+     *             @OA\Property(property="address", type="string", example="İstanbul, Türkiye"),
+     *             @OA\Property(property="birth_date", type="string", format="date", example="1990-05-10"),
+     *             @OA\Property(property="note", type="string", example="Not"),
+     *             @OA\Property(property="referance", type="string", example="REF001"),
+     *             @OA\Property(property="school_id", type="integer", example=2, nullable=true),
+     *             @OA\Property(property="payment_reminder", type="boolean", example=false)
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Profil güncellendi"),
+     *     @OA\Response(response=404, description="Profil bulunamadı"),
+     *     @OA\Response(response=422, description="Doğrulama hatası")
+     * )
+     */
+    public function updateManagerProfile(Request $request)
+    {
+        $user = Auth::user(); // role: manager
+
+        $profile = ManagerProfile::firstOrCreate(['user_id' => $user->id]);
+
+        $validated = $request->validate([
+            'phone'            => ['nullable', 'string', 'max:20'],
+            'address'          => ['nullable', 'string', 'max:255'],
+            'birth_date'       => ['nullable', 'date', 'before:today'],
+            'note'             => ['nullable', 'string', 'max:500'],
+            'referance'        => ['nullable', 'string', 'max:255'],
+            'school_id'        => ['sometimes', 'nullable', 'integer', 'exists:schools,id'],
+            'payment_reminder' => ['sometimes', 'boolean'],
+        ]);
+
+        $profile->update($validated);
+
+        return $this->successResponse($profile->load('user'), 'Profiliniz başarıyla güncellendi.');
+    }
+
+    /**
+     * =========================
+     *  ADMIN: GET BY ID & UPDATE BY ID
+     * =========================
+     */
+
+    /**
+     * @OA\Get(
+     *     path="/api/admin/manager/{user_id}/profile",
+     *     tags={"ManagerProfile"},
+     *     summary="(Admin) Manager profilini user_id ile getir",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="user_id", in="path", required=true, @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response=200, description="Profil bilgileri"),
+     *     @OA\Response(response=404, description="Profil bulunamadı")
+     * )
+     */
+    public function getManagerProfileById(int $user_id)
+    {
+        $profile = ManagerProfile::with('user')->where('user_id', $user_id)->first();
+
+        if (!$profile) {
+            return $this->errorResponse('Manager profili bulunamadı.', 404);
+        }
+
+        return $this->successResponse($profile, 'Profil bilgileri başarıyla getirildi.');
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/api/admin/manager/{user_id}/profile",
+     *     tags={"ManagerProfile"},
+     *     summary="(Admin) Manager profilini user_id ile güncelle",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="user_id", in="path", required=true, @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="phone", type="string", example="+905551234567"),
+     *             @OA\Property(property="address", type="string", example="İstanbul, Türkiye"),
+     *             @OA\Property(property="birth_date", type="string", format="date", example="1990-05-10"),
+     *             @OA\Property(property="note", type="string", example="Not"),
+     *             @OA\Property(property="referance", type="string", example="REF001"),
+     *             @OA\Property(property="school_id", type="integer", example=2, nullable=true),
+     *             @OA\Property(property="payment_reminder", type="boolean", example=false)
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Profil güncellendi"),
+     *     @OA\Response(response=404, description="Profil bulunamadı"),
+     *     @OA\Response(response=422, description="Doğrulama hatası")
+     * )
+     */
+    public function updateManagerProfileById(Request $request, int $user_id)
+    {
+        $profile = ManagerProfile::firstOrCreate(['user_id' => $user_id]);
+        $validated = $request->validate(
+            [
+                'phone'            => ['nullable', 'string', 'max:20'],
+                'address'          => ['nullable', 'string', 'max:255'],
+                'birth_date'       => ['nullable', 'date', 'before:today'],
+                'note'             => ['nullable', 'string', 'max:500'],
+                'referance'        => ['nullable', 'string', 'max:255'],
+                'school_id'        => ['sometimes', 'nullable', 'integer', 'exists:schools,id'],
+                'payment_reminder' => ['sometimes', 'boolean'],
+            ]
+        );
+
+        $profile->update($validated);
+
+        return $this->successResponse($profile->load('user'), 'Manager profili admin tarafından güncellendi.');
+    }
+
+
+
+    /**
+     * @OA\Post(
+     *     path="/api/manager/profile",
+     *     tags={"ManagerProfile"},
+     *     summary="(Manager) Kendi profilini oluştur (ilk kez kaydediyorsa)",
+     *     description="Manager kendi profiline ait bilgileri kaydeder. Eğer profil zaten varsa hata döner.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="phone", type="string", example="+905551234567"),
+     *             @OA\Property(property="address", type="string", example="İstanbul, Türkiye"),
+     *             @OA\Property(property="birth_date", type="string", format="date", example="1990-05-10"),
+     *             @OA\Property(property="note", type="string", example="Yönetici notu"),
+     *             @OA\Property(property="referance", type="string", example="REF001"),
+     *             @OA\Property(property="school_id", type="integer", example=2, nullable=true),
+     *             @OA\Property(property="payment_reminder", type="boolean", example=false)
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Profil başarıyla oluşturuldu"),
+     *     @OA\Response(response=409, description="Profil zaten mevcut"),
+     *     @OA\Response(response=422, description="Doğrulama hatası")
+     * )
+     */
+    public function storeManagerProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->hasRole('manager')) {
+            return $this->errorResponse('Bu işlemi sadece manager kullanıcıları yapabilir.', 403);
+        }
+
+        if (ManagerProfile::where('user_id', $user->id)->exists()) {
+            return $this->errorResponse('Bu kullanıcıya ait profil zaten mevcut.', 409);
+        }
+
+        $validated = $request->validate([
+            'phone'            => ['nullable', 'string', 'max:20'],
+            'address'          => ['nullable', 'string', 'max:255'],
+            'birth_date'       => ['nullable', 'date', 'before:today'],
+            'note'             => ['nullable', 'string', 'max:500'],
+            'referance'        => ['nullable', 'string', 'max:255'],
+            'school_id'        => ['sometimes', 'nullable', 'integer', 'exists:schools,id'],
+            'payment_reminder' => ['sometimes', 'boolean'],
+        ]);
+
+        $profile = ManagerProfile::create(array_merge($validated, [
+            'user_id' => $user->id,
+        ]));
+
+        return $this->successResponse($profile->load('user'), 'Profil başarıyla oluşturuldu.', 201);
+    }
+
+    /**
+     * =========================
+     *  ADMIN: STORE BY ID
+     * =========================
+     */
+
+    /**
+     * @OA\Post(
+     *     path="/api/admin/manager/{user_id}/profile",
+     *     tags={"ManagerProfile"},
+     *     summary="(Admin) Belirli bir manager için profil oluştur",
+     *     description="Admin, user_id'si verilen manager için profil oluşturabilir. Eğer zaten varsa hata döner.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="user_id", in="path", required=true, @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="phone", type="string", example="+905551234567"),
+     *             @OA\Property(property="address", type="string", example="İstanbul, Türkiye"),
+     *             @OA\Property(property="birth_date", type="string", format="date", example="1990-05-10"),
+     *             @OA\Property(property="note", type="string", example="Not"),
+     *             @OA\Property(property="referance", type="string", example="REF001"),
+     *             @OA\Property(property="school_id", type="integer", example=2, nullable=true),
+     *             @OA\Property(property="payment_reminder", type="boolean", example=false)
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Profil başarıyla oluşturuldu"),
+     *     @OA\Response(response=409, description="Profil zaten mevcut"),
+     *     @OA\Response(response=422, description="Doğrulama hatası")
+     * )
+     */
+    public function storeManagerProfileById(Request $request, $user_id)
+    {
+        $targetUser = User::findOrFail($user_id);
+
+        if ($targetUser->role !== 'manager') {
+            return $this->errorResponse('Seçilen kullanıcı bir manager değildir.', 422);
+        }
+
+        if (ManagerProfile::where('user_id', $user_id)->exists()) {
+            return $this->errorResponse('Bu kullanıcıya ait profil zaten mevcut.', 409);
+        }
+
+        $validated = $request->validate([
+            'phone'            => ['nullable', 'string', 'max:20'],
+            'address'          => ['nullable', 'string', 'max:255'],
+            'birth_date'       => ['nullable', 'date', 'before:today'],
+            'note'             => ['nullable', 'string', 'max:500'],
+            'referance'        => ['nullable', 'string', 'max:255'],
+            'school_id'        => ['sometimes', 'nullable', 'integer', 'exists:schools,id'],
+            'payment_reminder' => ['sometimes', 'boolean'],
+        ]);
+
+        $profile = ManagerProfile::create(array_merge($validated, [
+            'user_id' => $user_id,
+        ]));
+
+        return $this->successResponse($profile->load('user'), 'Manager profili admin tarafından oluşturuldu.', 201);
     }
 }

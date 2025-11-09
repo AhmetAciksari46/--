@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 /**
  * @OA\Info(
  *      version="1.0.0",
- *      title="EdeQR LMS API",
+ *      title="Laravel 12 LMS API",
  *      description="bridge digital LMS projesi için REST API dokümantasyonu",
  *      @OA\Contact(
  *          email="ahmet@aciksari.net"

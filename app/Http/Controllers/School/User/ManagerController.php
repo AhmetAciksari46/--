@@ -12,81 +12,156 @@ use App\Models\User;
 use App\Traits\ApiResponser;
 use App\Http\Requests\Profile\UpdateProfileRequest;
 
+/**
+ * @OA\Tag(
+ *     name="ManagerUser",
+ *     description="Manager kullanıcı bilgileri yönetimi (User tablosu)"
+ * )
+ */
 class ManagerController extends Controller
 {
     use ApiResponser;
+
+    /**
+     * @OA\Get(
+     *     path="/api/manager/me",
+     *     tags={"ManagerUser"},
+     *     summary="(Manager) Kendi user bilgilerini getir",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Bilgiler başarıyla alındı"),
+     *     @OA\Response(response=404, description="Kullanıcı bulunamadı")
+     * )
+     */
+    public function getManagerUser()
+    {
+        $user = Auth::user();
+
+        if (!$user->hasRole('manager')) {
+            return $this->errorResponse('Bu işlem sadece manager kullanıcıları içindir.', 403);
+        }
+
+        return $this->successResponse($user->load('managerProfile'), 'Bilgiler başarıyla getirildi.');
+    }
+
     /**
      * @OA\Put(
-     *     path="/api/me/manager/updateprofile",
-     *     tags={"ManagerProfile"},
-     *     summary="Yönetici kendi kullanıcı hesabını günceller",
-     *     security={{"bearerAuth": {}}},
+     *     path="/api/manager/me",
+     *     tags={"ManagerUser"},
+     *     summary="(Manager) Kendi user bilgilerini güncelle",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/UpdateProfileRequest")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="name", type="string", example="Yeni Yönetici Adı"),
+     *             @OA\Property(property="userName", type="string", example="manager1"),
+     *             @OA\Property(property="email", type="string", example="manager@okul.com"),
+     *             @OA\Property(property="password", type="string", example="123456"),
+     *             @OA\Property(property="password_confirmation", type="string", example="123456")
+     *         )
      *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Profil bilgileri başarıyla güncellendi",
-     *         @OA\JsonContent(ref="#/components/schemas/User")
-     *     ),
-     *     @OA\Response(response=401, description="Yetkisiz erişim"),
+     *     @OA\Response(response=200, description="Güncelleme başarılı"),
      *     @OA\Response(response=422, description="Doğrulama hatası")
      * )
      */
-    public function update(UpdateProfileRequest $request)
+    public function updateManagerUser(Request $request)
     {
-        $user = $request->user();
-        $validated = $request->validated();
+        $user = Auth::user();
 
-        $updatedFields = [];
-        if (isset($validated['name']) && $user->name !== $validated['name']) {
-            $user->name = $validated['name'];
-            $updatedFields[] = 'İsim';
+        if (!$user->hasRole('manager')) {
+            return $this->errorResponse('Bu işlem sadece manager kullanıcıları içindir.', 403);
         }
 
-        if (isset($validated['userName']) && $user->userName !== $validated['userName']) {
-            $user->userName = $validated['userName'];
-            $updatedFields[] = 'kullanıcı adı';
+        $validated = $request->validate([
+            'name'      => 'sometimes|string|max:255',
+            'userName'  => 'sometimes|string|max:255|unique:users,userName,' . $user->id,
+            'email'     => 'sometimes|email|unique:users,email,' . $user->id,
+            'password'  => 'sometimes|string|min:6|confirmed',
+        ]);
+
+        if (isset($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
         }
 
-        if (isset($validated['email']) && $user->email !== $validated['email']) {
-            $user->email = $validated['email'];
-            $user->email_verified_at = null;
-            $updatedFields[] = 'e-posta adresi';
-        }
+        $user->update($validated);
 
-        if (!empty($validated['new_password'])) {
-            $user->password = $validated['new_password']; // Hashed cast sayesinde otomatik hashlenir
-            $updatedFields[] = 'şifre';
-        }
-
-        $user->save();
-
-        if (in_array('e-posta adresi', $updatedFields)) {
-            $user->sendEmailVerificationNotification();
-        }
-
-        if (empty($updatedFields)) {
-            $message = 'Herhangi bir değişiklik yapılmadı.';
-        } elseif (count($updatedFields) === 1) {
-            $message = ucfirst($updatedFields[0]) . ' başarıyla güncellendi.';
-        } else {
-            $last = array_pop($updatedFields);
-            $message = ucfirst(implode(', ', $updatedFields)) . ' ve ' . $last . ' başarıyla güncellendi.';
-        }
-
-        return $this->successResponse($user->fresh(), $message);
+        return $this->successResponse($user, 'Bilgileriniz başarıyla güncellendi.');
     }
-    //getbyid gibi ->manager kullanacak
 
-    public function updatebyid(Request $request, $managerId) //for admin
-    {}
-    //getbyid gibi ->manager kullanacak
+    /**
+     * =========================
+     *  ADMIN: GET BY ID & UPDATE BY ID
+     * =========================
+     */
 
-    public function updateprofilesettingsbyid(Request $request, $managerId) //for admin
-    {}
+    /**
+     * @OA\Get(
+     *     path="/api/admin/manager/{id}",
+     *     tags={"ManagerUser"},
+     *     summary="(Admin) Manager user bilgilerini user_id ile getir",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id", in="path", required=true, @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response=200, description="Bilgiler getirildi"),
+     *     @OA\Response(response=404, description="Kullanıcı bulunamadı")
+     * )
+     */
+    public function getManagerUserById($id)
+    {
+        $user = User::where('role', 'manager')->with('managerProfile')->find($id);
 
+        if (!$user) {
+            return $this->errorResponse('Manager bulunamadı.', 404);
+        }
 
-    //buraya teacher düzenle. teacher profile düzenle. class düzenle. student ve student profile düzenle. eklenecek!
+        return $this->successResponse($user, 'Manager bilgileri getirildi.');
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/api/admin/manager/{id}",
+     *     tags={"ManagerUser"},
+     *     summary="(Admin) Manager user bilgilerini user_id ile güncelle",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id", in="path", required=true, @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="name", type="string", example="Yeni Yönetici"),
+     *             @OA\Property(property="userName", type="string", example="manager123"),
+     *             @OA\Property(property="email", type="string", example="manager@okul.com"),
+     *             @OA\Property(property="is_active", type="boolean", example=true)
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Güncelleme başarılı"),
+     *     @OA\Response(response=404, description="Kullanıcı bulunamadı"),
+     *     @OA\Response(response=422, description="Doğrulama hatası")
+     * )
+     */
+    public function updateManagerUserById(Request $request, $id)
+    {
+        $user = User::where('role', 'manager')->find($id);
+
+        if (!$user) {
+            return $this->errorResponse('Manager bulunamadı.', 404);
+        }
+
+        $validated = $request->validate([
+            'name'      => 'sometimes|string|max:255',
+            'userName'  => 'sometimes|string|max:255|unique:users,userName,' . $user->id,
+            'email'     => 'sometimes|email|unique:users,email,' . $user->id,
+            'password'  => 'sometimes|string|min:6|confirmed',
+            'is_active' => 'sometimes|boolean',
+        ]);
+
+        if (isset($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        }
+
+        $user->update($validated);
+
+        return $this->successResponse($user, 'Manager bilgileri admin tarafından güncellendi.');
+    }
 }

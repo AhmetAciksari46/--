@@ -19,7 +19,7 @@ class PackageWeekGradeRuleController extends Controller
      * path="/api/admin/packages/{package}/grade-rules",
      * summary="Paketin Sınıf Kurallarını Listeleme",
      * tags={"Admin Package Rules"},
-     * security={{"sanctum": {}}},
+     * security={{"bearerAuth": {}}},
      * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer"), description="Paket ID"),
      * @OA\Response(response=200, description="Sınıf kuralları listelendi.")
      * )
@@ -34,7 +34,7 @@ class PackageWeekGradeRuleController extends Controller
      * path="/api/admin/packages/{package}/grade-rules",
      * summary="Pakete Yeni Sınıf Kuralı Ekleme",
      * tags={"Admin Package Rules"},
-     * security={{"sanctum": {}}},
+     * security={{"bearerAuth": {}}},
      * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer"), description="Paket ID"),
      * @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/StorePackageWeekGradeRuleRequest")),
      * @OA\Response(response=201, description="Kural başarıyla eklendi.")
@@ -52,7 +52,7 @@ class PackageWeekGradeRuleController extends Controller
      * path="/api/admin/packages/{package}/grade-rules/{rule}",
      * summary="Paket Sınıf Kuralını Güncelleme",
      * tags={"Admin Package Rules"},
-     * security={{"sanctum": {}}},
+     * security={{"bearerAuth": {}}},
      * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer")),
      * @OA\Parameter(name="rule", in="path", required=true, @OA\Schema(type="integer"), description="Kural ID"),
      * @OA\Response(response=200, description="Kural başarıyla güncellendi.")
@@ -74,7 +74,7 @@ class PackageWeekGradeRuleController extends Controller
      * path="/api/admin/packages/{package}/grade-rules/{rule}",
      * summary="Paket Sınıf Kuralını Silme",
      * tags={"Admin Package Rules"},
-     * security={{"sanctum": {}}},
+     * security={{"bearerAuth": {}}},
      * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer")),
      * @OA\Parameter(name="rule", in="path", required=true, @OA\Schema(type="integer"), description="Kural ID"),
      * @OA\Response(response=200, description="Kural başarıyla silindi.")

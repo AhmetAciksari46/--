@@ -7,8 +7,8 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * @OA\Schema(
  *     schema="CompleteStudentProfileRequest",
- *     required={"schoolId","active_class_model_id","birth_date","student_number","tc_no"},
- *     @OA\Property(property="schoolId", type="integer", example=1),
+ *     required={"school_id","active_class_model_id","birth_date","student_number","tc_no"},
+ *     @OA\Property(property="school_id", type="integer", example=1),
  *     @OA\Property(property="active_class_model_id", type="integer", example=12),
  *     @OA\Property(property="birth_date", type="string", format="date", example="2012-05-10"),
  *     @OA\Property(property="student_number", type="string", example="2025A12"),
@@ -29,7 +29,7 @@ class CompleteStudentProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'schoolId' => 'required|integer|exists:schools,id',
+            'school_id' => 'required|integer|exists:schools,id',
             'active_class_model_id' => 'required|integer|exists:class_models,id',
             'birth_date' => 'required|date',
             'student_number' => 'required|string|unique:school_student_profiles,student_number',
@@ -44,7 +44,7 @@ class CompleteStudentProfileRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'schoolId.required' => 'Okul ID zorunludur.',
+            'school_id.required' => 'Okul ID zorunludur.',
             'active_class_model_id.required' => 'Sınıf ID zorunludur.',
             'birth_date.required' => 'Doğum tarihi zorunludur.',
             'student_number.required' => 'Öğrenci numarası zorunludur.',

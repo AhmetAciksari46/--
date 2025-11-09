@@ -24,7 +24,7 @@ trait ApiResponser
     protected function successResponse($data = null, ?string $message = null, int $code = 200): JsonResponse
     {
         return response()->json([
-            'status'  => 'success',
+            'status'  => true,
             'message' => $message ?? __('api.success'),
             'data'    => $data ?? (object)[],
         ], $code);
@@ -36,7 +36,7 @@ trait ApiResponser
     protected function errorResponse(string $key, int $code = 400, $errors = null): JsonResponse
     {
         return response()->json([
-            'status'  => 'error',
+            'status'  => false,
             'message' => $this->getErrorMessage($key),
             'errors'  => $errors,
             'data'    => null,

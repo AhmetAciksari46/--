@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  *     @OA\Property(property="active_additional_class_id", type="integer", example=2, nullable=true),
  *     @OA\Property(property="parent_name", type="string", example="Fatma Veli", nullable=true),
  *     @OA\Property(property="parent_phone", type="string", example="+905559991122", nullable=true),
- *     @OA\Property(property="schoolId", type="integer", example=5, nullable=true),
+ *     @OA\Property(property="school_id", type="integer", example=5, nullable=true),
  *     @OA\Property(property="gender", type="string", example="female", nullable=true),
  *     @OA\Property(property="description", type="string", example="Robotik kulübü öğrencisi", nullable=true),
  *     @OA\Property(property="registered_at", type="string", format="date-time", example="2024-01-10T09:00:00Z", nullable=true),
@@ -54,7 +54,7 @@ class SchoolStudentProfile extends Model
         'active_additional_class_id',
         'parent_name',
         'parent_phone',
-        'schoolId',
+        'school_id',
         'gender',
         'description',
         'registered_at',
@@ -85,7 +85,7 @@ class SchoolStudentProfile extends Model
     }
     public function school()
     {
-        return $this->belongsTo(School::class, 'schooldId');
+        return $this->belongsTo(School::class, 'school_id');
     }
     public function parents()
     {

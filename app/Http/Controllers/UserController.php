@@ -19,6 +19,7 @@ class UserController extends Controller
      *     path="/api/users",
      *     summary="Kullanıcı listesini döndürür",
      *     tags={"User"},
+     *     security={{"bearerAuth":{}}}, 
      *     @OA\Response(
      *         response=200,
      *         description="Başarılı",
@@ -28,19 +29,20 @@ class UserController extends Controller
     public function index() // tüm kullanıcılar
     {
         $this->authorizeRole(['admin', 'manager']);
-        return User::with([
+        $users = User::with([
             'individualStudentProfile',
             'schoolStudentProfile',
             'teacherProfile',
             'managerProfile'
         ])->get();
+        return $this->successResponse($users);
     }
     /**
      * @OA\Get(
      *     path="/api/users/{id}",
      *     summary="Tek kullanıcı bilgisi",
      *     tags={"User"},
-     *     security={{"sanctum":{}}},
+     *     security={{"bearerAuth":{}}}, 
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -55,12 +57,18 @@ class UserController extends Controller
     public function show($id) // tek kullanıcı
     {
         $this->authorizeRole(['admin', 'manager', 'teacher']);
-        $user =  User::with([
-            'individualStudentProfile',
-            'schoolStudentProfile',
-            'teacherProfile',
-            'managerProfile'
+        $user = User::with([
+            'individualStudentProfile:id,user_id',
+            'schoolStudentProfile:id,user_id',
+            'teacherProfile:id,user_id',
+            'managerProfile:id,user_id'
         ])->findOrFail($id);
+
+
+
+
+
+
         if (!$user) {
             return $this->errorResponse('user_not_found', 404);
         }
@@ -71,7 +79,7 @@ class UserController extends Controller
      *     path="/api/users",
      *     summary="Yeni kullanıcı oluştur",
      *     tags={"User"},
-     *     security={{"sanctum":{}}},
+     *     security={{"bearerAuth":{}}}, 
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -97,7 +105,7 @@ class UserController extends Controller
      *     path="/api/users/{id}",
      *     summary="Kullanıcıyı güncelle",
      *     tags={"User"},
-     *     security={{"sanctum":{}}},
+     *     security={{"bearerAuth":{}}}, 
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -131,7 +139,7 @@ class UserController extends Controller
      *     path="/api/users/{id}",
      *     summary="Kullanıcıyı sil",
      *     tags={"User"},
-     *     security={{"sanctum":{}}},
+     *     security={{"bearerAuth":{}}}, 
      *     @OA\Parameter(
      *         name="id",
      *         in="path",

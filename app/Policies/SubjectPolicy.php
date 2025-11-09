@@ -9,20 +9,29 @@ use Illuminate\Auth\Access\HandlesAuthorization;
 class SubjectPolicy
 {
     use HandlesAuthorization;
-
-    public function before(User $user, string $ability): ?bool
+    protected $policies = [
+        \App\Models\Subject::class => \App\Policies\SubjectPolicy::class,
+    ];
+    public function before(User $user, $ability)
     {
-        if ($user->isAdmin()) {
+        if ($user->role = "admin") {
             return true;
         }
-        return null;
+        return null; // Önemli: diğer policy'lerin çalışabilmesi için null dönülmeli
     }
 
     // Dersleri görme yetkisi (Okul kapsamında)
     public function viewAny(User $user): bool
     {
         // Manager'lar veya 'view_subjects' iznine sahip olanlar.
-        return $user->isManager() || $user->can('view_subjects');
+        return $user->role === "admin" || $user->isManager() || $user->can('view_subjects');
+    }
+    /**
+     * Tek bir subject kaydını görüntüleme izni.
+     */
+    public function view(User $user, Subject $subject): bool
+    {
+        return $user->hasRole('admin');
     }
 
     /**
@@ -53,10 +62,7 @@ class SubjectPolicy
         return $isOwnedBySchool;
     }
 
-    public function view(User $user, Subject $subject): bool
-    {
-        return $this->manageSubject($user, $subject);
-    }
+
 
     public function update(User $user, Subject $subject): bool
     {

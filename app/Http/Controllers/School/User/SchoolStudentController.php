@@ -81,7 +81,7 @@ class SchoolStudentController extends Controller
         DB::transaction(function () use ($request, $user) {
             $profile = SchoolStudentProfile::create([
                 'user_id' => $user->id,
-                'schoolId' => $request->schoolId,
+                'school_id' => $request->school_id,
                 'active_class_model_id' => $request->active_class_model_id,
                 'birth_date' => $request->birth_date,
                 'student_number' => $request->student_number,
@@ -143,7 +143,7 @@ class SchoolStudentController extends Controller
         $students = User::where('role', 'schoolstudent')
             ->whereHas('schoolStudentProfile', function ($q) use ($classModel, $school) {
                 $q->where('active_class_model_id', $classModel)
-                    ->where('schoolId', $school);
+                    ->where('school_id', $school);
             })
             ->with('schoolStudentProfile')
             ->get();
@@ -164,7 +164,7 @@ class SchoolStudentController extends Controller
     {
         $students = User::where('role', 'schoolstudent')
             ->whereHas('schoolStudentProfile', function ($q) use ($school) {
-                $q->where('schoolId', $school);
+                $q->where('school_id', $school);
             })
             ->with('schoolStudentProfile')
             ->get();
@@ -247,7 +247,7 @@ class SchoolStudentController extends Controller
         $student = User::where('role', 'schoolstudent')
             ->with('schoolStudentProfile')
             ->whereHas('schoolStudentProfile', function ($q) use ($school) {
-                $q->where('schoolId', $school);
+                $q->where('school_id', $school);
             })
             ->findOrFail($id);
 

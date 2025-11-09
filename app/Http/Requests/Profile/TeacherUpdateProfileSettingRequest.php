@@ -13,7 +13,7 @@ use Illuminate\Foundation\Http\FormRequest;
  *     description="Öğretmenin profil ayarlarını güncellemek için kullanılan alanlar.",
  *     @OA\Property(property="phone", type="string", example="+905551234567", nullable=true),
  *     @OA\Property(property="address", type="string", example="İzmir, Türkiye", nullable=true),
- *     @OA\Property(property="schoolId", type="integer", example=3, nullable=true),
+ *     @OA\Property(property="school_id", type="integer", example=3, nullable=true),
  *     @OA\Property(property="branch_id", type="integer", example=4, nullable=true),
  *     @OA\Property(property="img_path", type="string", example="/storage/teachers/avatars/5.png", nullable=true),
  *     @OA\Property(property="status", type="string", example="active", nullable=true),
@@ -48,7 +48,7 @@ class TeacherUpdateProfileSettingRequest extends FormRequest
         return [
             'phone' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:255'],
-            'schoolId' => ['sometimes', 'nullable', 'integer', 'exists:schools,id'],
+            'school_id' => ['sometimes', 'nullable', 'integer', 'exists:schools,id'],
             'branch_id' => ['sometimes', 'nullable', 'integer', 'exists:branches,id'],
             'img_path' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', 'string', 'max:50'],

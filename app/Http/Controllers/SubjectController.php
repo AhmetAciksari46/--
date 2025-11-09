@@ -8,132 +8,164 @@ use App\Models\Subject;
 use App\Http\Requests\School\StoreSubjectRequest;
 use App\Http\Requests\School\UpdateSubjectRequest;
 use App\Traits\ApiResponser;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // ⬅️ EKLE
 
 /**
  * @OA\Tag(
- * name="Subject Management",
- * description="Ders Kaynakları (Subject) Yönetimi (Admin/Manager)"
+ *     name="Admin - Subject Management",
+ *     description="Global Ders (Subject) Yönetimi. Bu uç noktalar yalnızca admin kullanıcılar içindir."
  * )
  */
 class SubjectController extends Controller
 {
-    use ApiResponser;
+    use ApiResponser, AuthorizesRequests;
     /**
      * @OA\Get(
-     * path="/api/schools/{school}/admin/subjects",
-     * operationId="listSubjects",
-     * tags={"Subject Management"},
-     * summary="Okula ait ders kayıtlarını listeler",
-     * security={{"sanctum": {}}},
-     * @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer"), description="Okul ID"),
-     * @OA\Response(response=200, description="Başarılı", @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Subject"))),
-     * @OA\Response(response=403, description="Yetkisiz Erişim")
+     *     path="/api/admin/subjects",
+     *     summary="Tüm global ders kayıtlarını listeler",
+     *     tags={"Admin - Subject Management"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Başarılı işlem",
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Subject"))
+     *     ),
+     *     @OA\Response(response=403, description="Yetkisiz erişim")
      * )
      */
-    public function index(School $school)
+    public function index()
     {
         $this->authorize('viewAny', Subject::class);
 
-        $subjects = $school->subjects()->get();
+        $subjects = Subject::orderBy('id')->get();
 
-        return $this->successResponse($subjects);
+        return $this->successResponse($subjects, 'Ders kayıtları başarıyla listelendi.');
     }
+
     /**
      * @OA\Get(
-     * path="/api/schools/{school}/admin/subjects/{subject}",
-     * operationId="showSubject",
-     * tags={"Subject Management"},
-     * summary="Belirli bir dersin detayını getirir",
-     * security={{"sanctum": {}}},
-     * @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer"), description="Okul ID"),
-     * @OA\Parameter(name="subject", in="path", required=true, @OA\Schema(type="integer"), description="Ders ID"),
-     * @OA\Response(response=200, description="Başarılı", @OA\JsonContent(ref="#/components/schemas/Subject")),
-     * @OA\Response(response=404, description="Ders bulunamadı veya okula ait değil")
+     *     path="/api/admin/subjects/{id}",
+     *     summary="Belirli bir global dersin detayını getirir",
+     *     tags={"Admin - Subject Management"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Ders ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Başarılı işlem",
+     *         @OA\JsonContent(ref="#/components/schemas/Subject")
+     *     ),
+     *     @OA\Response(response=404, description="Kayıt bulunamadı"),
+     *     @OA\Response(response=403, description="Yetkisiz erişim")
      * )
      */
-    public function show(School $school, Subject $subject)
+    public function show(Subject $subject)
     {
         $this->authorize('view', $subject);
 
-        if ($subject->school_id !== $school->id) {
-            return response()->json(['message' => 'Ders kaydı belirtilen okula ait değil.'], 404);
-        }
-        return $this->successResponse($subject);
+        return $this->successResponse($subject, 'Ders bilgisi başarıyla getirildi.');
     }
-
 
     /**
      * @OA\Post(
-     * path="/api/schools/{school}/admin/subjects",
-     * operationId="storeSubject",
-     * tags={"Subject Management"},
-     * summary="Yeni bir ders kaydı oluşturur (Okula atama yapılır)",
-     * security={{"sanctum": {}}},
-     * @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer"), description="Okul ID"),
-     * @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/StoreSubjectRequest")),
-     * @OA\Response(response=201, description="Başarılı", @OA\JsonContent(ref="#/components/schemas/Subject")),
-     * @OA\Response(response=403, description="Yetkisiz Erişim")
+     *     path="/api/admin/subjects",
+     *     summary="Yeni global ders oluşturur",
+     *     tags={"Admin - Subject Management"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/StoreSubjectRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Ders başarıyla oluşturuldu",
+     *         @OA\JsonContent(ref="#/components/schemas/Subject")
+     *     ),
+     *     @OA\Response(response=422, description="Doğrulama hatası"),
+     *     @OA\Response(response=403, description="Yetkisiz erişim")
      * )
      */
-    public function store(StoreSubjectRequest $request, School $school)
+    public function store(StoreSubjectRequest $request)
     {
         $this->authorize('create', Subject::class);
 
-        // Okula atama yaparak kaydı oluştur
-        $subject = $school->subjects()->create($request->validated());
+        $subject = Subject::create($request->validated());
 
-        return $this->successResponse($subject, 201);
+        return $this->successResponse($subject, 'Ders başarıyla oluşturuldu.', 201);
     }
 
     /**
      * @OA\Put(
-     * path="/api/schools/{school}/admin/subjects/{subject}",
-     * operationId="updateSubject",
-     * tags={"Subject Management"},
-     * summary="Belirli bir ders kaydını günceller",
-     * security={{"sanctum": {}}},
-     * @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer"), description="Okul ID"),
-     * @OA\Parameter(name="subject", in="path", required=true, @OA\Schema(type="integer"), description="Ders ID"),
-     * @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/UpdateSubjectRequest")),
-     * @OA\Response(response=200, description="Başarılı", @OA\JsonContent(ref="#/components/schemas/Subject")),
-     * @OA\Response(response=404, description="Ders bulunamadı veya okula ait değil")
+     *     path="/api/admin/subjects/{id}",
+     *     summary="Mevcut bir dersi günceller",
+     *     tags={"Admin - Subject Management"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Ders ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/UpdateSubjectRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Ders başarıyla güncellendi",
+     *         @OA\JsonContent(ref="#/components/schemas/Subject")
+     *     ),
+     *     @OA\Response(response=404, description="Kayıt bulunamadı"),
+     *     @OA\Response(response=422, description="Doğrulama hatası")
      * )
      */
-    public function update(UpdateSubjectRequest $request, School $school, Subject $subject)
+    public function update(UpdateSubjectRequest $request, Subject $subject, $id)
     {
         $this->authorize('update', $subject);
 
-        if ($subject->school_id !== $school->id) {
-            return response()->json(['message' => 'Ders kaydı belirtilen okula ait değil.'], 404);
+        $subject = Subject::find($id);
+
+        if (!$subject) {
+            return $this->errorResponse('Ders kaydı bulunamadı.', 404);
         }
+
+        $this->authorize('update', $subject);
 
         $subject->update($request->validated());
 
-        return $this->successResponse($subject);
+        return $this->successResponse($subject->refresh(), 'Ders başarıyla güncellendi.');
     }
 
     /**
      * @OA\Delete(
-     * path="/api/schools/{school}/admin/subjects/{subject}",
-     * operationId="deleteSubject",
-     * tags={"Subject Management"},
-     * summary="Belirli bir ders kaydını siler",
-     * security={{"sanctum": {}}},
-     * @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer"), description="Okul ID"),
-     * @OA\Parameter(name="subject", in="path", required=true, @OA\Schema(type="integer"), description="Ders ID"),
-     * @OA\Response(response=204, description="Başarılı (İçerik Yok)"),
-     * @OA\Response(response=404, description="Ders bulunamadı veya okula ait değil")
+     *     path="/api/admin/subjects/{id}",
+     *     summary="Belirli bir dersi siler",
+     *     tags={"Admin - Subject Management"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Ders ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(response=204, description="Ders başarıyla silindi"),
+     *     @OA\Response(response=403, description="Yetkisiz erişim"),
+     *     @OA\Response(response=404, description="Kayıt bulunamadı")
      * )
      */
-    public function destroy(School $school, Subject $subject)
+    public function destroy(Subject $subject)
     {
         $this->authorize('delete', $subject);
 
-        if ($subject->school_id !== $school->id) {
-            return response()->json(['message' => 'Ders kaydı belirtilen okula ait değil.'], 404);
-        }
-
         $subject->delete();
-        return $this->successResponse(null, 204);
+
+        return $this->successResponse(null, 'Ders başarıyla silindi.', 204);
     }
 }

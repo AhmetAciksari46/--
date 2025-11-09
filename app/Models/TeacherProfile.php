@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  *     @OA\Property(property="user_id", type="integer", example=5),
  *     @OA\Property(property="phone", type="string", example="+905551234567", nullable=true),
  *     @OA\Property(property="address", type="string", example="Ankara, Türkiye", nullable=true),
- *     @OA\Property(property="schoolId", type="integer", example=3, nullable=true),
+ *     @OA\Property(property="school_id", type="integer", example=3, nullable=true),
  *     @OA\Property(property="branch_id", type="integer", example=2, nullable=true),
  *     @OA\Property(property="img_path", type="string", example="/storage/teachers/1.png", nullable=true),
  *     @OA\Property(property="status", type="string", example="active", nullable=true),

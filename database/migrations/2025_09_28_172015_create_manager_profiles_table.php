@@ -20,7 +20,7 @@ return new class extends Migration
             $table->date('birth_date')->nullable();
             $table->string('note')->nullable();
             $table->string('referance')->nullable();
-            $table->unsignedBigInteger('schoolId')->nullable()->constrained('schools')
+            $table->unsignedBigInteger('school_id')->nullable()->constrained('schools')
                 ->nullOnDelete();
 
             $table->boolean('payment_reminder')->default(false);

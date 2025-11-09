@@ -15,6 +15,7 @@ class AdminUserSeeder extends Seeder
                 'name' => 'Super Admin',
                 'userName' => 'root',
                 'password' => bcrypt('root'),
+                'role' => "admin",
             ]
         );
 
@@ -26,6 +27,7 @@ class AdminUserSeeder extends Seeder
                 'name' => 'manager manager',
                 'userName' => 'manager',
                 'password' => bcrypt('manager'),
+                'role' => 'manager',
             ]
         );
         $manager->assignRole('manager');

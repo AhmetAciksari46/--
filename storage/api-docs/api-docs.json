@@ -1,7 +1,7 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "EdeQR LMS API",
+        "title": "Laravel 12 LMS API",
         "description": "bridge digital LMS projesi için REST API dokümantasyonu",
         "contact": {
             "email": "ahmet@aciksari.net"
@@ -242,7 +242,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             },
@@ -295,7 +295,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -351,7 +351,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             },
@@ -418,7 +418,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             },
@@ -504,7 +504,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             },
@@ -542,7 +542,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -708,13 +708,13 @@
                 }
             }
         },
-        "/api/managerregister": {
+        "/api/admin/managerregister": {
             "post": {
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Manager kullanıcı kaydı",
-                "operationId": "3fb9729fde6c24ac037713f6ad4fbf5a",
+                "summary": "Yeni Manager kaydı oluştur (Sadece Admin)",
+                "operationId": "35c1e5a6bf831096bb74cdf6fe30b2f6",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -723,21 +723,46 @@
                                 "required": [
                                     "name",
                                     "userName",
+                                    "email",
                                     "password"
                                 ],
                                 "properties": {
                                     "name": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "Yönetici Adı"
+                                    },
+                                    "userName": {
+                                        "type": "string",
+                                        "example": "manager1"
                                     },
                                     "email": {
                                         "type": "string",
-                                        "format": "email"
-                                    },
-                                    "userName": {
-                                        "type": "string"
+                                        "example": "manager@okul.com"
                                     },
                                     "password": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "123456"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+905551234567"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "İstanbul, Türkiye"
+                                    },
+                                    "birth_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "1985-05-10"
+                                    },
+                                    "referance": {
+                                        "type": "string",
+                                        "example": "REF001"
                                     }
                                 },
                                 "type": "object"
@@ -747,106 +772,40 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Manager kaydı başarıyla oluşturuldu"
-                    },
-                    "500": {
-                        "description": "Kayıt başarısız"
-                    }
-                }
-            }
-        },
-        "/api/teacherregister": {
-            "post": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Teacher kullanıcı kaydı",
-                "operationId": "daf2f583b84f020001f40bbe30aa25a6",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "name",
-                                    "userName",
-                                    "password"
-                                ],
-                                "properties": {
-                                    "name": {
-                                        "type": "string"
+                        "description": "Manager başarıyla oluşturuldu.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Yeni Manager başarıyla oluşturuldu."
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ManagerProfile"
+                                        }
                                     },
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email"
-                                    },
-                                    "userName": {
-                                        "type": "string"
-                                    },
-                                    "password": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
+                                    "type": "object"
+                                }
                             }
                         }
+                    },
+                    "403": {
+                        "description": "Yetkisiz erişim"
+                    },
+                    "422": {
+                        "description": "Doğrulama hatası"
                     }
                 },
-                "responses": {
-                    "201": {
-                        "description": "Teacher kaydı başarıyla oluşturuldu"
-                    },
-                    "500": {
-                        "description": "Kayıt başarısız"
+                "security": [
+                    {
+                        "bearerAuth": []
                     }
-                }
-            }
-        },
-        "/api/invidualstudentregister": {
-            "post": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Individual Student kaydı",
-                "operationId": "e06ea2357dba8ccd66b331e246b762bf",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "name",
-                                    "userName",
-                                    "password"
-                                ],
-                                "properties": {
-                                    "name": {
-                                        "type": "string"
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email"
-                                    },
-                                    "userName": {
-                                        "type": "string"
-                                    },
-                                    "password": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Individual student kaydı başarıyla oluşturuldu"
-                    },
-                    "500": {
-                        "description": "Kayıt başarısız"
-                    }
-                }
+                ]
             }
         },
         "/api/login": {
@@ -1234,7 +1193,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             },
@@ -1272,7 +1231,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -1310,7 +1269,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             },
@@ -1346,7 +1305,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -1376,7 +1335,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             },
@@ -1414,7 +1373,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -1452,7 +1411,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             },
@@ -1488,7 +1447,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -2543,65 +2502,6 @@
                 ]
             }
         },
-        "/api/admin/schools/create": {
-            "post": {
-                "tags": [
-                    "Admin - Schools"
-                ],
-                "summary": "Admin tarafından okul oluştur",
-                "description": "Admin kullanıcılar, istediği manager_id’ye bağlı yeni okul oluşturabilir.",
-                "operationId": "6a679c2d08795d2a2a547e00bddd7297",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "name",
-                                    "nickname",
-                                    "manager_id"
-                                ],
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Ede Koleji"
-                                    },
-                                    "nickname": {
-                                        "type": "string",
-                                        "example": "edekolej"
-                                    },
-                                    "manager_id": {
-                                        "type": "integer",
-                                        "example": 2
-                                    },
-                                    "address": {
-                                        "type": "string",
-                                        "example": "Maraş Dulkadiroğlu"
-                                    },
-                                    "is_active": {
-                                        "type": "boolean",
-                                        "example": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Okul başarıyla oluşturuldu"
-                    },
-                    "500": {
-                        "description": "Sunucu hatası"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/api/admin/school/getschools": {
             "get": {
                 "tags": [
@@ -2693,71 +2593,19 @@
                 ]
             }
         },
-        "/api/me/manager/updateprofile": {
-            "put": {
-                "tags": [
-                    "ManagerProfile"
-                ],
-                "summary": "Yönetici kendi kullanıcı hesabını günceller",
-                "operationId": "4177b5db7cc0db9ae5790a7c99b54bc0",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UpdateProfileRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Profil bilgileri başarıyla güncellendi",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/User"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Yetkisiz erişim"
-                    },
-                    "422": {
-                        "description": "Doğrulama hatası"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/me/manager/getprofilesettings": {
+        "/api/manager/me": {
             "get": {
                 "tags": [
-                    "ManagerProfile"
+                    "ManagerUser"
                 ],
-                "summary": "Yönetici profil ayarlarını getir",
-                "operationId": "3686b2be461d413119e94860f6752ccf",
+                "summary": "(Manager) Kendi user bilgilerini getir",
+                "operationId": "46240490bca45afa48605c788d74625d",
                 "responses": {
                     "200": {
-                        "description": "Profil ayarları bulundu",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ManagerProfile"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Yetkisiz erişim"
+                        "description": "Bilgiler başarıyla alındı"
                     },
                     "404": {
-                        "description": "Profil ayarları bulunamadı"
+                        "description": "Kullanıcı bulunamadı"
                     }
                 },
                 "security": [
@@ -2765,38 +2613,48 @@
                         "bearerAuth": []
                     }
                 ]
-            }
-        },
-        "/api/me/manager/updateprofilesettings": {
+            },
             "put": {
                 "tags": [
-                    "ManagerProfile"
+                    "ManagerUser"
                 ],
-                "summary": "Yönetici profil ayarlarını güncelle",
-                "operationId": "253070c6b2d4336ee7cc9a0dab291df8",
+                "summary": "(Manager) Kendi user bilgilerini güncelle",
+                "operationId": "71102a483df9b63528040eb1af98d17f",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/ManagerUpdateProfileSettingRequest"
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Yeni Yönetici Adı"
+                                    },
+                                    "userName": {
+                                        "type": "string",
+                                        "example": "manager1"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "manager@okul.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "Profil güncellendi",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ManagerProfile"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Yetkisiz erişim"
+                        "description": "Güncelleme başarılı"
                     },
                     "422": {
                         "description": "Doğrulama hatası"
@@ -2809,18 +2667,17 @@
                 ]
             }
         },
-        "/api/manager/profile/{user_id}": {
+        "/api/admin/manager/{id}": {
             "get": {
                 "tags": [
-                    "ManagerProfile"
+                    "ManagerUser"
                 ],
-                "summary": "Belirli kullanıcıya ait öğrenci profilini getir",
-                "operationId": "a065d4c2c835590d23b7eea51f6f4366",
+                "summary": "(Admin) Manager user bilgilerini user_id ile getir",
+                "operationId": "695b21adedc863d759e29ce7cf8a2968",
                 "parameters": [
                     {
-                        "name": "user_id",
+                        "name": "id",
                         "in": "path",
-                        "description": "Kullanıcı ID",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -2829,23 +2686,409 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Profil bulundu",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/SchoolStudentProfile"
-                                }
+                        "description": "Bilgiler getirildi"
+                    },
+                    "404": {
+                        "description": "Kullanıcı bulunamadı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "ManagerUser"
+                ],
+                "summary": "(Admin) Manager user bilgilerini user_id ile güncelle",
+                "operationId": "c9109738c891f023c4ea784382c3a36d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Yeni Yönetici"
+                                    },
+                                    "userName": {
+                                        "type": "string",
+                                        "example": "manager123"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "manager@okul.com"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Güncelleme başarılı"
                     },
-                    "401": {
-                        "description": "Yetkisiz erişim"
+                    "404": {
+                        "description": "Kullanıcı bulunamadı"
                     },
-                    "403": {
-                        "description": "Yetkiniz yok"
+                    "422": {
+                        "description": "Doğrulama hatası"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/manager/profile/me": {
+            "get": {
+                "tags": [
+                    "ManagerProfile"
+                ],
+                "summary": "(Manager) Kendi profilini getir",
+                "operationId": "03bd9c05e7adc499dcd222a428eb696e",
+                "responses": {
+                    "200": {
+                        "description": "Profil bilgileri"
                     },
                     "404": {
                         "description": "Profil bulunamadı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "ManagerProfile"
+                ],
+                "summary": "(Manager) Kendi profilini güncelle",
+                "operationId": "a50fc4ab47f7e6acfb0ea8b0cf5ae284",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+905551234567"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "İstanbul, Türkiye"
+                                    },
+                                    "birth_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "1990-05-10"
+                                    },
+                                    "note": {
+                                        "type": "string",
+                                        "example": "Not"
+                                    },
+                                    "referance": {
+                                        "type": "string",
+                                        "example": "REF001"
+                                    },
+                                    "school_id": {
+                                        "type": "integer",
+                                        "example": 2,
+                                        "nullable": true
+                                    },
+                                    "payment_reminder": {
+                                        "type": "boolean",
+                                        "example": false
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profil güncellendi"
+                    },
+                    "404": {
+                        "description": "Profil bulunamadı"
+                    },
+                    "422": {
+                        "description": "Doğrulama hatası"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/manager/{user_id}/profile": {
+            "get": {
+                "tags": [
+                    "ManagerProfile"
+                ],
+                "summary": "(Admin) Manager profilini user_id ile getir",
+                "operationId": "25d49d70731c85cecee4fef38fc00590",
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Profil bilgileri"
+                    },
+                    "404": {
+                        "description": "Profil bulunamadı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "ManagerProfile"
+                ],
+                "summary": "(Admin) Manager profilini user_id ile güncelle",
+                "operationId": "7fb11ef56292af2e6087989fba6b9f74",
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+905551234567"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "İstanbul, Türkiye"
+                                    },
+                                    "birth_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "1990-05-10"
+                                    },
+                                    "note": {
+                                        "type": "string",
+                                        "example": "Not"
+                                    },
+                                    "referance": {
+                                        "type": "string",
+                                        "example": "REF001"
+                                    },
+                                    "school_id": {
+                                        "type": "integer",
+                                        "example": 2,
+                                        "nullable": true
+                                    },
+                                    "payment_reminder": {
+                                        "type": "boolean",
+                                        "example": false
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profil güncellendi"
+                    },
+                    "404": {
+                        "description": "Profil bulunamadı"
+                    },
+                    "422": {
+                        "description": "Doğrulama hatası"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "ManagerProfile"
+                ],
+                "summary": "(Admin) Belirli bir manager için profil oluştur",
+                "description": "Admin, user_id'si verilen manager için profil oluşturabilir. Eğer zaten varsa hata döner.",
+                "operationId": "131ae168efb1bf22bd92c0be6bacdf6f",
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+905551234567"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "İstanbul, Türkiye"
+                                    },
+                                    "birth_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "1990-05-10"
+                                    },
+                                    "note": {
+                                        "type": "string",
+                                        "example": "Not"
+                                    },
+                                    "referance": {
+                                        "type": "string",
+                                        "example": "REF001"
+                                    },
+                                    "school_id": {
+                                        "type": "integer",
+                                        "example": 2,
+                                        "nullable": true
+                                    },
+                                    "payment_reminder": {
+                                        "type": "boolean",
+                                        "example": false
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Profil başarıyla oluşturuldu"
+                    },
+                    "409": {
+                        "description": "Profil zaten mevcut"
+                    },
+                    "422": {
+                        "description": "Doğrulama hatası"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/manager/profile": {
+            "post": {
+                "tags": [
+                    "ManagerProfile"
+                ],
+                "summary": "(Manager) Kendi profilini oluştur (ilk kez kaydediyorsa)",
+                "description": "Manager kendi profiline ait bilgileri kaydeder. Eğer profil zaten varsa hata döner.",
+                "operationId": "c1bfc407b2ace1da6770fa71a9454e67",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+905551234567"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "İstanbul, Türkiye"
+                                    },
+                                    "birth_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "1990-05-10"
+                                    },
+                                    "note": {
+                                        "type": "string",
+                                        "example": "Yönetici notu"
+                                    },
+                                    "referance": {
+                                        "type": "string",
+                                        "example": "REF001"
+                                    },
+                                    "school_id": {
+                                        "type": "integer",
+                                        "example": 2,
+                                        "nullable": true
+                                    },
+                                    "payment_reminder": {
+                                        "type": "boolean",
+                                        "example": false
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Profil başarıyla oluşturuldu"
+                    },
+                    "409": {
+                        "description": "Profil zaten mevcut"
+                    },
+                    "422": {
+                        "description": "Doğrulama hatası"
                     }
                 },
                 "security": [
@@ -3610,27 +3853,16 @@
                 ]
             }
         },
-        "/api/schools/{school}/admin/subjects": {
+        "/api/admin/subjects": {
             "get": {
                 "tags": [
-                    "Subject Management"
+                    "Admin - Subject Management"
                 ],
-                "summary": "Okula ait ders kayıtlarını listeler",
-                "operationId": "listSubjects",
-                "parameters": [
-                    {
-                        "name": "school",
-                        "in": "path",
-                        "description": "Okul ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
+                "summary": "Tüm global ders kayıtlarını listeler",
+                "operationId": "924dbd1ce7a932034149d10afe98569c",
                 "responses": {
                     "200": {
-                        "description": "Başarılı",
+                        "description": "Başarılı işlem",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3643,32 +3875,21 @@
                         }
                     },
                     "403": {
-                        "description": "Yetkisiz Erişim"
+                        "description": "Yetkisiz erişim"
                     }
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             },
             "post": {
                 "tags": [
-                    "Subject Management"
+                    "Admin - Subject Management"
                 ],
-                "summary": "Yeni bir ders kaydı oluşturur (Okula atama yapılır)",
-                "operationId": "storeSubject",
-                "parameters": [
-                    {
-                        "name": "school",
-                        "in": "path",
-                        "description": "Okul ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
+                "summary": "Yeni global ders oluşturur",
+                "operationId": "43ed26386886217b477f81e78b47bddf",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -3681,7 +3902,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Başarılı",
+                        "description": "Ders başarıyla oluşturuldu",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3690,47 +3911,42 @@
                             }
                         }
                     },
+                    "422": {
+                        "description": "Doğrulama hatası"
+                    },
                     "403": {
-                        "description": "Yetkisiz Erişim"
+                        "description": "Yetkisiz erişim"
                     }
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
         },
-        "/api/schools/{school}/admin/subjects/{subject}": {
+        "/api/admin/subjects/{id}": {
             "get": {
                 "tags": [
-                    "Subject Management"
+                    "Admin - Subject Management"
                 ],
-                "summary": "Belirli bir dersin detayını getirir",
-                "operationId": "showSubject",
+                "summary": "Belirli bir global dersin detayını getirir",
+                "operationId": "0bd970cb161cf05efff06edeace3a2e8",
                 "parameters": [
                     {
-                        "name": "school",
-                        "in": "path",
-                        "description": "Okul ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "subject",
+                        "name": "id",
                         "in": "path",
                         "description": "Ders ID",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Başarılı",
+                        "description": "Başarılı işlem",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3740,38 +3956,33 @@
                         }
                     },
                     "404": {
-                        "description": "Ders bulunamadı veya okula ait değil"
+                        "description": "Kayıt bulunamadı"
+                    },
+                    "403": {
+                        "description": "Yetkisiz erişim"
                     }
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             },
             "put": {
                 "tags": [
-                    "Subject Management"
+                    "Admin - Subject Management"
                 ],
-                "summary": "Belirli bir ders kaydını günceller",
-                "operationId": "updateSubject",
+                "summary": "Mevcut bir dersi günceller",
+                "operationId": "aa51f1d39ac7a594d4af0d8377b6f599",
                 "parameters": [
                     {
-                        "name": "school",
-                        "in": "path",
-                        "description": "Okul ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "subject",
+                        "name": "id",
                         "in": "path",
                         "description": "Ders ID",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
@@ -3787,7 +3998,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Başarılı",
+                        "description": "Ders başarıyla güncellendi",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3797,52 +4008,50 @@
                         }
                     },
                     "404": {
-                        "description": "Ders bulunamadı veya okula ait değil"
+                        "description": "Kayıt bulunamadı"
+                    },
+                    "422": {
+                        "description": "Doğrulama hatası"
                     }
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             },
             "delete": {
                 "tags": [
-                    "Subject Management"
+                    "Admin - Subject Management"
                 ],
-                "summary": "Belirli bir ders kaydını siler",
-                "operationId": "deleteSubject",
+                "summary": "Belirli bir dersi siler",
+                "operationId": "00963fd80df7ade2c4e872689b94d3fe",
                 "parameters": [
                     {
-                        "name": "school",
-                        "in": "path",
-                        "description": "Okul ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "subject",
+                        "name": "id",
                         "in": "path",
                         "description": "Ders ID",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
                 "responses": {
                     "204": {
-                        "description": "Başarılı (İçerik Yok)"
+                        "description": "Ders başarıyla silindi"
+                    },
+                    "403": {
+                        "description": "Yetkisiz erişim"
                     },
                     "404": {
-                        "description": "Ders bulunamadı veya okula ait değil"
+                        "description": "Kayıt bulunamadı"
                     }
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -4070,16 +4279,16 @@
                 }
             }
         },
-        "/subscriptions/check-active/{schoolId}": {
+        "/subscriptions/check-active/{school_id}": {
             "get": {
                 "tags": [
                     "Subscriptions"
                 ],
                 "summary": "Okul aboneliğini kontrol et",
-                "operationId": "31d36c04319f5ab63e761241697ce951",
+                "operationId": "cb86dfe198b3cb397e6ab539b3f94b49",
                 "parameters": [
                     {
-                        "name": "schoolId",
+                        "name": "school_id",
                         "in": "path",
                         "description": "Okul ID",
                         "required": true,
@@ -4114,7 +4323,12 @@
                     "200": {
                         "description": "Başarılı"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "post": {
                 "tags": [
@@ -4159,7 +4373,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -4192,7 +4406,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             },
@@ -4250,7 +4464,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             },
@@ -4278,7 +4492,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -4856,7 +5070,6 @@
             },
             "ManagerUpdateProfileSettingRequest": {
                 "title": "Manager Update Profile Request",
-                "required": [],
                 "properties": {
                     "phone": {
                         "type": "string",
@@ -4884,7 +5097,7 @@
                         "example": "ABC123",
                         "nullable": true
                     },
-                    "schoolId": {
+                    "school_id": {
                         "type": "integer",
                         "example": 2,
                         "nullable": true
@@ -4938,7 +5151,7 @@
                         "example": "İzmir, Türkiye",
                         "nullable": true
                     },
-                    "schoolId": {
+                    "school_id": {
                         "type": "integer",
                         "example": 3,
                         "nullable": true
@@ -5318,14 +5531,14 @@
             },
             "CompleteStudentProfileRequest": {
                 "required": [
-                    "schoolId",
+                    "school_id",
                     "active_class_model_id",
                     "birth_date",
                     "student_number",
                     "tc_no"
                 ],
                 "properties": {
-                    "schoolId": {
+                    "school_id": {
                         "type": "integer",
                         "example": 1
                     },
@@ -5595,7 +5808,7 @@
                 "type": "object"
             },
             "ManagerProfile": {
-                "title": "ManagerProfile",
+                "title": "Manager Profile",
                 "description": "Yönetici profil modeli",
                 "properties": {
                     "id": {
@@ -5632,7 +5845,7 @@
                         "example": "ABC123",
                         "nullable": true
                     },
-                    "schoolId": {
+                    "school_id": {
                         "type": "integer",
                         "example": 2,
                         "nullable": true
@@ -5655,6 +5868,14 @@
                         "oneOf": [
                             {
                                 "$ref": "#/components/schemas/User"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "school": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/School"
                             }
                         ],
                         "nullable": true
@@ -6054,7 +6275,7 @@
                         "example": "+905559991122",
                         "nullable": true
                     },
-                    "schoolId": {
+                    "school_id": {
                         "type": "integer",
                         "example": 5,
                         "nullable": true
@@ -6241,25 +6462,17 @@
             },
             "Subject": {
                 "title": "Subject Model",
-                "description": "Ders Kaynağı (Örn: Matematik, Fizik). Okula özel olarak oluşturulabilir.",
+                "description": "Global Ders Kaynağı (ör: Matematik, Türkçe). Tüm paketler ve okullar tarafından ortak kullanılır.",
                 "properties": {
                     "id": {
                         "type": "integer",
                         "example": 1
                     },
-                    "school_id": {
-                        "description": "Okula özelse okul ID, Global ise NULL",
-                        "type": "integer",
-                        "example": 1,
-                        "nullable": true
-                    },
                     "name": {
-                        "description": "Dersin Adı",
                         "type": "string",
                         "example": "Matematik"
                     },
                     "code": {
-                        "description": "Dersin Kodu",
                         "type": "string",
                         "example": "MT101",
                         "nullable": true
@@ -6400,7 +6613,7 @@
                         "example": "Ankara, Türkiye",
                         "nullable": true
                     },
-                    "schoolId": {
+                    "school_id": {
                         "type": "integer",
                         "example": 3,
                         "nullable": true
@@ -6528,24 +6741,12 @@
                 "type": "object"
             }
         },
-        "responses": {
-            "201": {
-                "description": "School student kaydı başarıyla oluşturuldu"
-            },
-            "500": {
-                "description": "Kayıt başarısız"
-            }
-        },
         "securitySchemes": {
             "bearerAuth": {
                 "type": "http",
                 "scheme": "bearer",
                 "bearerFormat": "JWT",
                 "description": "JWT veya Sanctum tokenini \"Bearer {token}\" formatında girin"
-            },
-            "bearer_token": {
-                "type": "http",
-                "scheme": "bearer"
             }
         }
     },
@@ -6595,6 +6796,14 @@
             "description": "Okul yönetimi işlemleri (Manager, Teacher, Student, Admin)"
         },
         {
+            "name": "ManagerUser",
+            "description": "Manager kullanıcı bilgileri yönetimi (User tablosu)"
+        },
+        {
+            "name": "ManagerProfile",
+            "description": "Manager profil bilgileri yönetimi (ManagerProfile tablosu)"
+        },
+        {
             "name": "SchoolStudentProfile",
             "description": "Okul öğrencilerinin profil işlemleri"
         },
@@ -6607,8 +6816,8 @@
             "description": "Öğretmen profil ayarları"
         },
         {
-            "name": "Subject Management",
-            "description": "Ders Kaynakları (Subject) Yönetimi (Admin/Manager)"
+            "name": "Admin - Subject Management",
+            "description": "Global Ders (Subject) Yönetimi. Bu uç noktalar yalnızca admin kullanıcılar içindir."
         },
         {
             "name": "User",
@@ -6621,10 +6830,6 @@
         {
             "name": "Admin - Schools",
             "description": "Admin - Schools"
-        },
-        {
-            "name": "ManagerProfile",
-            "description": "ManagerProfile"
         },
         {
             "name": "Teachers",

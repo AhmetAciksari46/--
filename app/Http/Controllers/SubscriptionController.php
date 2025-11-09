@@ -310,12 +310,12 @@ class SubscriptionController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/subscriptions/check-active/{schoolId}",
+     *     path="/subscriptions/check-active/{school_id}",
      *     tags={"Subscriptions"},
      *     summary="Okul aboneliğini kontrol et",
      *     security={{"bearerAuth": {}}},
      *     @OA\Parameter(
-     *         name="schoolId",
+     *         name="school_id",
      *         in="path",
      *         required=true,
      *         description="Okul ID",
@@ -327,9 +327,9 @@ class SubscriptionController extends Controller
      */
 
 
-    public function checkActive($schoolId)
+    public function checkActive($school_id)
     {
-        $subscription = Subscription::where('school_id', $schoolId)
+        $subscription = Subscription::where('school_id', $school_id)
             ->with('package')
             ->latest('end_date')
             ->first();
