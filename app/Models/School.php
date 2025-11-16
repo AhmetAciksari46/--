@@ -64,7 +64,10 @@ class School extends Model
     {
         return $this->hasMany(AdditionalClassRoom::class);
     }
-
+    public function grades()
+    {
+        return $this->hasMany(SchoolHasGrade::class);
+    }
     public function activeSubscription()
     {
         return $this->subscriptions()

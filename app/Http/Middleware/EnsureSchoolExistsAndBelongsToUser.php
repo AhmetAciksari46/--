@@ -14,43 +14,49 @@ class EnsureSchoolExistsAndBelongsToUser
 {
     public function handle(Request $request, Closure $next)
     {
+        $user = $request->user(); // <-- MUST be first line
+        if ($user->role === 'admin') {
+            return $next($request);
+        }
 
 
-        $school = $request->route('school'); // URL'deki {school} parametresini alıyoruz
-        // 1️⃣ Okul var mı kontrolü
-        if (! $school) {
+        $school = $request->route('school'); // model binding School instance
+
+        // 1) Okul var mı?
+        if (!$school) {
             return response()->json([
-                'message' => 'Geçersiz okul bilgisi. Lütfen önce bir okul oluşturun.'
+                'message' => 'Geçersiz okul bilgisi.'
             ], 403);
         }
-        $user = $request->user();
 
-        $managerProfile = ManagerProfile::where('user_id', $user->id)->first();
-        $teacherProfile = TeacherProfile::where('user_id', $user->id)->first();
-        $studentProfile = SchoolStudentProfile::where('user_id', $user->id)->first();
+        // Kullanıcının profilleri
+        $managerProfile  = $user->managerProfile;
+        $teacherProfile  = $user->teacherProfile;
+        $studentProfile  = $user->schoolStudentProfile;
+
         $hasAccess = false;
-        $profileType = null;
 
-
+        // 2) Manager mı ve okul aynı mı?
         if ($managerProfile && $managerProfile->school_id === $school->id) {
             $hasAccess = true;
-            $profileType = 'manager';
-        } elseif ($teacherProfile && $teacherProfile->school_id === $school->id) {
-            $hasAccess = true;
-            $profileType = 'teacher';
-        } elseif ($studentProfile && $studentProfile->school_id === $school->id) {
-            $hasAccess = true;
-            $profileType = 'student';
         }
 
-        // 4️⃣ Erişim kontrolü
-        if (! $hasAccess) {
+        // 3) Teacher mı?
+        if ($teacherProfile && $teacherProfile->school_id === $school->id) {
+            $hasAccess = true;
+        }
+
+        // 4) Öğrenci mi?
+        if ($studentProfile && $studentProfile->school_id === $school->id) {
+            $hasAccess = true;
+        }
+
+        // Erişim yoksa
+        if (!$hasAccess) {
             return response()->json([
                 'message' => 'Bu okula erişim yetkiniz bulunmamaktadır.'
             ], 403);
         }
-        $request->attributes->set('school', $school);
-        $request->attributes->set('profile_type', $profileType);
 
         return $next($request);
     }

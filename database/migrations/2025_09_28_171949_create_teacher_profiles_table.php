@@ -39,8 +39,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('teacher_profiles', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('branch_id');
-        });
+        Schema::dropIfExists('teacher_profiles');
     }
 };

@@ -19,7 +19,8 @@ class AdminUserSeeder extends Seeder
             ]
         );
 
-        $admin->assignRole('admin');
+        $admin->syncRoles(['admin']);   // 👈 guard sanctum ile admin rolü
+
         //--------------------------------------------------------
         $manager = User::firstOrCreate(
             ['email' => 'manager@manager.com'],
@@ -30,6 +31,7 @@ class AdminUserSeeder extends Seeder
                 'role' => 'manager',
             ]
         );
-        $manager->assignRole('manager');
+        $manager->syncRoles(['manager']);   // 👈 guard sanctum ile admin rolü
+
     }
 }

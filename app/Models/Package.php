@@ -39,12 +39,6 @@ use Illuminate\Database\Eloquent\Model;
  *     @OA\Items(ref="#/components/schemas/PackageWeekGradeRule"),
  *     description="Paketin haftalık sınıf kuralları"
  * ),
- * @OA\Property(
- *     property="subject_rules",
- *     type="array",
- *     @OA\Items(ref="#/components/schemas/PackageWeekSubjectRule"),
- *     description="Paketin haftalık ders kuralları"
- * ),
  * @OA\Property(property="created_at", type="string", format="date-time"),
  * @OA\Property(property="updated_at", type="string", format="date-time")
  * )
@@ -100,10 +94,7 @@ class Package extends Model
         return $this->hasMany(PackageWeekGradeRule::class);
     }
 
-    public function subjectRules()
-    {
-        return $this->hasMany(PackageWeekSubjectRule::class);
-    }
+
     public function schools()
     {
         return $this->hasMany(School::class);

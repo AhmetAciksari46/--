@@ -11,73 +11,115 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Traits\ApiResponser;
+use App\Http\Requests\Teacher\TeacherUpdateRequestManager;
 use App\Http\Requests\Profile\UpdateProfileRequest;
 use Illuminate\Support\Facades\DB;
+use App\Models\School;
 
 /**
  * @OA\Tag(
- *     name="TeacherProfile",
+ *     name="Manager - Teacher İşlemleri",
  *     description="Öğretmenlerin kendi profil işlemleri"
  * )
  */
 class TeacherController extends Controller
 {
     use ApiResponser;
+
+
+
+
     /**
      * @OA\Get(
      *     path="/api/schools/{school}/teachers",
-     *     summary="List teachers of a school",
-     *     tags={"Teachers"},
+     *     summary="Belirli bir okulun öğretmenlerini listeler",
+     *     tags={"Manager - Teacher İşlemleri"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Response(response=200, description="List of teachers")
      * )
      */
-    public function index($school)
+    public function index(School $school)
     {
+
         $teachers = User::where('role', 'teacher')
-            ->whereHas('teacherProfile', fn($q) => $q->where('school_id', $school))
+            ->whereHas('teacherProfile', fn($q) => $q->where('school_id', $school->id))
             ->with('teacherProfile')
             ->get();
-
-        return response()->json($teachers);
+        return $this->successResponse($teachers, 'Okula ait öğretmenler getirildi.', 200);
     }
     /**
      * @OA\Get(
      *     path="/api/schools/{school}/teachers/{teacher}",
-     *     summary="Get teacher by ID",
-     *     tags={"TeacherProfile"},
-     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="teacher", in="path", required=true, @OA\Schema(type="integer")),
+     *     summary="Belirli öğretmeni getirir",
+     *     tags={"Manager - Teacher İşlemleri"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(
+     *         name="school",
+     *         in="path",
+     *         required=true,
+     *         description="Okul ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="teacher",
+     *         in="path",
+     *         required=true,
+     *         description="Öğretmen ID",
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *
      *     @OA\Response(response=200, description="Teacher details")
      * )
      */
-    public function show($school, User $teacher)
+    public function show(School $school, User $teacher)
     {
+        if (!$teacher->teacherProfile || $teacher->teacherProfile->school_id != $school->id) {
+
+            return $this->errorResponse('Bu öğretmen bu okula ait değil.', 403);
+        }
+
         $teacher->load('teacherProfile');
-        return response()->json($teacher);
+        return $this->successResponse($teacher, 'Öğretmen bilgileri getirildi.', 200);
     }
     /**
      * @OA\Post(
      *     path="/api/schools/{school}/teachers",
-     *     summary="Create a new teacher",
-     *     tags={"TeacherProfile"},
-     *     @OA\RequestBody(
-     *          required=true,
-     *          @OA\JsonContent(
-     *              required={"name","email","password","branch_id"},
-     *              @OA\Property(property="name", type="string"),
-     *              @OA\Property(property="userName", type="string"),
-     *              @OA\Property(property="email", type="string"),
-     *              @OA\Property(property="password", type="string"),
-     *              @OA\Property(property="branch_id", type="integer"),
-     *              @OA\Property(property="phone", type="string"),
-     *              @OA\Property(property="address", type="string")
-     *          )
+     *     summary="Belirli okula yeni öğretmen ekler",
+     *     tags={"Manager - Teacher İşlemleri"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(
+     *         name="school",
+     *         in="path",
+     *         required=true,
+     *         description="Okul ID",
+     *         @OA\Schema(type="integer", example=1)
      *     ),
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name","userName","password","branch_id"},
+     *             @OA\Property(property="name", type="string", example="Ali Yılmaz"),
+     *             @OA\Property(property="userName", type="string", example="aliyilmaz"),
+     *             @OA\Property(property="email", type="string", example="ali@example.com"),
+     *             @OA\Property(property="password", type="string", example="12345678"),
+     *             @OA\Property(property="password_confirmation", type="string", example="12345678"),
+     *             @OA\Property(property="branch_id", type="integer", example=2),
+     *             @OA\Property(property="phone", type="string", example="+905551234567"),
+     *             @OA\Property(property="address", type="string", example="İstanbul"),
+     *             @OA\Property(property="birth_date", type="string", format="date", example="1985-05-10"),
+     *             @OA\Property(property="referance", type="string", example="REF001")
+     *         )
+     *     ),
+     *
      *     @OA\Response(response=201, description="Teacher created successfully")
      * )
      */
-    public function store(Request $request, $school)
+    public function store(Request $request, School $school)
     {
         $data = $request->validate([
             'name' => 'required|string',
@@ -87,6 +129,8 @@ class TeacherController extends Controller
             'branch_id' => 'required|exists:branches,id',
             'phone' => 'nullable|string',
             'address' => 'nullable|string',
+            'birth_date' => 'nullable|date|before:today',
+            'referance' => 'nullable|string|max:255',
         ]);
 
         $teacher = DB::transaction(function () use ($data, $school) {
@@ -97,9 +141,9 @@ class TeacherController extends Controller
                 'password' => bcrypt($data['password']),
                 'role' => 'teacher',
             ]);
-
+            $user->assignRole('teacher');
             $profile = $user->teacherProfile()->create([
-                'school_id' => $school,
+                'school_id' => $school->id,
                 'branch_id' => $data['branch_id'],
                 'phone' => $data['phone'] ?? null,
                 'address' => $data['address'] ?? null,
@@ -108,96 +152,245 @@ class TeacherController extends Controller
             return $user->load('teacherProfile');
         });
 
-        return response()->json($teacher, 201);
+        return $this->successResponse($teacher, 'Yeni öğretmen oluşturuldu.', 200);
     }
 
     /**
      * @OA\Put(
      *     path="/api/schools/{school}/teachers/{teacher}",
-     *     summary="Update teacher information",
-     *     tags={"TeacherProfile"},
-     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="teacher", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\RequestBody(
-     *          required=false,
-     *          @OA\JsonContent(
-     *              @OA\Property(property="name", type="string"),
-     *              @OA\Property(property="email", type="string"),
-     *              @OA\Property(property="phone", type="string"),
-     *              @OA\Property(property="address", type="string")
-     *          )
+     *     summary="Belirli öğretmeni günceller",
+     *     tags={"Manager - Teacher İşlemleri"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(
+     *         name="school",
+     *         in="path",
+     *         required=true,
+     *         description="Okul ID",
+     *         @OA\Schema(type="integer", example=1)
      *     ),
+     *     @OA\Parameter(
+     *         name="teacher",
+     *         in="path",
+     *         required=true,
+     *         description="Öğretmen User ID",
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/TeacherUpdateRequestManager")
+     *     ),
+     *
      *     @OA\Response(response=200, description="Teacher updated successfully")
      * )
      */
-    public function update(Request $request, $school, User $teacher)
+
+    public function update(TeacherUpdateRequestManager $request, School $school, User $teacher)
     {
-        $data = $request->only(['name', 'email', 'phone', 'address']);
 
-        $teacher->update($data);
-        $teacher->teacherProfile->update($data);
 
-        return response()->json(['message' => 'Teacher updated successfully']);
+        // 🔒 Öğretmen bu okula mı ait?
+        if (!$teacher->teacherProfile || $teacher->teacherProfile->school_id != $school->id) {
+
+            return $this->errorResponse('Bu öğretmen bu okula ait değil.', 403);
+        }
+
+        $validated = $request->validated();
+
+        // USER alanları
+        $userFields = array_filter(
+            $validated,
+            fn($k) =>
+            in_array($k, ['name', 'email']),
+            ARRAY_FILTER_USE_KEY
+        );
+
+        // TEACHER PROFILE alanları
+        $profileFields = array_filter(
+            $validated,
+            fn($k) =>
+            !in_array($k, ['name', 'email']),
+            ARRAY_FILTER_USE_KEY
+        );
+
+        if (!empty($userFields)) {
+            $teacher->update($userFields);
+        }
+
+        if (!empty($profileFields)) {
+            $teacher->teacherProfile->update($profileFields);
+        }
+
+
+        return $this->successResponse($teacher->load('teacherProfile'), 'Öğretmen başarıyla güncellendi.', 200);
     }
+
 
     /**
      * @OA\Delete(
      *     path="/api/schools/{school}/teachers/{teacher}",
-     *     summary="Delete teacher",
-     *     tags={"TeacherProfile"},
-     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="teacher", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="Teacher deleted successfully")
+     *     summary="Belirli öğretmeni siler",
+     *     tags={"Manager - Teacher İşlemleri"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(
+     *         name="school",
+     *         in="path",
+     *         required=true,
+     *         description="Okul ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="teacher",
+     *         in="path",
+     *         required=true,
+     *         description="Öğretmen ID",
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *
+     *     @OA\Response(response=200, description="Teacher deleted")
      * )
      */
-    public function destroy($school, User $teacher)
+    public function destroy(School $school, User $teacher)
     {
+
+        if ($teacher->teacherProfile->school_id != $school->id) {
+            return $this->errorResponse('Bu öğretmen bu okula ait değil.', 403);
+        }
+
         $teacher->delete();
-        return response()->json(['message' => 'Teacher deleted']);
+        return $this->successResponse(null, 'Öğretmen Silindi', 200);
     }
+
+
+
+
+
+
+
 
     /**
      * @OA\Get(
      *     path="/api/schools/{school}/teachers/{teacher}/permissions",
-     *     summary="Get teacher permissions",
-     *     tags={"TeacherProfile"},
-     *     @OA\Response(response=200, description="List of teacher permissions")
+     *     summary="Öğretmenin tüm izinlerini listeler",
+     *     tags={"Manager - Teacher İşlemleri"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(
+     *         name="school",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="teacher",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *
+     *     @OA\Response(response=200, description="Permissions list")
      * )
      */
-    public function getPermissions(User $teacher)
+    public function getPermissions(School $school, User $teacher)
     {
-        $permissions = $teacher->getAllPermissions()->pluck('name');
-        return response()->json(['permissions' => $permissions]);
+
+        return response()->json([
+            'permissions' => $teacher->getAllPermissions()->pluck('name')
+        ]);
     }
 
     /**
      * @OA\Put(
      *     path="/api/schools/{school}/teachers/{teacher}/permissions",
-     *     summary="Update teacher permissions",
-     *     tags={"TeacherProfile"},
-     *     @OA\RequestBody(
-     *          required=true,
-     *          @OA\JsonContent(
-     *              @OA\Property(property="permissions", type="array", @OA\Items(type="string"))
-     *          )
+     *     summary="Öğretmenin izinlerini günceller",
+     *     tags={"Manager - Teacher İşlemleri"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(
+     *         name="school",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
      *     ),
-     *     @OA\Response(response=200, description="Permissions updated successfully")
+     *
+     *     @OA\Parameter(
+     *         name="teacher",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="permissions",
+     *                 type="array",
+     *                 @OA\Items(type="string", example="attendance.edit")
+     *             )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(response=200, description="Permissions updated")
      * )
      */
-    public function updatePermissions(Request $request, User $teacher)
+    public function updatePermissions(Request $request, School $school, User $teacher)
     {
-        // 1️⃣ Policy kontrolü: Manager bu öğretmeni düzenlemeye yetkili mi?
-        $this->authorize('updatePermissions', $teacher);
+        // 🔥 Okul - öğretmen doğrulaması
+        if (!$teacher->teacherProfile || $teacher->teacherProfile->school_id !== $school->id) {
+            return response()->json(['message' => 'Bu öğretmen bu okula ait değil.'], 403);
+        }
 
         $data = $request->validate([
             'permissions' => 'required|array',
+            'permissions.*' => 'string|exists:permissions,name',
         ]);
 
         $teacher->syncPermissions($data['permissions']);
 
-        return response()->json(['message' => 'Permissions updated']);
+        return response()->json([
+            'message' => 'Teacher permissions updated successfully.',
+            'new_permissions' => $teacher->getPermissionNames(),
+        ]);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/schools/{school}/teachers/{teacher}/available-permissions",
+     *     summary="Öğretmenlere atanabilir tüm izinleri döner",
+     *     tags={"Manager - Teacher Permissions"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Tüm teacher permission listesi",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="permissions", type="array",
+     *                 @OA\Items(type="string", example="classmodel.view")
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function availablePermissionsForTeachers(School $school, User $teacher)
+    {
+        return $this->authorize('manageTeacherPermissions', [$school, $teacher]);
+
+        // Sadece öğretmen rolüne ait izinleri getir
+        $teacherRole = \Spatie\Permission\Models\Role::where('name', 'teacher')->first();
+
+        $permissions = $teacherRole
+            ? $teacherRole->permissions->pluck('name')
+            : collect([]);
+
+        return response()->json([
+            'available_permissions' => $permissions
+        ]);
+    }
 
 
 
@@ -205,7 +398,7 @@ class TeacherController extends Controller
     // /**
     //  * @OA\Put(
     //  *     path="/api/me/teacher/updateprofile",
-    //  *     tags={"TeacherProfile"},
+    //  *     tags={"Manager - Teacher İşlemleri"},
     //  *     summary="Öğretmen kendi kullanıcı hesabını günceller",
     //  *     security={{"bearerAuth": {}}},
     //  *     @OA\RequestBody(

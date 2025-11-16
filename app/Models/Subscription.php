@@ -39,9 +39,8 @@ class Subscription extends Model
 
     protected $dates = ['start_date', 'end_date'];
     protected $fillable = [
-        'subscribable_type',   // <-- buraya ekle
+        'subscribable_type',
         'subscribable_id',
-        'subscribable',
         'package_id',
         'price',
         'currency',
@@ -54,8 +53,8 @@ class Subscription extends Model
         'is_active',
         'auto_renew',
         'note'
-
     ];
+
     protected $casts = [
         'is_active' => 'boolean',
         'start_date' => 'date',

@@ -13,30 +13,17 @@ class EnsureSchoolIsActive
     public function handle(Request $request, Closure $next)
     {
         $user = $request->user();
-        $schoolId = $request->route('school')?->id ?? null;
-
-        // Eğer kullanıcı manager veya teacher ise kendi schoolId'si ile kontrol
-        // Eğer öğrenci ise öğrenci -> schoolId ile kontrol
-        if (!$schoolId) {
-            if ($user->role === 'manager' || $user->role === 'teacher') {
-                $schoolId = $user->school_id ?? $user->manager_profile?->school_id ?? null;
-            } elseif ($user->role === 'schoolstudent' || $user->role === 'individualstudent') {
-                $schoolId = $user->student_profile?->school_id ?? null;
-            }
-        }
-        if (!$schoolId) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Okul bilgisi bulunamadı.'
-            ], 403);
+        // Admin her okula erişebilir
+        if ($user->role === 'admin') {
+            return $next($request);
         }
 
-        $school = School::find($schoolId);
+
+        $school = $request->route('school');
 
         if (!$school || !$school->is_active) {
             return response()->json([
-                'status' => 'error',
-                'message' => 'Bu işlemi gerçekleştirmek için okulun aktif bir paketi olmalı.'
+                'message' => 'Bu okulun aktif bir paketi yok.'
             ], 403);
         }
 

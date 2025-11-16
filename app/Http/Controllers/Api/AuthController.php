@@ -21,7 +21,7 @@ use Spatie\Permission\Models\Role;
 
 /**
  * @OA\Tag(
- *     name="Auth",
+ *     name="01 Auth İşlemleri",
  *     description="Kullanıcı kimlik doğrulama işlemleri"
  * )
  */
@@ -35,7 +35,7 @@ class AuthController extends Controller
      * @OA\Post(
      *     path="/api/register",
      *     summary="Yeni kullanıcı kaydı oluşturur",
-     *     tags={"Auth"},
+     *     tags={"01 Auth İşlemleri"},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -72,7 +72,7 @@ class AuthController extends Controller
     /**
      * @OA\Post(
      *     path="/api/admin/managerregister",
-     *     tags={"Auth"},
+     *     tags={"01 Auth İşlemleri"},
      *     summary="Yeni Manager kaydı oluştur (Sadece Admin)",
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
@@ -174,7 +174,7 @@ class AuthController extends Controller
      * @OA\Post(
      *     path="/api/login",
      *     summary="Kullanıcı girişi yapar ve erişim token'ı döner",
-     *     tags={"Auth"},
+     *     tags={"01 Auth İşlemleri"},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -244,7 +244,7 @@ class AuthController extends Controller
      *     path="/api/logout",
      *     summary="Aktif kullanıcı oturumunu kapatır",
      *     security={{"sanctum":{}}},
-     *     tags={"Auth"},
+     *     tags={"01 Auth İşlemleri"},
      *     @OA\Response(response=200, description="Çıkış başarılı"),
      *     @OA\Response(response=401, description="Yetkilendirme gerekli")
      * )

@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             AdminUserSeeder::class,
             BranchSeeder::class,
-            SubjectSeeder::class,
+            //SubjectSeeder::class,
             PackageSeeder::class,
             PackageWeekGradeRuleSeeder::class,
             PackageWeekSubjectRuleSeeder::class,

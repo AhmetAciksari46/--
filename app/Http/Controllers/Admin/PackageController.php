@@ -51,9 +51,8 @@ class PackageController extends Controller
     public function index()
     {
         // Tüm paketleri paginated olarak çekiyoruz.
-        $packages = Package::with(['gradeRules', 'subjectRules'])
-            ->paginate(15);
-        //TODO: EKLENEBİLİR            ->withCount('subscriptions') 
+        $packages = Package::with(['gradeRules'])
+            ->get();
 
         return $this->successResponse($packages);
     }
@@ -86,7 +85,7 @@ class PackageController extends Controller
         // StorePackageRequest, yetkilendirme ve doğrulamayı halletti.
         $package = Package::create($request->validated());
         return $this->successResponse(
-            $package->load(['gradeRules', 'subjectRules'])->loadCount('subscriptions'),
+            $package->load(['gradeRules'])->loadCount('subscriptions'),
             'Paket başarıyla oluşturuldu.',
             201
         );
@@ -116,7 +115,7 @@ class PackageController extends Controller
     {
         // Paketin kurallarını da eager load ederek tam bir detay sunuyoruz.
         return $this->successResponse(
-            $package->load(['gradeRules', 'subjectRules'])->loadCount('subscriptions'),
+            $package->load(['gradeRules'])->loadCount('subscriptions'),
             'Paket detayı başarıyla getirildi.'
         );
     }
@@ -163,7 +162,7 @@ class PackageController extends Controller
     {
         $package->update($request->validated());
         return $this->successResponse(
-            $package->load(['gradeRules', 'subjectRules'])->loadCount('subscriptions'),
+            $package->load(['gradeRules'])->loadCount('subscriptions'),
             'Paket başarıyla güncellendi.'
         );
     }
@@ -209,60 +208,12 @@ class PackageController extends Controller
 
         // İlişkili kuralları siliyoruz (Veritabanında CASCADE yoksa gereklidir)
         $package->gradeRules()->delete();
-        $package->subjectRules()->delete();
 
         $package->delete();
         return $this->successResponse(null, 'Paket ve ilişkili kuralları başarıyla silindi.');
     }
 
 
-    //*********************-Admin Kısmı bitti-*************************** */
-
-    //TODO: V2.0 da eklenecek
-
-    // Sadece aktif ve görünür olan paketleri getir
-    // public function publicIndex()
-    // {
-    //     try {
-    //         $packages = Package::where('is_active', true)
-    //             ->where('is_visible', true)
-    //             ->orderBy('sort_order')
-    //             ->get();
-    //         return $this->successResponse($packages, 'Paket listesi başarıyla getirildi.');
-    //     } catch (\Exception $e) {
-    //         return $this->errorResponse('Paketler getirilirken bir hata oluştu: ' . $e->getMessage(), 500);
-    //     }
-    // }
-    // Sadece aktif ve görünür paketi id ile gösterebilir
-
-    //TODO: V2.0 da eklenecek
-
-    /**
-     * @OA\Get(
-     *     path="/api/publicpackage/{id}",
-     *     summary="İlgili Paketi Getirir",
-     *     description="Paket detaylarını getirir.",
-     *     tags={"Packages"},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Başarılı",
-     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Package"))
-     *     )
-     * )
-     */
-
-    // public function publicShow($id)
-    // {
-    //     $package = Package::where('is_active', true)
-    //         ->where('is_visible', true)
-    //         ->findOrFail($id);
-
-    //     return response()->json([
-    //         'message' => 'Paket detayları getirildi.',
-    //         'data' => $package
-    //     ]);
-    //     return $this->successResponse($package, 'Paket detayları getirildi.');
-    // }
 
 
 

@@ -15,122 +15,213 @@ class RolePermissionSeeder extends Seeder
 
         // Permissions
         $permissions = [
+
+            // USER
             'user.create',
-            'user.edit',
+            'user.update',
             'user.delete',
-
-            'organization.create',
-            'organization.edit',
-            'organization.delete',
-
+            'user.view',
+            'user.view.list',
+            // SCHOOL
             'school.create',
             'school.update',
             'school.delete',
             'school.view',
+            'school.view.list',
 
-            'class.create',
-            'class.edit',
-            'class.delete',
+            // CLASS
+            'classmodel.create',
+            'classmodel.update',
+            'classmodel.delete',
+            'classmodel.view',
+            'classmodel.view.list',
 
+            // STUDENT
             'student.create',
-            'student.edit',
+            'student.update',
             'student.delete',
+            'student.view',
+            'student.view.list',
 
-            'worker.create',
-            'worker.edit',
-            'worker.delete',
-
+            // TEACHER
             'teacher.create',
-            'teacher.edit',
+            'teacher.update',
             'teacher.delete',
+            'teacher.view',
+            'teacher.view.list',
 
+            // WORKER
+            'worker.create',
+            'worker.update',
+            'worker.delete',
+            'worker.view',
+            'worker.view.list',
+
+            // SETTINGS
             'profile.update',
-            'settings.edit',
+            'settings.update',
 
+            // PACKAGE
             'package.create',
-            'package.edit',
+            'package.update',
             'package.delete',
             'package.view',
+            'package.view.list',
 
-            'student.view',
-            'class.view',
-            'teacher.view',
-            'worker.view',
-            'organization.view',
+            'subscription.create',
+            'subscription.update',
+            'subscription.delete',
+            'subscription.view',
+            'subscription.view.list',
 
-            'student.view.list',
-            'class.view.list',
-            'teacher.view.list',
-            'worker.view.list',
-            'organization.view.list',
+            'grade.create',
+            'grade.update',
+            'grade.delete',
+            'grade.view',
+            'grade.view.list',
+
         ];
 
+
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
+            Permission::firstOrCreate([
+                'name' => $permission,
+                'guard_name' => 'sanctum',   // 👈 KRİTİK
+            ]);
         }
 
-        $admin = Role::firstOrCreate(['name' => 'admin']);
-        $manager = Role::firstOrCreate(['name' => 'manager']);
-        $teacher = Role::firstOrCreate(['name' => 'teacher']);
-        $individualstudent = Role::firstOrCreate(['name' => 'individualstudent']);
-        $schoolstudent = Role::firstOrCreate(['name' => 'schoolschstudent']);
-        $worker = Role::firstOrCreate(['name' => 'worker']);
+        $admin = Role::firstOrCreate(
+            ['name' => 'admin', 'guard_name' => 'sanctum']
+        );
+        $manager = Role::firstOrCreate(
+            ['name' => 'manager', 'guard_name' => 'sanctum']
+        );
+        $teacher = Role::firstOrCreate(
+            ['name' => 'teacher', 'guard_name' => 'sanctum']
+        );
+        $individualstudent = Role::firstOrCreate(
+            ['name' => 'individualstudent', 'guard_name' => 'sanctum']
+        );
+        $schoolstudent = Role::firstOrCreate(
+            ['name' => 'schoolstudent', 'guard_name' => 'sanctum']
+        );
+        $worker = Role::firstOrCreate(
+            ['name' => 'worker', 'guard_name' => 'sanctum']
+        );
 
         // Role => Permission eşleştirmeleri
-        $admin->givePermissionTo(Permission::all()); // admin her şeye sahip
+        $admin->syncPermissions(Permission::where('guard_name', 'sanctum')->get());
 
-        $manager->givePermissionTo([
-            'organization.edit',
+        // $manager->givePermissionTo([
+        //     'organization.edit',
+        //     'profile.update',
+
+        //     'class.create',
+        //     'class.edit',
+        //     'class.delete',
+        //     'class.view',
+        //     'class.view.list',
+
+        //     'student.view',
+        //     'student.view.list',
+        //     'student.create',
+        //     'student.edit',
+        //     'student.delete',
+
+        //     'worker.create',
+        //     'worker.edit',
+        //     'worker.delete',
+        //     'worker.view.list',
+        //     'worker.view',
+
+        //     'teacher.create',
+        //     'teacher.edit',
+        //     'teacher.delete',
+        //     'teacher.view',
+        //     'teacher.view.list',
+        //     'school.create',
+        //     'school.update',
+        //     'school.delete',
+        //     'school.view',
+        //     'organization.view',
+
+        // ]);
+        $manager->syncPermissions([
             'profile.update',
 
-            'class.create',
-            'class.edit',
-            'class.delete',
-            'class.view',
-            'class.view.list',
+            // CLASS
+            'classmodel.create',
+            'classmodel.update',
+            'classmodel.delete',
+            'classmodel.view',
+            'classmodel.view.list',
 
+            // STUDENT
+            'student.create',
+            'student.update',
+            'student.delete',
             'student.view',
             'student.view.list',
-            'student.create',
-            'student.edit',
-            'student.delete',
 
+            // WORKER
             'worker.create',
-            'worker.edit',
+            'worker.update',
             'worker.delete',
-            'worker.view.list',
             'worker.view',
+            'worker.view.list',
 
+            // TEACHER
             'teacher.create',
-            'teacher.edit',
+            'teacher.update',
             'teacher.delete',
             'teacher.view',
             'teacher.view.list',
-            'school.create',
-            'school.update',
-            'school.delete',
+
+            // SCHOOL
             'school.view',
-            'organization.view',
+            'school.update',
 
         ]);
-        $teacher->givePermissionTo([
-            'class.create',
-            'class.edit',
-            'class.delete',
-            'student.create',
-            'student.edit',
-            'student.delete',
+
+        // $teacher->givePermissionTo([
+        //     'class.create',
+        //     'class.edit',
+        //     'class.delete',
+        //     'student.create',
+        //     'student.edit',
+        //     'student.delete',
+        //     'profile.update',
+        //     'student.view',
+        //     'class.view',
+        //     'student.view.list',
+        //     'class.view.list',
+
+        // ]);
+
+        $teacher->syncPermissions([
             'profile.update',
-            'student.view',
-            'class.view',
-            'student.view.list',
-            'class.view.list',
 
+            // TEACHER Görevleri
+            'student.view',
+            'student.view.list',
+            'classmodel.view',
+            'classmodel.view.list',
+
+            // Eğer öğretmene CRUD yetkisi vermek istersen:
+            // 'student.create', 'student.update', 'student.delete',
+            // 'class.create', 'class.update', 'class.delete',
         ]);
+
+
         $individualstudent->givePermissionTo([
             'profile.update',
         ]);
-        $schoolstudent->givePermissionTo([
+        // $schoolstudent->givePermissionTo([
+        //     'profile.update',
+        //     'student.view.list',
+        // ]);
+        // ---- SCHOOL STUDENT ----
+        $schoolstudent->syncPermissions([
             'profile.update',
             'student.view.list',
         ]);

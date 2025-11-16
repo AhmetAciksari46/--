@@ -22,150 +22,102 @@ class SubjectController extends Controller
     /**
      * @OA\Get(
      *     path="/api/admin/subjects",
-     *     summary="Tüm global ders kayıtlarını listeler",
-     *     tags={"Admin - Subject Management"},
+     *     tags={"Subjects"},
+     *     summary="Tüm dersleri listele",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Başarılı işlem",
-     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Subject"))
-     *     ),
-     *     @OA\Response(response=403, description="Yetkisiz erişim")
+     *     @OA\Response(response=200, description="Liste döndürüldü")
      * )
      */
     public function index()
     {
         $this->authorize('viewAny', Subject::class);
-
-        $subjects = Subject::orderBy('id')->get();
-
-        return $this->successResponse($subjects, 'Ders kayıtları başarıyla listelendi.');
-    }
-
-    /**
-     * @OA\Get(
-     *     path="/api/admin/subjects/{id}",
-     *     summary="Belirli bir global dersin detayını getirir",
-     *     tags={"Admin - Subject Management"},
-     *     security={{"bearerAuth": {}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="Ders ID",
-     *         @OA\Schema(type="integer", example=1)
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Başarılı işlem",
-     *         @OA\JsonContent(ref="#/components/schemas/Subject")
-     *     ),
-     *     @OA\Response(response=404, description="Kayıt bulunamadı"),
-     *     @OA\Response(response=403, description="Yetkisiz erişim")
-     * )
-     */
-    public function show(Subject $subject)
-    {
-        $this->authorize('view', $subject);
-
-        return $this->successResponse($subject, 'Ders bilgisi başarıyla getirildi.');
+        return response()->json(Subject::with(['branch', 'parent', 'grade'])->get());
     }
 
     /**
      * @OA\Post(
      *     path="/api/admin/subjects",
-     *     summary="Yeni global ders oluşturur",
-     *     tags={"Admin - Subject Management"},
-     *     security={{"bearerAuth": {}}},
+     *     tags={"Subjects"},
+     *     summary="Yeni ders oluştur",
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/StoreSubjectRequest")
+     *         @OA\JsonContent(
+     *             required={"name","branch_id"},
+     *             @OA\Property(property="name", type="string", example="English Reading"),
+     *             @OA\Property(property="branch_id", type="integer", example=2),
+     *             @OA\Property(property="parent_id", type="integer", nullable=true),
+     *             @OA\Property(property="grade_id", type="integer", nullable=true)
+     *         )
      *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Ders başarıyla oluşturuldu",
-     *         @OA\JsonContent(ref="#/components/schemas/Subject")
-     *     ),
-     *     @OA\Response(response=422, description="Doğrulama hatası"),
-     *     @OA\Response(response=403, description="Yetkisiz erişim")
+     *     @OA\Response(response=201, description="Oluşturuldu")
      * )
      */
-    public function store(StoreSubjectRequest $request)
+    public function store(Request $request)
     {
         $this->authorize('create', Subject::class);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:subjects,name',
+            'branch_id' => 'required|exists:branches,id',
+            'parent_id' => 'nullable|exists:subjects,id',
+            'grade_id' => 'nullable|exists:grades,id',
+        ]);
 
-        $subject = Subject::create($request->validated());
-
-        return $this->successResponse($subject, 'Ders başarıyla oluşturuldu.', 201);
+        $subject = Subject::create($validated);
+        return response()->json($subject, 201);
     }
 
     /**
      * @OA\Put(
      *     path="/api/admin/subjects/{id}",
-     *     summary="Mevcut bir dersi günceller",
-     *     tags={"Admin - Subject Management"},
-     *     security={{"bearerAuth": {}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="Ders ID",
-     *         @OA\Schema(type="integer", example=1)
-     *     ),
+     *     tags={"Subjects"},
+     *     summary="Ders güncelle",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/UpdateSubjectRequest")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="name", type="string"),
+     *             @OA\Property(property="branch_id", type="integer"),
+     *             @OA\Property(property="parent_id", type="integer"),
+     *             @OA\Property(property="grade_id", type="integer")
+     *         )
      *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Ders başarıyla güncellendi",
-     *         @OA\JsonContent(ref="#/components/schemas/Subject")
-     *     ),
-     *     @OA\Response(response=404, description="Kayıt bulunamadı"),
-     *     @OA\Response(response=422, description="Doğrulama hatası")
+     *     @OA\Response(response=200, description="Başarılı")
      * )
      */
-    public function update(UpdateSubjectRequest $request, Subject $subject, $id)
+    public function update(Request $request, $id)
     {
+        $subject = Subject::findOrFail($id);
         $this->authorize('update', $subject);
 
-        $subject = Subject::find($id);
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255|unique:subjects,name,' . $id,
+            'branch_id' => 'sometimes|exists:branches,id',
+            'parent_id' => 'nullable|exists:subjects,id',
+            'grade_id' => 'nullable|exists:grades,id',
+        ]);
 
-        if (!$subject) {
-            return $this->errorResponse('Ders kaydı bulunamadı.', 404);
-        }
-
-        $this->authorize('update', $subject);
-
-        $subject->update($request->validated());
-
-        return $this->successResponse($subject->refresh(), 'Ders başarıyla güncellendi.');
+        $subject->update($validated);
+        return response()->json($subject);
     }
 
     /**
      * @OA\Delete(
      *     path="/api/admin/subjects/{id}",
-     *     summary="Belirli bir dersi siler",
-     *     tags={"Admin - Subject Management"},
-     *     security={{"bearerAuth": {}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="Ders ID",
-     *         @OA\Schema(type="integer", example=1)
-     *     ),
-     *     @OA\Response(response=204, description="Ders başarıyla silindi"),
-     *     @OA\Response(response=403, description="Yetkisiz erişim"),
-     *     @OA\Response(response=404, description="Kayıt bulunamadı")
+     *     tags={"Subjects"},
+     *     summary="Ders sil",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=204, description="Silindi")
      * )
      */
-    public function destroy(Subject $subject)
+    public function destroy($id)
     {
+        $subject = Subject::findOrFail($id);
         $this->authorize('delete', $subject);
-
         $subject->delete();
 
-        return $this->successResponse(null, 'Ders başarıyla silindi.', 204);
+        return response()->json(['message' => 'Silindi'], 204);
     }
 }

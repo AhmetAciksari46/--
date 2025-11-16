@@ -7,6 +7,12 @@ use Illuminate\Support\Facades\Gate;
 use App\Models\User;
 use App\Policies\TeacherPolicy;
 use App\Models\ClassModel;
+use App\Models\Attendance;
+use App\Models\LessonSession;
+use App\Models\ClassSchedule;
+use App\Models\SchoolHasGrade;
+
+use App\Policies\LessonSessionPolicy;
 use App\Policies\ClassModelPolicy;
 use App\Policies\SchoolStudentPolicy;
 use App\Models\SchoolSession;
@@ -14,6 +20,11 @@ use App\Models\SchoolStudentProfile;
 use App\Policies\SchoolSessionPolicy;
 use App\Models\StudentCurriculumOverride;
 use App\Policies\StudentCurriculumOverridePolicy;
+use App\Policies\ClassSchedulePolicy;
+use App\Policies\SchoolPolicy;
+use App\Models\School;
+use App\Policies\AttendancePolicy;
+use App\Policies\SchoolHasGradePolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -26,6 +37,15 @@ class AuthServiceProvider extends ServiceProvider
         SchoolStudentProfile::class => SchoolStudentPolicy::class,
         SchoolSession::class => SchoolSessionPolicy::class,
         StudentCurriculumOverride::class => StudentCurriculumOverridePolicy::class,
+        Attendance::class => AttendancePolicy::class,
+        LessonSession::class => LessonSessionPolicy::class,
+        ClassSchedule::class => ClassSchedulePolicy::class,
+        SchoolHasGrade::class => SchoolHasGradePolicy::class,
+        School::class => SchoolPolicy::class,
+
+
+
+
     ];
 
     /**

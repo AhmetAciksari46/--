@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('subjects', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
-            $table->string('code')->nullable();
-            $table->text('description')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->foreignId('branch_id')->constrained('branches')->onDelete('cascade');
+            $table->foreignId('parent_id')->nullable()->constrained('subjects')->nullOnDelete();
+            $table->foreignId('grade_id')->nullable()->constrained('grades')->nullOnDelete();
             $table->timestamps();
         });
     }

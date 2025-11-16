@@ -8,52 +8,15 @@ use Illuminate\Support\Str;
 /**
  * @OA\Schema(
  *     schema="BranchStoreRequest",
- *     title="Branş Oluşturma İsteği",
- *     description="Yeni bir branş oluşturmak için kullanılan istek şeması.",
  *     type="object",
- *     required={"name"},
- *     @OA\Property(
- *         property="name",
- *         type="string",
- *         example="Matematik",
- *         description="Branşın adı. Bu alan zorunludur."
- *     ),
- *     @OA\Property(
- *         property="slug",
- *         type="string",
- *         example="matematik",
- *         description="Branşın kısa adı (slug). Gönderilmezse otomatik oluşturulur."
- *     ),
- *     @OA\Property(
- *         property="code",
- *         type="string",
- *         example="MATH",
- *         description="Branşın kısa kodu (örneğin ders kısaltması)."
- *     ),
- *     @OA\Property(
- *         property="description",
- *         type="string",
- *         example="Matematik branşı sayısal dersleri içerir.",
- *         description="Branş hakkında açıklama (isteğe bağlı)."
- *     ),
- *     @OA\Property(
- *         property="color",
- *         type="string",
- *         example="#1E90FF",
- *         description="Arayüzde kullanılacak renk kodu (isteğe bağlı)."
- *     ),
- *     @OA\Property(
- *         property="icon",
- *         type="string",
- *         example="calculator",
- *         description="Branşı temsil eden ikon adı (isteğe bağlı)."
- *     ),
- *     @OA\Property(
- *         property="is_active",
- *         type="boolean",
- *         example=true,
- *         description="Branş aktif mi? true = aktif, false = pasif."
- *     )
+ *     required={"name", "slug"},
+ *     @OA\Property(property="name", type="string", example="Matematik"),
+ *     @OA\Property(property="slug", type="string", example="matematik"),
+ *     @OA\Property(property="code", type="string", example="MATH"),
+ *     @OA\Property(property="description", type="string", example="Sayısal dersleri kapsar"),
+ *     @OA\Property(property="color", type="string", example="#0088cc"),
+ *     @OA\Property(property="icon", type="string", example="pi pi-calculator"),
+ *     @OA\Property(property="is_active", type="boolean", example=true),
  * )
  */
 class StoreBranchRequest extends FormRequest
@@ -66,13 +29,13 @@ class StoreBranchRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'        => ['required', 'string', 'max:255'],
-            'slug'        => ['nullable', 'string', 'max:255', 'unique:branches,slug'],
-            'code'        => ['nullable', 'string', 'max:10'],
-            'description' => ['nullable', 'string'],
-            'color'       => ['nullable', 'string', 'max:20'],
-            'icon'        => ['nullable', 'string', 'max:50'],
-            'is_active'   => ['boolean'],
+            'name'        => 'required|string|max:255',
+            'slug'        => 'required|string|max:255|unique:branches,slug',
+            'code'        => 'nullable|string|max:10',
+            'description' => 'nullable|string',
+            'color'       => 'nullable|string|max:20',
+            'icon'        => 'nullable|string|max:50',
+            'is_active'   => 'nullable|boolean',
         ];
     }
 

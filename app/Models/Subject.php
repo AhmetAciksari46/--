@@ -8,13 +8,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 /**
  * @OA\Schema(
  *     schema="Subject",
- *     title="Subject Model",
- *     description="Global Ders Kaynağı (ör: Matematik, Türkçe). Tüm paketler ve okullar tarafından ortak kullanılır.",
+ *     type="object",
+ *     title="Subject",
+ *     description="Ders bilgilerini ve hiyerarşisini temsil eder.",
  *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Matematik"),
- *     @OA\Property(property="code", type="string", example="MT101", nullable=true),
- *     @OA\Property(property="description", type="string", example="Sayısal ve mantıksal düşünme becerileri", nullable=true),
- *     @OA\Property(property="is_active", type="boolean", example=true),
+ *     @OA\Property(property="name", type="string", example="English Reading"),
+ *     @OA\Property(property="branch_id", type="integer", example=2),
+ *     @OA\Property(property="parent_id", type="integer", example=1),
+ *     @OA\Property(property="grade_id", type="integer", example=3),
  *     @OA\Property(property="created_at", type="string", format="date-time"),
  *     @OA\Property(property="updated_at", type="string", format="date-time")
  * )
@@ -23,31 +24,25 @@ class Subject extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'code',
-        'description',
-        'is_active',
-    ];
+    protected $fillable = ['name', 'branch_id', 'parent_id', 'grade_id'];
 
-    protected $casts = [
-        'is_active' => 'boolean',
-    ];
-
-    /** 🔗 İlişkiler **/
-
-    public function packageRules()
+    public function branch()
     {
-        return $this->hasMany(PackageWeekSubjectRule::class);
+        return $this->belongsTo(Branch::class);
     }
 
-    public function sessions()
+    public function parent()
     {
-        return $this->hasMany(SchoolSession::class);
+        return $this->belongsTo(Subject::class, 'parent_id');
     }
 
-    public function contents()
+    public function children()
     {
-        return $this->hasMany(Content::class);
+        return $this->hasMany(Subject::class, 'parent_id');
+    }
+
+    public function grade()
+    {
+        return $this->belongsTo(Grade::class);
     }
 }

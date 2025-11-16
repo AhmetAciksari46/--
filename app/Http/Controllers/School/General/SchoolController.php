@@ -8,13 +8,13 @@ use Illuminate\Http\Request;
 use App\Models\School;
 use App\Traits\ApiResponser;
 use App\Http\Requests\Manager\UpdateSchoolRequest;
-use App\Http\Requests\Manager\CreateSchoolRequest;
 use App\Http\Requests\Manager\CreateSchoolbyAdminRequest;
 use App\Http\Requests\Manager\UpdateSchoolbyAdminRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ManagerProfile;
 use App\Models\TeacherProfile;
 use App\Models\SchoolStudentProfile;
+use App\Models\User;
 
 /**
  * @OA\Tag(
@@ -84,12 +84,13 @@ class SchoolController extends Controller
         }
         return $this->successResponse($school);
     }
+
     /**
      * @OA\Post(
-     *     path="/api/schools/create",
+     *     path="/api/admin/school/createschool",
      *     tags={"Schools"},
-     *     summary="Yeni okul oluştur (Manager rolü)",
-     *     description="Manager kullanıcılar için yeni okul oluşturma işlemi. Eğer mevcut okulu varsa hata döner.",
+     *     summary="Yeni okul oluştur (admin rolü)",
+     *     description="Admin kullanıcılar için yeni okul oluşturma işlemi.",
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
@@ -99,7 +100,8 @@ class SchoolController extends Controller
      *             @OA\Property(property="nickname", type="string", example="ackolej"),
      *             @OA\Property(property="address", type="string", example="Kahramanmaraş"),
      *             @OA\Property(property="is_active", type="boolean", example=true),
-     *             @OA\Property(property="img_path", type="string", example="uploads/schools/logo.png")
+     *             @OA\Property(property="img_path", type="string", example="uploads/schools/logo.png"),
+     *             @OA\Property(property="manager_id", type="integer", example="1")
      *         )
      *     ),
      *     @OA\Response(response=200, description="Okul başarıyla oluşturuldu"),
@@ -107,32 +109,7 @@ class SchoolController extends Controller
      *     @OA\Response(response=500, description="Sunucu hatası")
      * )
      */
-    public function create(CreateSchoolRequest $request)
-    {
-        $user = $request->user();
 
-        // Manager profilini al
-        $managerProfile = $user->managerProfile;
-        if ($managerProfile->school_id) {
-            return $this->errorResponse('Mevcut okulunuz var, yeni okul oluşturamazsınız.', 403);
-        }
-        try {
-            $school = School::create([
-                'name' => $request->name,
-                'nickname' => $request->nickname,
-                'address' => $request->address,
-                'is_active' => $request->input('is_active', true),
-                'img_path' => $request->img_path,
-                'manager_id' => $request->user()->id, // otomatik atanıyor
-            ]);
-
-            $managerProfile->update(['school_id' => $school->id]);
-
-            return $this->successResponse($school->fresh(), 'Okul başarıyla oluşturuldu.', 200);
-        } catch (\Exception $e) {
-            return $this->errorResponse('Okul oluşturulurken bir hata oluştu: ' . $e->getMessage(), 500);
-        }
-    }
     // Admin için okul oluşturma
     public function createSchool(CreateSchoolbyAdminRequest $request)
     {
@@ -145,6 +122,14 @@ class SchoolController extends Controller
                 'img_path' => $request->img_path,
                 'manager_id' => $request->manager_id, // admin belirleyecek
             ]);
+            // 2. Manager'ın profilini güncelle (KRİTİK KISIM)
+            $manager = User::find($request->manager_id);
+
+            if ($manager && $manager->managerProfile) {
+                $manager->managerProfile->update([
+                    'school_id' => $school->id
+                ]);
+            }
             return $this->successResponse($school->fresh(), 'Okul başarıyla oluşturuldu.', 201);
         } catch (\Exception $e) {
             return $this->errorResponse('Okul oluşturulurken bir hata oluştu: ' . $e->getMessage(), 500);

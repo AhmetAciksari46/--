@@ -9,51 +9,14 @@ use Illuminate\Support\Str;
 /**
  * @OA\Schema(
  *     schema="BranchUpdateRequest",
- *     title="Branş Güncelleme İsteği",
- *     description="Bir branşın bilgilerini güncellemek için kullanılan istek şeması.",
  *     type="object",
- *     @OA\Property(
- *         property="name",
- *         type="string",
- *         example="Matematik",
- *         description="Branşın adı. (örnek: Matematik)"
- *     ),
- *     @OA\Property(
- *         property="slug",
- *         type="string",
- *         example="matematik",
- *         description="Branşın kısa adı (slug). Eğer gönderilmezse otomatik oluşturulur."
- *     ),
- *     @OA\Property(
- *         property="code",
- *         type="string",
- *         example="MATH",
- *         description="Branş kodu. Genellikle kısa bir kısaltma."
- *     ),
- *     @OA\Property(
- *         property="description",
- *         type="string",
- *         example="Sayısal alan dersleri için branş.",
- *         description="Branşın açıklaması (isteğe bağlı)."
- *     ),
- *     @OA\Property(
- *         property="color",
- *         type="string",
- *         example="#1E90FF",
- *         description="Arayüzde kullanılacak renk kodu (isteğe bağlı)."
- *     ),
- *     @OA\Property(
- *         property="icon",
- *         type="string",
- *         example="calculator",
- *         description="Branşı temsil eden ikon adı (isteğe bağlı)."
- *     ),
- *     @OA\Property(
- *         property="is_active",
- *         type="boolean",
- *         example=true,
- *         description="Branş aktif mi değil mi. true = aktif, false = pasif."
- *     )
+ *     @OA\Property(property="name", type="string", example="Matematik"),
+ *     @OA\Property(property="slug", type="string", example="matematik"),
+ *     @OA\Property(property="code", type="string", example="MATH"),
+ *     @OA\Property(property="description", type="string", example="Sayısal dersleri kapsar"),
+ *     @OA\Property(property="color", type="string", example="#0088cc"),
+ *     @OA\Property(property="icon", type="string", example="pi pi-calculator"),
+ *     @OA\Property(property="is_active", type="boolean", example=true),
  * )
  */
 class UpdateBranchRequest extends FormRequest
@@ -65,17 +28,14 @@ class UpdateBranchRequest extends FormRequest
 
     public function rules(): array
     {
-        $branchId = $this->route('branch');
-        $branchId = is_object($branchId) ? $branchId->id : $branchId;
-
         return [
-            'name'        => ['sometimes', 'string', 'max:255'],
-            'slug'        => ['sometimes', 'string', 'max:255', Rule::unique('branches', 'slug')->ignore($branchId)],
-            'code'        => ['sometimes', 'nullable', 'string', 'max:10'],
-            'description' => ['sometimes', 'nullable', 'string'],
-            'color'       => ['sometimes', 'nullable', 'string', 'max:20'],
-            'icon'        => ['sometimes', 'nullable', 'string', 'max:50'],
-            'is_active'   => ['sometimes', 'boolean'],
+            'name'        => 'sometimes|string|max:255',
+            'slug'        => 'sometimes|string|max:255|unique:branches,slug,' . $this->branch->id,
+            'code'        => 'nullable|string|max:10',
+            'description' => 'nullable|string',
+            'color'       => 'nullable|string|max:20',
+            'icon'        => 'nullable|string|max:50',
+            'is_active'   => 'nullable|boolean',
         ];
     }
 

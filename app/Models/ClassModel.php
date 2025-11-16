@@ -30,6 +30,9 @@ class ClassModel extends Model
         'name',
         'school_id',
         'teacher_id',
+        'grade_id',
+        'is_active',
+        'is_deleted'
     ];
 
 
@@ -55,5 +58,9 @@ class ClassModel extends Model
     public function students()
     {
         return $this->hasMany(SchoolStudentProfile::class, 'active_class_model_id');
+    }
+    public function schedules()
+    {
+        return $this->hasMany(ClassSchedule::class, 'class_model_id');
     }
 }

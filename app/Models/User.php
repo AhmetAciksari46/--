@@ -27,6 +27,8 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     use HasRoles, HasApiTokens, HasFactory, Notifiable;
+
+
     protected $fillable = [
         'name',
         'userName',
@@ -114,7 +116,10 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Course::class, 'active_course_id');
     }
-
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class, 'student_id');
+    }
     // Abonelikleri (okul yöneticisi veya bireysel öğrenci için)
     public function subscriptions()
     {

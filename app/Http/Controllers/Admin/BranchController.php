@@ -7,134 +7,173 @@ use Illuminate\Http\Request;
 use App\Http\Requests\Branch\StoreBranchRequest;
 use App\Http\Requests\Branch\UpdateBranchRequest;
 use App\Models\Branch;
+use App\Traits\ApiResponser;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @OA\Tag(
- *   name="Branches",
+ *   name="Admin Branches",
  *   description="Branch (branş) CRUD operations"
- * )
- *
- * @OA\Schema(
- *   schema="Branch",
- *   @OA\Property(property="id", type="integer", example=1),
- *   @OA\Property(property="name", type="string", example="Matematik"),
- *   @OA\Property(property="slug", type="string", example="matematik"),
- *   @OA\Property(property="code", type="string", example="MATH"),
- *   @OA\Property(property="description", type="string", nullable=true),
- *   @OA\Property(property="color", type="string", example="#1E90FF", nullable=true),
- *   @OA\Property(property="icon", type="string", example="calculator", nullable=true),
- *   @OA\Property(property="is_active", type="boolean", example=true),
- *   @OA\Property(property="created_at", type="string", format="date-time"),
- *   @OA\Property(property="updated_at", type="string", format="date-time"),
  * )
  */
 class BranchController extends Controller
 {
+    use ApiResponser;
+
     /**
      * @OA\Get(
-     *   path="/api/branches",
-     *   tags={"Branches"},
-     *   summary="List branches",
-     *   @OA\Parameter(name="q", in="query", description="Search by name or code", required=false, @OA\Schema(type="string")),
-     *   @OA\Parameter(name="is_active", in="query", description="Filter by active state", required=false, @OA\Schema(type="boolean")),
-     *   @OA\Response(response=200, description="OK",
-     *     @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Branch"))
+     *   path="/api/admin/branches",
+     *   tags={"Admin Branches"},
+     *   summary="Branş listesini getir",
+     *   security={{"bearerAuth":{}}},
+     *   @OA\Response(response=200, description="Branch kayıtları listesi"),
+     *   @OA\Response(response=403, description="Yetkiniz yok")
+     * )
+     */
+    public function index()
+    {
+        $branches = Branch::all();
+
+        return $this->successResponse($branches, 'Branşlar başarıyla getirildi', 200);
+    }
+
+    /**
+     * @OA\Get(
+     *   path="/api/getactivebranches",
+     *   tags={"Admin Branches"},
+     *   summary="Aktif olan branş listesini getir",
+     *   security={{"bearerAuth":{}}},
+     *   @OA\Response(
+     *      response=200,
+     *      description="Aktif branş listesi",
+     *      @OA\JsonContent(
+     *          type="object",
+     *          @OA\Property(property="status", type="boolean", example=true),
+     *          @OA\Property(property="message", type="string", example="İşlem başarılı."),
+     *          @OA\Property(
+     *              property="data",
+     *              type="array",
+     *              @OA\Items(
+     *                  type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Matematik"),
+     *                  @OA\Property(property="slug", type="string", example="matematik"),
+     *                  @OA\Property(property="code", type="string", example="MATH"),
+     *                  @OA\Property(property="color", type="string", example="#1E90FF"),
+     *              )
+     *          )
+     *      )
+     *   ),
+     *   @OA\Response(
+     *      response=403,
+     *      description="Yetkiniz yok"
      *   )
      * )
      */
-    public function index(Request $request)
+    public function activeBranches()
     {
-        $query = Branch::query();
-
-        if ($search = $request->query('q')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('code', 'like', "%{$search}%")
-                    ->orWhere('slug', 'like', "%{$search}%");
-            });
+        if (!Auth::user()->can('teacher.create')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
-
-        if (!is_null($request->query('is_active'))) {
-            $query->where('is_active', (bool) $request->query('is_active'));
-        }
-
-        return response()->json($query->latest()->paginate(20));
+        $branches = Branch::select('id', 'name', 'code', 'color')
+            ->where('is_active', 1)
+            ->get();
+        return $this->successResponse($branches, 'Aktif branşlar bilgisi başarıyla getirildi', 200);
     }
+
     /**
      * @OA\Post(
-     *     path="/api/branches",
-     *     tags={"Branches"},
-     *     summary="Yeni branş oluştur",
-     *     description="Sisteme yeni bir branş ekler.",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         description="Oluşturulacak branş verileri",
-     *         @OA\JsonContent(ref="#/components/schemas/BranchStoreRequest")
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Branş başarıyla oluşturuldu",
-     *         @OA\JsonContent(ref="#/components/schemas/Branch")
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Doğrulama hatası"
-     *     )
+     *   path="/api/admin/branches",
+     *   tags={"Admin Branches"},
+     *   security={{"bearerAuth":{}}},
+     *   summary="Yeni branş oluştur",
+     *   @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/BranchStoreRequest")),
+     *   @OA\Response(response=201, description="Created", @OA\JsonContent(ref="#/components/schemas/Branch"))
      * )
      */
-
     public function store(StoreBranchRequest $request)
     {
         $branch = Branch::create($request->validated());
-        return response()->json($branch, 201);
+
+        return $this->successResponse($branch, 'Branş başarıyla oluşturuldu.', 200);
     }
+
 
     /**
      * @OA\Get(
-     *   path="/api/branches/{id}",
-     *   tags={"Branches"},
-     *   summary="Get a branch",
+     *   path="/api/admin/branches/{id}",
+     *   tags={"Admin Branches"},
+     *   summary="Branş getir",
+     *   security={{"bearerAuth":{}}},
      *   @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *   @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/Branch")),
-     *   @OA\Response(response=404, description="Not Found")
+     *   @OA\Response(
+     *       response=200,
+     *       description="Branş başarıyla getirildi",
+     *       @OA\JsonContent(ref="#/components/schemas/Branch")
+     *   ),
+     *   @OA\Response(response=404, description="Bulunamadı")
      * )
      */
     public function show(Branch $branch)
     {
-        return response()->json($branch);
+
+        return $this->successResponse($branch, 'Branş getirildi.', 200);
     }
 
     /**
      * @OA\Put(
-     *   path="/api/branches/{id}",
-     *   tags={"Branches"},
-     *   summary="Update branch",
+     *   path="/api/admin/branches/{id}",
+     *   tags={"Admin Branches"},
+     *   summary="Branş güncelle",
+     *   security={{"bearerAuth":{}}},
      *   @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
      *   @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/BranchUpdateRequest")),
-     *   @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/Branch")),
-     *   @OA\Response(response=404, description="Not Found"),
-     *   @OA\Response(response=422, description="Validation error")
+     *   @OA\Response(
+     *       response=200,
+     *       description="Branş başarıyla güncellendi",
+     *       @OA\JsonContent(ref="#/components/schemas/Branch")
+     *   ),
+     *   @OA\Response(response=404, description="Bulunamadı"),
+     *   @OA\Response(response=422, description="Doğrulama hatası")
      * )
      */
     public function update(UpdateBranchRequest $request, Branch $branch)
     {
         $branch->update($request->validated());
-        return response()->json($branch);
+
+        return $this->successResponse($branch, 'Branş güncellendi.', 200);
     }
 
     /**
      * @OA\Delete(
-     *   path="/api/branches/{id}",
-     *   tags={"Branches"},
-     *   summary="Delete branch",
-     *   @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *   @OA\Response(response=204, description="No Content"),
-     *   @OA\Response(response=404, description="Not Found")
+     *   path="/api/admin/branches/{branch}",
+     *   tags={"Admin Branches"},
+     *   summary="Branşı sil",
+     *   security={{"bearerAuth":{}}},
+     *   @OA\Parameter(
+     *      name="branch",
+     *      in="path",
+     *      required=true,
+     *      description="Silinecek branş ID'si",
+     *      @OA\Schema(type="integer", example=1)
+     *   ),
+     *   @OA\Response(
+     *      response=204,
+     *      description="Başarıyla silindi (No Content)"
+     *   ),
+     *   @OA\Response(
+     *      response=404,
+     *      description="Branş bulunamadı"
+     *   ),
+     *   @OA\Response(
+     *      response=403,
+     *      description="Yetkisiz erişim"
+     *   )
      * )
      */
     public function destroy(Branch $branch)
     {
         $branch->delete();
-        return response()->noContent();
+        return $this->successResponse(null, 'Branş silindi.', 200);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponser; // <<< Bu satırı ekleyin!
+
 /**
  * @OA\Tag(
  *     name="User",
@@ -16,7 +17,7 @@ class UserController extends Controller
     use ApiResponser; // <<< Trait'i kullanıma alın!
     /**
      * @OA\Get(
-     *     path="/api/users",
+     *     path="/api/admin/users",
      *     summary="Kullanıcı listesini döndürür",
      *     tags={"User"},
      *     security={{"bearerAuth":{}}}, 
@@ -39,7 +40,7 @@ class UserController extends Controller
     }
     /**
      * @OA\Get(
-     *     path="/api/users/{id}",
+     *     path="/api/admin/users/{id}",
      *     summary="Tek kullanıcı bilgisi",
      *     tags={"User"},
      *     security={{"bearerAuth":{}}}, 
@@ -76,7 +77,7 @@ class UserController extends Controller
     }
     /**
      * @OA\Post(
-     *     path="/api/users",
+     *     path="/api/admin/users",
      *     summary="Yeni kullanıcı oluştur",
      *     tags={"User"},
      *     security={{"bearerAuth":{}}}, 
@@ -102,7 +103,7 @@ class UserController extends Controller
     }
     /**
      * @OA\Put(
-     *     path="/api/users/{id}",
+     *     path="/api/admin/users/{id}",
      *     summary="Kullanıcıyı güncelle",
      *     tags={"User"},
      *     security={{"bearerAuth":{}}}, 
@@ -136,7 +137,7 @@ class UserController extends Controller
     }
     /**
      * @OA\Delete(
-     *     path="/api/users/{id}",
+     *     path="/api/admin/users/{id}",
      *     summary="Kullanıcıyı sil",
      *     tags={"User"},
      *     security={{"bearerAuth":{}}}, 
