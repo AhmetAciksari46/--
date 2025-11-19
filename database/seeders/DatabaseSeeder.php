@@ -19,7 +19,6 @@ class DatabaseSeeder extends Seeder
             //SubjectSeeder::class,
             PackageSeeder::class,
             PackageWeekGradeRuleSeeder::class,
-            PackageWeekSubjectRuleSeeder::class,
         ]);
     }
 }

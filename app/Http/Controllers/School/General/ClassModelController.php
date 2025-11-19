@@ -8,230 +8,287 @@ use Illuminate\Http\Request;
 use App\Models\ClassModel;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
-
+use App\Models\SchoolHasGrade;
 use App\Http\Requests\Class\StoreClassRequest;
 use App\Http\Requests\Class\UpdateClassRequest;
+use App\Models\School;
+use App\Traits\ApiResponser;
 
 /**
  * @OA\Tag(
- *     name="ClassModels",
- *     description="Class management endpoints for schools"
+ *     name="Manager & Teacher ClassModel İşlemleri",
+ *     description="Okul sınıf yönetimi"
  * )
  */
 class ClassModelController extends Controller
 {
-    /**
-     * @OA\Get(
-     *     path="/api/schools/{school_id}/classmodels",
-     *     summary="Belirli bir okula ait tüm sınıf modellerini getirir",
-     *     tags={"ClassModels"},
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="school_id",
-     *         in="path",
-     *         required=true,
-     *         description="Okul ID'si",
-     *         @OA\Schema(type="integer", example=1)
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Başarılı sorgu",
-     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/ClassModel"))
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Bu okula ait sınıf bulunamadı"
-     *     )
-     * )
-     */
-    public function getBySchool($school_id)
+    use ApiResponser;
+
+    private function authorizeSchool(School $school)
     {
-        $this->authorize('viewAny', ClassModel::class);
+        $u = auth()->user();
 
-        $classes = ClassModel::where('school_id', $school_id)->get();
+        if ($u->hasRole('admin')) return true;
 
-        if ($classes->isEmpty()) {
-            return response()->json(['message' => 'Bu okula ait sınıf bulunamadı.'], 404);
+        if ($u->hasRole('manager')) {
+            if (!$u->managerProfile || $u->managerProfile->school_id !== $school->id) {
+                abort(403, 'Sadece kendi okulunuzda işlem yapabilirsiniz.');
+            }
+            return true;
         }
 
-        return response()->json($classes);
+        if ($u->hasRole('teacher')) {
+            if (!$u->teacherProfile || $u->teacherProfile->school_id !== $school->id) {
+                abort(403, 'Sadece kendi okulunuzda işlem yapabilirsiniz.');
+            }
+            return true;
+        }
+
+        abort(403, 'Bu işlemi yapmak için yetkiniz yok.');
     }
+
+    // ----------------------------------------------------------------------
+
 
     /**
      * @OA\Get(
-     *     path="/api/classmodels/{id}",
-     *     summary="ID’ye göre bir sınıf modelini getirir",
-     *     tags={"ClassModels"},
-     *     security={{"bearerAuth":{}}},
+     *     path="/api/schools/{school}/classes",
+     *     summary="Okuldaki tüm sınıfları getirir",
+     *     tags={"Manager & Teacher ClassModel İşlemleri"},
+     *     security={{"bearerAuth":{}}},     
      *     @OA\Parameter(
-     *         name="id",
+     *         name="school",
      *         in="path",
      *         required=true,
-     *         description="ClassModel ID'si",
-     *         @OA\Schema(type="integer", example=1)
+     *         description="School ID",
+     *         @OA\Schema(type="integer", example=10)
      *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="ClassModel bulundu",
-     *         @OA\JsonContent(ref="#/components/schemas/ClassModel")
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="ClassModel bulunamadı"
-     *     )
+     *     @OA\Response(response=200, description="Sınıflar listelendi.")
      * )
      */
-    public function getClassModelById($id)
+    public function index(School $school)
     {
-        $classModel = ClassModel::find($id);
-
-        if (!$classModel) {
-            return response()->json(['message' => 'ClassModel bulunamadı.'], 404);
+        //TODO: yetki kontrolü eklenecek
+        if (!auth()->user()->can('classmodel.view')) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
         }
-        // Policy kontrolü
-        $this->authorize('view', $classModel);
-        return response()->json($classModel);
+        return $this->successResponse(
+            ClassModel::where('school_id', $school->id)->get(),
+            "Sınıflar başarıyla listelendi.",
+            200
+        );
     }
+
     /**
      * @OA\Post(
-     *     path="/api/schools/{school}/class",
-     *     summary="Create a new class",
-     *     tags={"ClassModels"},
-     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
+     *     path="/api/schools/{school}/classes",
+     *     summary="Yeni sınıf oluşturur",
+     *     tags={"Manager & Teacher ClassModel İşlemleri"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(
+     *         name="school",
+     *         in="path",
+     *         required=true,
+     *         description="Okul ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(ref="#/components/schemas/StoreClassRequest")
      *     ),
-     *     @OA\Response(response=201, description="Class created successfully"),
-     *     @OA\Response(response=400, description="No teachers found or invalid teacher"),
-     *     @OA\Response(response=403, description="Unauthorized")
+     *
+     *     @OA\Response(
+     *         response=201,
+     *         description="Sınıf başarıyla oluşturuldu."
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=403,
+     *         description="Yetki hatası"
+     *     )
      * )
      */
-    public function store(StoreClassRequest $request, $school)
+    public function store(StoreClassRequest $request, School $school)
     {
-        $this->authorize('create', ClassModel::class);
-
-        $user = $request->user();
-
-        if (!in_array($user->role, ['admin', 'manager'])) {
-            return response()->json(['message' => 'You are not authorized to create a class.'], 403);
+        if (!auth()->user()->can('classmodel.create')) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
         }
-
-        $teacherExists = User::where('role', 'teacher')
-            ->whereHas('teacherProfile', fn($q) => $q->where('school_id', $school))
+        $this->authorizeSchoolAccess($school);
+        // ✔ 1) Grade bu okula ait mi?
+        $allowed = SchoolHasGrade::where('school_id', $school->id)
+            ->where('grade_id', $request->grade_id)
             ->exists();
 
-        if (!$teacherExists) {
-            return response()->json([
-                'message' => 'No teachers found in this school. Please create a teacher before creating a class.'
-            ], 400);
+        if (!$allowed) {
+            return $this->errorResponse(
+                "Bu okul belirtilen grade seviyesine sahip değildir.",
+                422
+            );
         }
-
         $data = $request->validated();
+        $data['school_id'] = $school->id;
 
-        $teacher = User::where('id', $data['teacher_id'])
-            ->where('role', 'teacher')
-            ->whereHas('teacherProfile', fn($q) => $q->where('school_id', $school))
-            ->first();
+        $class = ClassModel::create($data);
 
-        if (!$teacher) {
-            return response()->json([
-                'message' => 'Selected teacher does not belong to this school.'
-            ], 400);
-        }
-
-        $class = ClassModel::create([
-            'name' => $data['name'],
-            'school_id' => $school,
-            'teacher_id' => $data['teacher_id'],
-        ]);
-
-        return response()->json([
-            'message' => 'Class created successfully.',
-            'class' => $class
-        ], 201);
+        return $this->successResponse($class, "Sınıf başarıyla oluşturuldu.", 201);
     }
+
     /**
-     * @OA\Put(
-     *     path="/api/schools/{school}/class/{classModel}",
-     *     summary="Update an existing class",
-     *     tags={"ClassModels"},
-     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="classModel", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\RequestBody(
+     * @OA\Get(
+     *     path="/api/schools/{school}/classes/{classModel}",
+     *     summary="Belirli bir sınıfı getirir",
+     *     tags={"Manager & Teacher ClassModel İşlemleri"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="school",
+     *         in="path",
      *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/UpdateClassRequest")
+     *         description="Okul ID",
+     *         @OA\Schema(type="integer", example=1)
      *     ),
-     *     @OA\Response(response=200, description="Class updated successfully"),
-     *     @OA\Response(response=400, description="Invalid class or teacher"),
-     *     @OA\Response(response=403, description="Unauthorized")
+     *
+     *     @OA\Parameter(
+     *         name="classModel",
+     *         in="path",
+     *         required=true,
+     *         description="classModel ID",
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *     @OA\Response(response=200, description="Sınıf detayları getirildi."),
+     *     @OA\Response(response=403, description="Bu işlemi yapmak için yetkiniz yok."),
      * )
      */
-    public function update(UpdateClassRequest $request, $school, ClassModel $classModel)
+    public function show(School $school, ClassModel $classModel)
     {
-        $this->authorize('update', $classModel);
-
-        $user = $request->user();
-
-        if (!in_array($user->role, ['admin', 'manager'])) {
-            return response()->json(['message' => 'You are not authorized to update this class.'], 403);
+        $this->authorizeSchoolAccess($school);
+        if (!auth()->user()->can('classmodel.view')) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        }
+        if ($classModel->school_id !== $school->id) {
+            return $this->errorResponse("Bu sınıf bu okula ait değil.", 403);
         }
 
-        if ($classModel->school_id != $school) {
-            return response()->json(['message' => 'This class does not belong to the given school.'], 400);
+        return $this->successResponse($classModel, "Sınıf bilgileri getirildi.", 200);
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/api/schools/{school}/classes/{classModel}",
+     *     summary="Sınıfı günceller",
+     *     tags={"Manager & Teacher ClassModel İşlemleri"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="school",
+     *         in="path",
+     *         required=true,
+     *         description="Okul ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="classModel",
+     *         in="path",
+     *         required=true,
+     *         description="classModel ID",
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/UpdateClassRequest")),
+     *     @OA\Response(response=200, description="Sınıf güncellendi.")
+     * )
+     */
+    public function update(UpdateClassRequest $request, School $school, ClassModel $classModel)
+    {
+        $this->authorizeSchoolAccess($school);
+        if (!auth()->user()->can('classmodel.update')) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
         }
+        if ($classModel->school_id !== $school->id) {
+            return $this->errorResponse("Bu sınıf bu okula ait değil.", 403);
+        }
+        // ✔ grade değişiyorsa kontrol et
+        if ($request->filled('grade_id')) {
+            $allowed = SchoolHasGrade::where('school_id', $school->id)
+                ->where('grade_id', $request->grade_id)
+                ->exists();
 
-        $data = $request->validated();
-
-        if (isset($data['teacher_id'])) {
-            $teacher = User::where('id', $data['teacher_id'])
-                ->where('role', 'teacher')
-                ->whereHas('teacherProfile', fn($q) => $q->where('school_id', $school))
-                ->first();
-
-            if (!$teacher) {
-                return response()->json([
-                    'message' => 'The selected teacher does not belong to this school.'
-                ], 400);
+            if (!$allowed) {
+                return $this->errorResponse(
+                    "Bu okul belirtilen grade seviyesine sahip değildir.",
+                    422
+                );
             }
         }
+        $classModel->update($request->validated());
 
-        $classModel->update($data);
-
-        return response()->json([
-            'message' => 'Class updated successfully.',
-            'class' => $classModel
-        ]);
+        return $this->successResponse($classModel, "Sınıf başarıyla güncellendi.", 200);
     }
 
     /**
      * @OA\Delete(
-     *     path="/api/schools/{school}/class/{classModel}",
-     *     summary="Delete a class",
-     *     tags={"ClassModels"},
-     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="classModel", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="Class deleted successfully"),
-     *     @OA\Response(response=400, description="Invalid school or class"),
-     *     @OA\Response(response=403, description="Unauthorized")
+     *     path="/api/schools/{school}/classes/{classModel}",
+     *     summary="Sınıfı siler",
+     *     tags={"Manager & Teacher ClassModel İşlemleri"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="school",
+     *         in="path",
+     *         required=true,
+     *         description="Okul ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *
+     *     @OA\Parameter(
+     *         name="classModel",
+     *         in="path",
+     *         required=true,
+     *         description="classModel ID",
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *     @OA\Response(response=200, description="Sınıf silindi.")
      * )
      */
-    public function destroy(Request $request, $school, ClassModel $classModel)
+    public function destroy(School $school, ClassModel $classModel)
     {
-        $this->authorize('delete', $classModel);
-
-        $user = $request->user();
-
-        if (!in_array($user->role, ['admin', 'manager'])) {
-            return response()->json(['message' => 'You are not authorized to delete this class.'], 403);
+        $this->authorizeSchoolAccess($school);
+        if (!auth()->user()->can('classmodel.delete')) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
         }
-
-        if ($classModel->school_id != $school) {
-            return response()->json(['message' => 'This class does not belong to this school.'], 400);
+        if ($classModel->school_id !== $school->id) {
+            return $this->errorResponse("Bu sınıf bu okula ait değil.", 403);
         }
 
         $classModel->delete();
 
-        return response()->json(['message' => 'Class deleted successfully.']);
+        return $this->successResponse(null, "Sınıf başarıyla silindi.", 200);
+    }
+    private function authorizeSchoolAccess(School $school)
+    {
+        $user = auth()->user();
+
+        // Admin her okula erişebilir
+        if ($user->hasRole('admin')) {
+            return true;
+        }
+
+        // Manager kendi okulunda işlem yapabilir
+        if ($user->hasRole('manager')) {
+            if ($user->managerProfile && $user->managerProfile->school_id == $school->id) {
+                return true;
+            }
+            abort(403, 'Bu işlem için yetkiniz yok. (Manager Okul Erişim Engeli)');
+        }
+
+        // Teacher kendi okulunda işlem yapabilir
+        if ($user->hasRole('teacher')) {
+            if ($user->teacherProfile && $user->teacherProfile->school_id == $school->id) {
+                return true;
+            }
+            abort(403, 'Bu işlem için yetkiniz yok. (Teacher Okul Erişim Engeli)');
+        }
+
+        // Diğer roller için yasak
+        abort(403, 'Bu işlem için yetkiniz yok.');
     }
 }

@@ -24,8 +24,9 @@ class StudentParent extends Model
         'is_parent'
     ];
 
+
     public function profile()
     {
-        return $this->belongsTo(SchoolStudentProfile::class, 'student_profile_id');
+        return $this->belongsTo(SchoolStudentProfile::class, 'school_student_profile_id');
     }
 }

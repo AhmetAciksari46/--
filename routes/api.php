@@ -18,25 +18,25 @@ use App\Http\Controllers\School\User\TeacherController;
 
 use App\Http\Controllers\School\General\SchoolController;
 use App\Http\Controllers\School\General\ClassModelController;
-
+use App\Http\Controllers\School\Week\SchoolWeekController;
+use App\Http\Controllers\School\Week\SchoolWeekDayController;
 use App\Http\Controllers\{
     UserController,
-    PermissionController,
     SubscriptionController,
     SchoolHasGradeController,
     ClassScheduleController,
-    SchoolWeekController,
     AdditionalClassRoomController,
     StudentCurriculumOverrideController,
     AttendanceController,
     LessonSessionController,
     ContentController,
-    SchoolWeekDayController,
     SubjectController,
     PackageWeekGradeRuleController,
     GradeController,
     TeacherSubjectController
 };
+use App\Http\Controllers\Admin\AdminTeacherController;
+use App\Http\Controllers\School\User\StudentParentController;
 
 Route::post("/register", [AuthController::class, "register"]);
 Route::post("/login", [AuthController::class, "login"]);
@@ -105,7 +105,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('school-has-grades/by-school/{school_id}', [SchoolHasGradeController::class, 'getBySchoolId']);
 
             Route::apiResource('packages', PackageController::class);
-            Route::apiResource('packages.grade-rules', PackageWeekGradeRuleController::class)->except(['show']);
+            Route::apiResource('packages.grade-rules', PackageWeekGradeRuleController::class);
             // Abonelikleri listele
             Route::get('subscriptions', [SubscriptionController::class, 'index']);
 
@@ -167,6 +167,18 @@ Route::middleware('auth:sanctum')->group(function () {
             });
 
 
+            Route::prefix("teachers")->group(function () { //by aadmin
+                Route::get('/', [AdminTeacherController::class, 'index']); // all teachers
+                Route::get('/getteachersbyschoolid/{school}', [AdminTeacherController::class, 'getbySchoolId']); // o okuldaki öğretmenlerin tamamını getir
+                Route::get('/{teacher}', [AdminTeacherController::class, 'show']); // getTeacherById
+                Route::post('/', [AdminTeacherController::class, 'store']); // createTeacher
+                Route::put('/{teacher}', [AdminTeacherController::class, 'update']); // updateTeacher
+                Route::delete('/{teacher}', [AdminTeacherController::class, 'destroy']); // deleteTeacher
+                Route::delete('/{teacher}/permissions', [AdminTeacherController::class, 'removePermissions']); // removeTeacherPermissions
+                Route::get('/{teacher}/permissions', [AdminTeacherController::class, 'getPermissions']); // getTeacherPermissions
+                Route::put('/{teacher}/permissions', [AdminTeacherController::class, 'updatePermissions']); // updateTeacherPermissions
+                Route::get('/available-permissions', [AdminTeacherController::class, 'availablePermissionsForTeachers']);
+            });
             Route::get('/getschool', [SchoolController::class, 'index']);  // okula bağlı userlar için okul bilgisi çekme
 
         });
@@ -186,6 +198,9 @@ Route::middleware('auth:sanctum')->group(function () {
         //------------------------------------------------admin-----------------------------------------------
         //Managerın yapacağı işlemler
         Route::prefix("manager")->group(function () {
+            Route::get('/teachers/available-permissions', [TeacherController::class, 'availablePermissionsForTeachers']);
+            Route::get('/packages/{package}/my-grade-rules', [PackageWeekGradeRuleController::class, 'showManagerPackage']);
+
             Route::get('my-grades', [SchoolHasGradeController::class, 'myGrades'])
                 ->middleware('auth:sanctum');
             Route::prefix("school")->group(function () {
@@ -197,39 +212,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::prefix("schools/{school}")->middleware(['ensure.school', 'active.school'])
             ->group(function () {
-
-                Route::middleware(['role:manager'])->group(function () {
-                    Route::prefix('manager')->group(function () {
-                        Route::resource('weeks', SchoolWeekController::class)->only(['index', 'update']);
-                        Route::resource('overrides', StudentCurriculumOverrideController::class)->only(['index', 'store', 'destroy']);
-                        Route::resource('days', SchoolWeekDayController::class)->only(['index', 'update']);
-                    });
-
-
-                    Route::prefix("classrooms")->group(function () {
-                        Route::post('/', [ClassModelController::class, 'store']);
-                        Route::put('/{classModel}', [ClassModelController::class, 'update']);
-                        Route::delete('/{classModel}', [ClassModelController::class, 'destroy']);
-                        Route::get('/classmodels', [ClassModelController::class, 'getBySchool']);
-                        Route::get('/classmodels/{id}', [ClassModelController::class, 'getClassModelById']);
-                    });
-                });
-
-
-
                 Route::prefix('teachers')->group(function () {
                     Route::get('/', [TeacherController::class, 'index']); // teacherList
                     Route::get('/{teacher}', [TeacherController::class, 'show']); // getTeacherById
                     Route::post('/', [TeacherController::class, 'store']); // createTeacher
                     Route::put('/{teacher}', [TeacherController::class, 'update']); // updateTeacher
                     Route::delete('/{teacher}', [TeacherController::class, 'destroy']); // deleteTeacher
-
-                    Route::get('/{teacher}/available-permissions', [PermissionController::class, 'availablePermissionsForTeachers']);
-
-
-                    // Permissions
+                    Route::delete('/{teacher}/permissions', [TeacherController::class, 'removePermissions']); // removeTeacherPermissions
                     Route::get('/{teacher}/permissions', [TeacherController::class, 'getPermissions']); // getTeacherPermissions
                     Route::put('/{teacher}/permissions', [TeacherController::class, 'updatePermissions']); // updateTeacherPermissions
+                    Route::put('/{teacher}/reset-password', [TeacherController::class, 'resetPassword']); //resetTeacherPassword
 
 
                     // Yoklama Yönetimi (Session'a bağlı kaynak)
@@ -237,6 +229,69 @@ Route::middleware('auth:sanctum')->group(function () {
                     Route::get('sessions/{session}/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
                     Route::post('sessions/{session}/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
                 });
+
+                Route::prefix('students')->group(function () {
+                    Route::get('/', [SchoolStudentProfileController::class, 'index']);
+                    Route::get('/{student}', [SchoolStudentProfileController::class, 'show']);
+                    Route::post('/', [SchoolStudentProfileController::class, 'store']);
+                    Route::put('/{student}', [SchoolStudentProfileController::class, 'update']);
+                    Route::delete('/{student}', [SchoolStudentProfileController::class, 'destroy']);
+                    Route::put('/{student}/reset-password', [SchoolStudentProfileController::class, 'resetPassword']);
+                    Route::get(
+                        '/by-class/{classModel}',
+                        [SchoolStudentProfileController::class, 'getByClassModel']
+                    );
+                });
+                Route::prefix('students/{profile}/parents')->group(function () {
+                    Route::get('/', [StudentParentController::class, 'index']);
+                    Route::post('/', [StudentParentController::class, 'store']);
+                    Route::get('/{parent}', [StudentParentController::class, 'show']);
+                    Route::put('/{parent}', [StudentParentController::class, 'update']);
+                    Route::delete('/{parent}', [StudentParentController::class, 'destroy']);
+                });
+
+
+                Route::prefix('classes')->group(function () {
+                    Route::get('/', [ClassModelController::class, 'index']);
+                    Route::post('/', [ClassModelController::class, 'store']);
+                    Route::get('/{classModel}', [ClassModelController::class, 'show']);
+                    Route::put('/{classModel}', [ClassModelController::class, 'update']);
+                    Route::delete('/{classModel}', [ClassModelController::class, 'destroy']);
+                });
+
+
+
+                Route::middleware(['role:manager'])->group(function () {
+                    Route::prefix('manager')->group(function () {
+                        Route::resource('overrides', StudentCurriculumOverrideController::class)->only(['index', 'store', 'destroy']);
+                    });
+                    Route::prefix("weeks")->group(function () {
+
+                        Route::get("/", [SchoolWeekController::class, "index"]);        // Tüm haftalar
+                        Route::post("/", [SchoolWeekController::class, "store"]);      // Yeni hafta
+                        Route::get("/{week}", [SchoolWeekController::class, "show"]);  // Hafta detay
+                        Route::put("/{week}", [SchoolWeekController::class, "update"]); // Hafta güncelle
+                        Route::delete("/{week}", [SchoolWeekController::class, "destroy"]); // Hafta sil
+                        Route::post('/auto-generate', [SchoolWeekController::class, 'autoGenerate']);
+                        Route::get('/check', [SchoolWeekController::class, 'checkWeeks']);
+                    });
+
+                    // School Week Day CRUD
+                    Route::prefix("weeks/{week}/days")->group(function () {
+
+                        Route::get("/", [SchoolWeekDayController::class, "index"]);        // Gün listesi
+                        Route::post("/", [SchoolWeekDayController::class, "store"]);       // Yeni gün ekle
+                        Route::get("/{day}", [SchoolWeekDayController::class, "show"]);    // Gün detay
+                        Route::put("/{day}", [SchoolWeekDayController::class, "update"]);  // Gün güncelle
+                        Route::delete("/{day}", [SchoolWeekDayController::class, "destroy"]); // Gün sil
+                        Route::post('/auto-generate', [SchoolWeekDayController::class, 'autoGenerate']);
+                        Route::get('/check', [SchoolWeekDayController::class, 'checkDays']);
+                    });
+                });
+
+
+
+
 
 
 
@@ -279,16 +334,6 @@ Route::middleware('auth:sanctum')->group(function () {
                     // Rol Kontrolü: 'schoolstudent'
                     Route::get('curriculum/contents', [ContentController::class, 'studentIndex'])->name('curriculum.contents.index');
                 });
-
-
-                // Route::prefix("teachers")->group(function () {
-                //     Route::get("/getteachers", [TeacherController::class, "index"]); // o okuldaki öğretmenlerin tamamını getir
-                //     Route::post("/create", [TeacherController::class, "store"]); // öğretmen oluştur
-                //     Route::get("/{id}", [TeacherController::class, "show"]); // id ye göre öğretmen getir
-                //     Route::delete("/{id}", [TeacherController::class, "destroy"]); // id ye göre öğretmen sil
-                //     Route::put("/updateprofile/{id}", [TeacherController::class, "updateProfileByManager"]); // id ye göre öğretmen güncelle (manager için)
-                //     Route::put("/updateprofilesettings{id}", [TeacherController::class, "updateProfileSettingsByManager"]); // id ye göre öğretmen profil settings güncelle (manager için)
-                // });
 
                 Route::prefix("additionalclassrooms")->group(function () {
                     Route::get("/getclass", [AdditionalClassRoomController::class, "index"]); // o okuldaki sınıfların tamamını getir

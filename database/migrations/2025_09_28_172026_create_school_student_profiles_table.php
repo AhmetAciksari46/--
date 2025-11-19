@@ -16,12 +16,11 @@ return new class extends Migration
         Schema::create('school_student_profiles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->unsignedBigInteger('schoolId');
+            $table->unsignedBigInteger('school_id');
             $table->string('phone')->nullable();
             $table->string('address')->nullable();
             $table->unsignedBigInteger('active_course_id')->nullable();
             $table->foreignId('active_class_id')->nullable()->constrained('class_models')->nullOnDelete();
-            $table->unsignedBigInteger('active_additional_class_id')->nullable();
             $table->string('parent_name')->nullable();
             $table->string('parent_phone')->nullable();
             $table->date('birth_date');

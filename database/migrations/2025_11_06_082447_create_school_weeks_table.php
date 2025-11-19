@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('school_weeks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id')->constrained()->cascadeOnDelete();
-            $table->unsignedInteger('week_no');
-            $table->date('start_date');
-            $table->boolean('is_holiday')->default(false);
+            $table->foreignId('school_id')->constrained()->onDelete('cascade');
+            $table->foreignId('package_week_grade_rule_id')->constrained()->onDelete('cascade');
+
+            $table->date('start_date')->nullable(); // Manager belirler
             $table->timestamps();
         });
     }

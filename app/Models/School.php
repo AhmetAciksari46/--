@@ -60,10 +60,7 @@ class School extends Model
         return $this->hasMany(TeacherProfile::class, 'school_id');
     }
 
-    public function additionalClassRooms()
-    {
-        return $this->hasMany(AdditionalClassRoom::class);
-    }
+
     public function grades()
     {
         return $this->hasMany(SchoolHasGrade::class);
@@ -71,9 +68,17 @@ class School extends Model
     public function activeSubscription()
     {
         return $this->subscriptions()
-            ->where('status', 'active')
-            ->where('end_date', '>', now())
-            ->latest('end_date')
+            ->where('is_active', true)
+            ->where('payment_status', 'paid')
+            ->where(function ($q) {
+                // 1) Bitiş tarihi NULL → süresiz abonelik
+                $q->whereNull('end_date')
+                    // 2) Ya da end_date gelecekte
+                    ->orWhere('end_date', '>=', now());
+            })
+            ->where('start_date', '<=', now())
+            ->orderByRaw('end_date IS NULL DESC') // Süresiz abonelikler önce gelsin
+            ->orderBy('end_date', 'desc')
             ->first();
     }
 

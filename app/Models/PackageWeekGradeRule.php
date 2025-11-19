@@ -32,4 +32,16 @@ class PackageWeekGradeRule extends Model
     {
         return $this->belongsTo(Package::class);
     }
+    // Bu kuralı kullanan okul haftaları
+    public function schoolWeeks()
+    {
+        return $this->hasMany(SchoolWeek::class, 'package_week_grade_rule_id');
+    }
+    // Bu kuralın içerdiği günlere ait tüm contentler
+    // (Ödev, Sınav, Video, Quiz vs.)
+    public function contents()
+    {
+        return $this->hasMany(PackageContent::class, 'week_grade_rule_id');
+        // Eğer content tablosu farklıysa burayı düzenleriz
+    }
 }

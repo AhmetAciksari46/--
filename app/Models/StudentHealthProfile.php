@@ -23,8 +23,9 @@ class StudentHealthProfile extends Model
         'health_insurance'
     ];
 
+
     public function profile()
     {
-        return $this->belongsTo(SchoolStudentProfile::class, 'student_profile_id');
+        return $this->belongsTo(SchoolStudentProfile::class, 'school_student_profile_id');
     }
 }

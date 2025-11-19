@@ -28,6 +28,23 @@ class PackageWeekGradeRuleController extends Controller
     {
         return $this->successResponse($package->gradeRules, 'Sınıf kuralları listelendi.');
     }
+    /**
+     * @OA\Get(
+     * path="/api/admin/packages/{package}/grade-rules/{grade_rule}",
+     * summary="Paketin Sınıf Kurallarını Listeleme",
+     * tags={"Admin Package Rules"},
+     * security={{"bearerAuth": {}}},
+     * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer"), description="Paket ID"),
+     * @OA\Parameter(name="grade_rule", in="path", required=true, @OA\Schema(type="integer"), description="grade_rule ID"),
+     * @OA\Response(response=200, description="Kural getirildi.")
+     * )
+     */
+    public function show(Package $package, PackageWeekGradeRule $grade_rule)
+    {
+        $grade_details = $package->gradeRules()->where('id', $grade_rule->id)->first();
+        return $this->successResponse($grade_details, 'Kural getirildi');
+    }
+
 
     /**
      * @OA\Post(
@@ -55,6 +72,7 @@ class PackageWeekGradeRuleController extends Controller
      * security={{"bearerAuth": {}}},
      * @OA\Parameter(name="package", in="path", required=true, @OA\Schema(type="integer")),
      * @OA\Parameter(name="rule", in="path", required=true, @OA\Schema(type="integer"), description="Kural ID"),
+     * @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/UpdatePackageWeekGradeRuleRequest")),
      * @OA\Response(response=200, description="Kural başarıyla güncellendi.")
      * )
      */
@@ -89,5 +107,68 @@ class PackageWeekGradeRuleController extends Controller
         $grade_rule->delete();
 
         return $this->successResponse(null, 'Sınıf kuralı başarıyla silindi.');
+    }
+
+
+
+    /**
+     * @OA\Get(
+     *     path="/api/manager/packages/{package}/my-grade-rules",
+     *     summary="Manager'ın bağlı olduğu okulun paketini görüntüleme",
+     *     tags={"Manager Genel İşlemleri"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(
+     *         name="package",
+     *         in="path",
+     *         required=true,
+     *         description="Paket ID",
+     *         @OA\Schema(type="integer", example=3)
+     *     ),
+     *
+     *     @OA\Response(response=200, description="Paket bilgisi getirildi."),
+     *     @OA\Response(response=403, description="Bu pakete erişim izniniz yok."),
+     *     @OA\Response(response=404, description="Paket bulunamadı.")
+     * )
+     */
+    public function showManagerPackage(Package $package)
+    {
+        $user = auth()->user();
+        // 🔐 Rol Doğrulama
+        if (!$user->hasRole('manager')) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        }
+
+        // 🏫 Manager'ın okulu
+        $school = $user->managerProfile->school ?? null;
+
+        if (!$school) {
+            return response()->json(['message' => 'Bu kullanıcı bir okula bağlı değil.'], 403);
+        }
+
+        // 📦 Aktif abonelik
+        $subscription = $school->activeSubscription();
+
+        if (!$subscription) {
+            return response()->json(['message' => 'Bu okulun aktif bir aboneliği bulunmuyor.'], 403);
+        }
+
+        $package = $subscription->package;
+        return $this->successResponse($package->gradeRules, 'Sınıf kuralları listelendi.');
+
+        // 🔥 Sonsuz döngüyü engellemek için SAFE RESPONSE
+        return response()->json([
+            'data' => [
+                'id' => $package->id,
+                'name' => $package->name,
+                'description' => $package->description,
+                'price' => $package->price,
+                'duration_days' => $package->duration_days,
+                'week_count' => $package->week_count,
+                'type' => $package->type,
+                'is_active' => $package->is_active
+            ],
+            'message' => 'Paket bilgisi başarıyla getirildi.'
+        ], 200);
     }
 }

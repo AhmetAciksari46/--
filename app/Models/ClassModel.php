@@ -31,9 +31,11 @@ class ClassModel extends Model
         'school_id',
         'teacher_id',
         'grade_id',
+        'academic_year',
+        'description',
         'is_active',
-        'is_deleted'
     ];
+
 
 
     // Bu sınıfın bağlı olduğu okul
@@ -57,7 +59,7 @@ class ClassModel extends Model
     // Bu sınıfta okuyan öğrenciler (user -> profile_settings ile bağlanacak)
     public function students()
     {
-        return $this->hasMany(SchoolStudentProfile::class, 'active_class_model_id');
+        return $this->hasMany(SchoolStudentProfile::class, 'active_class_id');
     }
     public function schedules()
     {

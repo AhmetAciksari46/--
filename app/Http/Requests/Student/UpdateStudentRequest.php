@@ -7,16 +7,14 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * @OA\Schema(
  *     schema="UpdateStudentRequest",
- *     @OA\Property(property="name", type="string", example="Ahmet Can"),
- *     @OA\Property(property="email", type="string", example="ahmetcan@example.com"),
- *     @OA\Property(property="userName", type="string", example="ahmetcan123"),
- *     @OA\Property(property="password", type="string", example="YeniŞifre123"),
- *     @OA\Property(property="phone", type="string", example="05554443322"),
- *     @OA\Property(property="address", type="string", example="İstanbul"),
- *     @OA\Property(property="parent_name", type="string", example="Ali Can"),
- *     @OA\Property(property="parent_phone", type="string", example="05551112233"),
- *     @OA\Property(property="blood_type", type="string", example="A+"),
- *     @OA\Property(property="health_insurance", type="string", example="SGK")
+ *     type="object",
+ *
+ *     @OA\Property(property="name", type="string", example="Mehmet Can Demir"),
+ *     @OA\Property(property="email", type="string", example="mehmetcan@example.com"),
+ *     @OA\Property(property="phone", type="string", example="+905554445566"),
+ *     @OA\Property(property="address", type="string", example="Ankara, Türkiye"),
+ *     @OA\Property(property="birth_date", type="string", format="date", example="2014-05-20"),
+ *     @OA\Property(property="gender", type="string", example="male")
  * )
  */
 class UpdateStudentRequest extends FormRequest
@@ -25,35 +23,23 @@ class UpdateStudentRequest extends FormRequest
     {
         return true; // Policy kontrolü controller içinde yapılır
     }
-
-    public function rules(): array
+    public function rules()
     {
         return [
-            'name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|unique:users,email,' . $this->route('id'),
-            'userName' => 'nullable|string|max:255|unique:users,userName,' . $this->route('id'),
-            'password' => 'nullable|string|min:6',
-
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:255',
-
-            'parent_name' => 'nullable|string|max:255',
-            'parent_phone' => 'nullable|string|max:20',
-
-            'blood_type' => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-,bilinmiyor',
-            'health_insurance' => 'nullable|in:SGK,özel sağlık sigortası,yeşil kart,sigortasız,diğer',
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|nullable|email|unique:users,email,' . $this->student->id,
+            'phone' => 'sometimes|nullable|string',
+            'address' => 'sometimes|nullable|string',
+            'birth_date' => 'sometimes|date|before:today',
+            'gender' => 'sometimes|nullable|string',
         ];
     }
 
-    public function messages(): array
+    public function messages()
     {
         return [
             'email.email' => 'Geçerli bir e-posta adresi giriniz.',
-            'email.unique' => 'Bu e-posta zaten kayıtlıdır.',
-            'userName.unique' => 'Bu kullanıcı adı zaten alınmıştır.',
-            'password.min' => 'Şifre en az 6 karakter olmalıdır.',
-            'blood_type.in' => 'Geçerli bir kan grubu seçiniz.',
-            'health_insurance.in' => 'Geçerli bir sağlık sigortası türü seçiniz.',
+            'birth_date.before' => 'Doğum tarihi bugünden önce olmalıdır.',
         ];
     }
 }

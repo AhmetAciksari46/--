@@ -80,6 +80,11 @@ class RolePermissionSeeder extends Seeder
             'grade.view',
             'grade.view.list',
 
+            'teacher.permissions.update',
+            'teacher.permissions.view',
+            'teacher.available.permissions.view',
+            'teacher.reset.password',
+
         ];
 
 
@@ -180,23 +185,14 @@ class RolePermissionSeeder extends Seeder
             // SCHOOL
             'school.view',
             'school.update',
-
+            //permissiosnlar
+            'teacher.permissions.update',
+            'teacher.permissions.view',
+            'teacher.available.permissions.view',
+            'teacher.reset.password',
         ]);
 
-        // $teacher->givePermissionTo([
-        //     'class.create',
-        //     'class.edit',
-        //     'class.delete',
-        //     'student.create',
-        //     'student.edit',
-        //     'student.delete',
-        //     'profile.update',
-        //     'student.view',
-        //     'class.view',
-        //     'student.view.list',
-        //     'class.view.list',
 
-        // ]);
 
         $teacher->syncPermissions([
             'profile.update',
