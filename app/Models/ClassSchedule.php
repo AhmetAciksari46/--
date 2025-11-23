@@ -12,9 +12,8 @@ use Illuminate\Database\Eloquent\Model;
  *     description="Sınıfın haftalık ders programı girişlerini temsil eder.",
  *     @OA\Property(property="id", type="integer", example=10),
  *     @OA\Property(property="class_model_id", type="integer", example=3, description="Sınıfın id’si (ClassModel)"),
- *     @OA\Property(property="teacher_id", type="integer", example=5, description="Dersi veren öğretmen ID"),
+ *     @OA\Property(property="teacher_subject_id", type="integer", example=5, description="teacher_subject tablosunun id’si"),
  *     @OA\Property(property="physical_classroom_id", type="integer", example=7, description="Dersin yapıldığı fiziksel sınıf ID"),
- *     @OA\Property(property="subject_id", type="integer", example=12, description="Ders konusu ID (Subject)"),
  *     @OA\Property(property="day_of_week", type="string", example="Monday"),
  *     @OA\Property(property="start_time", type="string", example="09:00"),
  *     @OA\Property(property="end_time", type="string", example="10:00"),
@@ -28,9 +27,8 @@ class ClassSchedule extends Model
 {
     protected $fillable = [
         'class_model_id',
-        'teacher_id',
         'physical_classroom_id',
-        'subject_id',
+        'teacher_subject_id',
         'day_of_week',
         'start_time',
         'end_time',
@@ -43,17 +41,13 @@ class ClassSchedule extends Model
         return $this->belongsTo(ClassModel::class);
     }
 
-    public function teacher()
+    public function teacherSubject()
     {
-        return $this->belongsTo(User::class, 'teacher_id');
+        return $this->belongsTo(TeacherSubject::class, 'teacher_subject_id');
     }
 
     public function physicalClassroom()
     {
         return $this->belongsTo(PhysicalClassroom::class);
-    }
-    public function subject()
-    {
-        return $this->belongsTo(Subject::class);
     }
 }

@@ -85,6 +85,12 @@ class RolePermissionSeeder extends Seeder
             'teacher.available.permissions.view',
             'teacher.reset.password',
 
+            'classroom.create',
+            'classroom.update',
+            'classroom.delete',
+            'classroom.view',
+            'classroom.view.list'
+
         ];
 
 
@@ -190,6 +196,11 @@ class RolePermissionSeeder extends Seeder
             'teacher.permissions.view',
             'teacher.available.permissions.view',
             'teacher.reset.password',
+            'classroom.create',
+            'classroom.update',
+            'classroom.delete',
+            'classroom.view',
+            'classroom.view.list'
         ]);
 
 

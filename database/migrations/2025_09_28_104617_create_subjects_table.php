@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->foreignId('branch_id')->constrained('branches')->onDelete('cascade');
-            $table->foreignId('parent_id')->nullable()->constrained('subjects')->nullOnDelete();
             $table->foreignId('grade_id')->nullable()->constrained('grades')->nullOnDelete();
             $table->timestamps();
         });

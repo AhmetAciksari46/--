@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
 use App\Models\School;
@@ -31,7 +33,7 @@ class SubjectController extends Controller
     public function index()
     {
         $this->authorize('viewAny', Subject::class);
-        return response()->json(Subject::with(['branch', 'parent', 'grade'])->get());
+        return response()->json(Subject::with(['branch', 'grade'])->get());
     }
 
     /**
@@ -46,7 +48,6 @@ class SubjectController extends Controller
      *             required={"name","branch_id"},
      *             @OA\Property(property="name", type="string", example="English Reading"),
      *             @OA\Property(property="branch_id", type="integer", example=2),
-     *             @OA\Property(property="parent_id", type="integer", nullable=true),
      *             @OA\Property(property="grade_id", type="integer", nullable=true)
      *         )
      *     ),
@@ -59,7 +60,6 @@ class SubjectController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:subjects,name',
             'branch_id' => 'required|exists:branches,id',
-            'parent_id' => 'nullable|exists:subjects,id',
             'grade_id' => 'nullable|exists:grades,id',
         ]);
 
@@ -79,7 +79,6 @@ class SubjectController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="name", type="string"),
      *             @OA\Property(property="branch_id", type="integer"),
-     *             @OA\Property(property="parent_id", type="integer"),
      *             @OA\Property(property="grade_id", type="integer")
      *         )
      *     ),
@@ -94,7 +93,6 @@ class SubjectController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255|unique:subjects,name,' . $id,
             'branch_id' => 'sometimes|exists:branches,id',
-            'parent_id' => 'nullable|exists:subjects,id',
             'grade_id' => 'nullable|exists:grades,id',
         ]);
 

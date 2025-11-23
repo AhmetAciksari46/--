@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\School\Week;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ClassSchedule;
 use App\Models\ClassModel;
@@ -61,8 +62,7 @@ class ClassScheduleController extends Controller
      *         @OA\JsonContent(
      *             required={"class_model_id","subject_id","teacher_id","day_of_week","start_time","end_time"},
      *             @OA\Property(property="class_model_id", type="integer", example=1),
-     *             @OA\Property(property="subject_id", type="integer", example=2),
-     *             @OA\Property(property="teacher_id", type="integer", example=5),
+     *             @OA\Property(property="teacher_subject_id", type="integer", example=5),
      *             @OA\Property(property="day_of_week", type="string", example="monday"),
      *             @OA\Property(property="start_time", type="string", example="09:00"),
      *             @OA\Property(property="end_time", type="string", example="10:00"),
@@ -80,8 +80,7 @@ class ClassScheduleController extends Controller
 
         $validated = $request->validate([
             'class_model_id' => 'required|exists:class_models,id',
-            'subject_id' => 'required|exists:subjects,id',
-            'teacher_id' => 'required|exists:users,id',
+            'teacher_subject_id' => 'required|exists:teacher_subjects,id',
             'day_of_week' => 'required|string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
@@ -93,7 +92,7 @@ class ClassScheduleController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Ders programı başarıyla oluşturuldu.',
-            'data' => $schedule->load(['class', 'teacher', 'subject'])
+            'data' => $schedule->load(['class', 'teacherSubject'])
         ], 201);
     }
 
@@ -115,7 +114,7 @@ class ClassScheduleController extends Controller
      */
     public function show($id)
     {
-        $schedule = ClassSchedule::with(['class', 'teacher', 'subject'])->findOrFail($id);
+        $schedule = ClassSchedule::with(['class', 'teacher',])->findOrFail($id);
         $this->authorize('view', $schedule);
 
         return response()->json([

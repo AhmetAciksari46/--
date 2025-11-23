@@ -4,36 +4,40 @@ use App\Http\Controllers\Api\AuthController;
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckUserProfile;
-use App\Http\Controllers\Admin\BranchController;
-use App\Http\Controllers\Admin\PackageController;
 
-use App\Http\Controllers\School\User\SchoolStudentController;
 use App\Http\Controllers\School\User\TeacherProfileController;
-
 use App\Http\Controllers\School\User\SchoolStudentProfileController;
 use App\Http\Controllers\School\User\ManagerProfileController;
 use App\Http\Controllers\School\User\ManagerController;
-
 use App\Http\Controllers\School\User\TeacherController;
 
 use App\Http\Controllers\School\General\SchoolController;
+use App\Http\Controllers\School\General\TeacherSubjectController;
 use App\Http\Controllers\School\General\ClassModelController;
-use App\Http\Controllers\School\Week\SchoolWeekController;
-use App\Http\Controllers\School\Week\SchoolWeekDayController;
-use App\Http\Controllers\{
-    UserController,
-    SubscriptionController,
-    SchoolHasGradeController,
-    ClassScheduleController,
-    AdditionalClassRoomController,
-    StudentCurriculumOverrideController,
-    AttendanceController,
-    LessonSessionController,
+
+use App\Http\Controllers\Admin\{
     ContentController,
     SubjectController,
     PackageWeekGradeRuleController,
+    SchoolHasGradeController,
     GradeController,
-    TeacherSubjectController
+    PackageController,
+    BranchController,
+    SubscriptionController
+};
+
+use App\Http\Controllers\School\Week\{
+    AttendanceController,
+    ClassScheduleController,
+    LessonSessionController,
+    SchoolWeekDayController,
+    SchoolWeekController,
+    PhysicalClassroomController
+};
+
+use App\Http\Controllers\{
+    UserController,
+    StudentCurriculumOverrideController,
 };
 use App\Http\Controllers\Admin\AdminTeacherController;
 use App\Http\Controllers\School\User\StudentParentController;
@@ -59,15 +63,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // // School Student kendi profili ->Sadece ad syad ve şifre değişebilir// diğer bilgileri manager yada teacher değiştirir
         // Route::prefix("schoolstudent")->middleware("role:schoolstudent")->group(function () {
-        //     Route::put("/updateprofile", [SchoolStudentController::class, "updateprofile"]);
         //     Route::get("/getprofilesettings", [SchoolStudentProfileController::class, "getprofilesettings"]);
         // });
 
         // // individual Student kendi profili
         // Route::prefix("individualstudent")->middleware("role:individualstudent")->group(function () {
-        //     Route::put("/updateprofile", [IndividualStudentController::class, "updateprofile"]);
-        //     Route::put("/updateprofilesettings", [IndividualStudentProfileController::class, "updateprofilesettings"]);
-        //     Route::get("/getprofilesettings", [IndividualStudentProfileController::class, "getprofilesettings"]);
         // });
     });
 
@@ -212,6 +212,24 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::prefix("schools/{school}")->middleware(['ensure.school', 'active.school'])
             ->group(function () {
+
+
+                Route::get('/classrooms', [PhysicalClassroomController::class, 'index'])
+                    ->middleware('permission:classroom.view');
+
+                Route::post('/classrooms', [PhysicalClassroomController::class, 'store'])
+                    ->middleware('permission:classroom.create');
+
+                Route::get('/classrooms/{classroom}', [PhysicalClassroomController::class, 'show'])
+                    ->middleware('permission:classroom.view');
+
+                Route::put('/classrooms/{classroom}', [PhysicalClassroomController::class, 'update'])
+                    ->middleware('permission:classroom.update');
+
+                Route::delete('/classrooms/{classroom}', [PhysicalClassroomController::class, 'destroy'])
+                    ->middleware('permission:classroom.delete');
+
+
                 Route::prefix('teachers')->group(function () {
                     Route::get('/', [TeacherController::class, 'index']); // teacherList
                     Route::get('/{teacher}', [TeacherController::class, 'show']); // getTeacherById
@@ -250,7 +268,6 @@ Route::middleware('auth:sanctum')->group(function () {
                     Route::delete('/{parent}', [StudentParentController::class, 'destroy']);
                 });
 
-
                 Route::prefix('classes')->group(function () {
                     Route::get('/', [ClassModelController::class, 'index']);
                     Route::post('/', [ClassModelController::class, 'store']);
@@ -258,8 +275,6 @@ Route::middleware('auth:sanctum')->group(function () {
                     Route::put('/{classModel}', [ClassModelController::class, 'update']);
                     Route::delete('/{classModel}', [ClassModelController::class, 'destroy']);
                 });
-
-
 
                 Route::middleware(['role:manager'])->group(function () {
                     Route::prefix('manager')->group(function () {
@@ -289,13 +304,6 @@ Route::middleware('auth:sanctum')->group(function () {
                     });
                 });
 
-
-
-
-
-
-
-
                 // Öğretmen işlemleri
                 Route::prefix('attendance')->group(function () {
                     Route::get('/{class_schedule_id}', [AttendanceController::class, 'index']);
@@ -322,25 +330,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
                 // Öğrenci işlemleri
                 Route::prefix("students")->group(function () {
-                    Route::post('/createuser', [SchoolStudentController::class, 'store']);  // öğrenci oluştur (user modeldeki bilgiler)
-                    Route::post('/{user}/completeprofile', [SchoolStudentController::class, 'completeProfile']); // öğrenci profil, veli ve sağlık bilgilerini tamamlar
-                    Route::get('/{id}', [SchoolStudentController::class, 'show']); // id ye göre öğrenci getir
-                    Route::get('/byclass/{classModel}', [SchoolStudentController::class, 'getByClassModel']); //  sınıf id bazlı öğrencilerin tamamını getir
-                    Route::get('/', [SchoolStudentController::class, 'index']); // o okuldaki öğrencilerin tamamını getir
-                    Route::delete('/{id}', [SchoolStudentController::class, 'destroy']); //id ye göre öğrenci ve tüm profile bilgileri sil
-                    Route::put('/{id}/update', [SchoolStudentController::class, 'update']); //  id ye göre öğrenci güncelle (user ve parent vs modeldeki bilgiler)
-
                     // Müfredat İçeriğini Görme (Kısıtlamalı)
                     // Rol Kontrolü: 'schoolstudent'
                     Route::get('curriculum/contents', [ContentController::class, 'studentIndex'])->name('curriculum.contents.index');
-                });
-
-                Route::prefix("additionalclassrooms")->group(function () {
-                    Route::get("/getclass", [AdditionalClassRoomController::class, "index"]); // o okuldaki sınıfların tamamını getir
-                    Route::post("/create", [AdditionalClassRoomController::class, "store"]); // sınıf oluştur
-                    Route::get("/{id}", [AdditionalClassRoomController::class, "show"]); // id ye göre sınıf getir
-                    Route::put("/update/{id}", [AdditionalClassRoomController::class, "updateClassroom"]); // id ye göre sınıf güncelle
-                    Route::delete("/{id}", [AdditionalClassRoomController::class, "destroy"]); //id ye göre sınıf sil
                 });
             });
     });
