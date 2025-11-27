@@ -17,6 +17,7 @@ use App\Traits\ApiResponser;
 use App\Models\ClassModel;
 use Illuminate\Support\Facades\DB;
 use App\Models\AdditionalClassRoom;
+use Spatie\Permission\Models\Role;
 
 /**
  * @OA\Tag(
@@ -45,11 +46,13 @@ class SchoolStudentProfileController extends Controller
             return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
         }
 
-        $students = User::where('role', 'student')
-            ->whereHas('studentProfile', fn($q) => $q->where('school_id', $school->id))
-            ->with('studentProfile')
+        $students = User::where('role', 'schoolstudent')
+            ->whereHas('schoolStudentProfile', fn($q) => $q->where('school_id', $school->id))
+            ->with('schoolStudentProfile')
             ->get();
-
+        if ($students->isEmpty()) {
+            return $this->successResponse([], 'Bu okula ait öğrenci bulunamadı.', 200);
+        }
         return $this->successResponse($students, 'Öğrenciler başarıyla getirildi.', 200);
     }
 
@@ -72,11 +75,14 @@ class SchoolStudentProfileController extends Controller
             return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
         }
 
-        if (!$student->studentProfile || $student->studentProfile->school_id != $school->id) {
+        if (!$student->schoolStudentProfile || $student->schoolStudentProfile->school_id != $school->id) {
             return $this->errorResponse('Bu öğrenci bu okula ait değil.', 403);
         }
 
-        return $this->successResponse($student->load('studentProfile'), 'Öğrenci bilgileri getirildi.', 200);
+        if (!$student) {
+            return $this->errorResponse('Öğrenci profili bulunamadı.', 404);
+        }
+        return $this->successResponse($student->load('schoolStudentProfile'), 'Öğrenci bilgileri getirildi.', 200);
     }
 
     /**
@@ -98,11 +104,14 @@ class SchoolStudentProfileController extends Controller
      */
     public function store(StoreStudentRequest $request, School $school)
     {
+
         if (!auth()->user()->can('student.create')) {
             return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
         }
+
         $data = $request->validated();
         // CLASS OKULA AİT Mİ?
+
         if (!empty($data['active_class_id'])) {
             $classCheck = ClassModel::where('id', $data['active_class_id'])
                 ->where('school_id', $school->id)
@@ -114,18 +123,26 @@ class SchoolStudentProfileController extends Controller
         }
 
 
-        $student = DB::transaction(function () use ($data, $school) {
+
+
+
+
+        try {
+            // 1) User
             $user = User::create([
                 'name' => $data['name'],
                 'userName' => $data['userName'],
                 'email' => $data['email'] ?? null,
                 'password' => Hash::make($data['password']),
-                'role' => 'student',
+                'role' => 'schoolstudent',
+                "is_active" => true,
             ]);
 
-            $user->assignRole('school_student');
+            if (Role::where('name', 'school_student')->exists()) {
+                $user->assignRole('school_student');
+            }
 
-            $profile = SchoolStudentProfile::create([
+            SchoolStudentProfile::create([
                 'user_id' => $user->id,
                 'school_id' => $school->id,
                 'phone' => $data['phone'] ?? null,
@@ -136,8 +153,20 @@ class SchoolStudentProfileController extends Controller
                 'gender' => $data['gender'] ?? null,
             ]);
 
-            return $user->load('studentProfile');
-        });
+
+            DB::commit();
+
+            return $this->successResponse(
+                $user->load('schoolStudentProfile'),
+                'Yeni Öğrenci başarıyla oluşturuldu.',
+                201
+            );
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return $this->errorResponse('Öğrenci oluşturulurken hata: ' . $e->getMessage(), 500);
+        }
+
+
 
         return $this->successResponse($student, 'Öğrenci başarıyla oluşturuldu.', 201);
     }
@@ -148,7 +177,8 @@ class SchoolStudentProfileController extends Controller
      *     summary="Öğrenci bilgilerini günceller",
      *     tags={"Manager & Teacher - Student Profil İşlemleri"},
      *     security={{"bearerAuth":{}}},
-     *
+     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="student", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(ref="#/components/schemas/UpdateStudentRequest")
@@ -162,7 +192,7 @@ class SchoolStudentProfileController extends Controller
         if (!auth()->user()->can('student.update')) {
             return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
         }
-        if (!$student->studentProfile || $student->studentProfile->school_id != $school->id) {
+        if (!$student->schoolStudentProfile || $student->schoolStudentProfile->school_id != $school->id) {
             return $this->errorResponse('Bu öğrenci bu okula ait değil.', 403);
         }
         if (!empty($validated['active_class_id'])) {
@@ -188,10 +218,10 @@ class SchoolStudentProfileController extends Controller
         }
 
         if ($profileFields) {
-            $student->studentProfile->update($profileFields);
+            $student->schoolStudentProfile->update($profileFields);
         }
 
-        return $this->successResponse($student->load('studentProfile'), 'Öğrenci başarıyla güncellendi.', 200);
+        return $this->successResponse($student->load('schoolStudentProfile'), 'Öğrenci başarıyla güncellendi.', 200);
     }
 
     /**
@@ -210,7 +240,7 @@ class SchoolStudentProfileController extends Controller
             return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
         }
 
-        if (!$student->studentProfile || $student->studentProfile->school_id != $school->id) {
+        if (!$student->schoolStudentProfile || $student->schoolStudentProfile->school_id != $school->id) {
             return $this->errorResponse('Bu öğrenci bu okula ait değil.', 403);
         }
 
@@ -239,7 +269,7 @@ class SchoolStudentProfileController extends Controller
         if (!auth()->user()->can('student.update')) {
             return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
         }
-        if (!$student->studentProfile || $student->studentProfile->school_id != $school->id) {
+        if (!$student->schoolStudentProfile || $student->schoolStudentProfile->school_id != $school->id) {
             return response()->json(['message' => 'Bu öğrenci bu okula ait değil.'], 403);
         }
 
@@ -307,5 +337,36 @@ class SchoolStudentProfileController extends Controller
             'Sınıfa ait öğrenciler başarıyla listelendi.',
             200
         );
+    }
+
+
+    /**
+     * @OA\Get(
+     *     path="/api/schools/{school}/students/{student}/details",
+     *     summary="Belirli öğrenci bilgilerini getirir",
+     *     tags={"Manager & Teacher - Student Profil İşlemleri"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="student", in="path", required=true, @OA\Schema(type="integer")),
+     *
+     *     @OA\Response(response=200, description="Student details")
+     * )
+     */
+    public function getDetails(School $school, User $student)
+    {
+        if (!auth()->user()->can('student.view')) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        }
+
+        if (!$student->schoolStudentProfile || $student->schoolStudentProfile->school_id != $school->id) {
+            return $this->errorResponse('Bu öğrenci bu okula ait değil.', 403);
+        }
+
+        if (!$student) {
+            return $this->errorResponse('Öğrenci profili bulunamadı.', 404);
+        }
+        $data = $student->load(['schoolStudentProfile', 'schoolStudentProfile.activeClass', 'schoolStudentProfile.activeCourse', 'schoolStudentProfile.school', 'schoolStudentProfile.parents', 'schoolStudentProfile.healthProfile']);
+        return $this->successResponse($data, 'Öğrenci bilgileri getirildi.', 200);
     }
 }

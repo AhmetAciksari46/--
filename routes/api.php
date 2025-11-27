@@ -41,6 +41,7 @@ use App\Http\Controllers\{
 };
 use App\Http\Controllers\Admin\AdminTeacherController;
 use App\Http\Controllers\School\User\StudentParentController;
+use App\Http\Controllers\School\User\StudentHealthController;
 
 Route::post("/register", [AuthController::class, "register"]);
 Route::post("/login", [AuthController::class, "login"]);
@@ -90,19 +91,15 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // TEACHER SUBJECTS (Admin + Manager)
-    Route::prefix('teacher-subjects')->group(function () {
-        Route::get('/', [TeacherSubjectController::class, 'index']);
-        Route::post('/', [TeacherSubjectController::class, 'store']);
-        Route::delete('/{id}', [TeacherSubjectController::class, 'destroy']);
-    });
+
 
 
     Route::middleware('role:admin')
         ->prefix('admin')->group(function () {
-            Route::get('school-has-grades', [SchoolHasGradeController::class, 'index']);
-            Route::post('school-has-grades', [SchoolHasGradeController::class, 'store']);
-            Route::delete('school-has-grades/{id}', [SchoolHasGradeController::class, 'destroy']);
-            Route::get('school-has-grades/by-school/{school_id}', [SchoolHasGradeController::class, 'getBySchoolId']);
+            Route::get('/school-has-grades', [SchoolHasGradeController::class, 'index']);
+            Route::post('/school-has-grades', [SchoolHasGradeController::class, 'store']);
+            Route::delete('/school-has-grades/{id}', [SchoolHasGradeController::class, 'destroy']);
+            Route::get('/school-has-grades/by-school/{school_id}', [SchoolHasGradeController::class, 'getBySchoolId']);
 
             Route::apiResource('packages', PackageController::class);
             Route::apiResource('packages.grade-rules', PackageWeekGradeRuleController::class);
@@ -184,7 +181,6 @@ Route::middleware('auth:sanctum')->group(function () {
         });
 
     Route::middleware(CheckUserProfile::class)->group(function () {
-        Route::get('getactivebranches', [BranchController::class, 'activeBranches']);
 
         // Paket satın alma
         Route::post('/packages/{package}/purchase', [PackageController::class, 'purchase'])
@@ -200,6 +196,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::prefix("manager")->group(function () {
             Route::get('/teachers/available-permissions', [TeacherController::class, 'availablePermissionsForTeachers']);
             Route::get('/packages/{package}/my-grade-rules', [PackageWeekGradeRuleController::class, 'showManagerPackage']);
+            Route::get('/getactivesubjects', [SubjectController::class, 'activeSubjects']);
+            Route::get('/getactivebranches', [BranchController::class, 'activeBranches']);
 
             Route::get('my-grades', [SchoolHasGradeController::class, 'myGrades'])
                 ->middleware('auth:sanctum');
@@ -213,21 +211,20 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::prefix("schools/{school}")->middleware(['ensure.school', 'active.school'])
             ->group(function () {
 
+                Route::prefix('teacher-subjects')->group(function () {
+                    Route::get('/', [TeacherSubjectController::class, 'index']);
+                    Route::post('/', [TeacherSubjectController::class, 'store']);
+                    Route::delete('/{id}', [TeacherSubjectController::class, 'destroy']);
+                });
+                Route::get('/classrooms', [PhysicalClassroomController::class, 'index']);
 
-                Route::get('/classrooms', [PhysicalClassroomController::class, 'index'])
-                    ->middleware('permission:classroom.view');
+                Route::post('/classrooms', [PhysicalClassroomController::class, 'store']);
 
-                Route::post('/classrooms', [PhysicalClassroomController::class, 'store'])
-                    ->middleware('permission:classroom.create');
+                Route::get('/classrooms/{classroom}', [PhysicalClassroomController::class, 'show']);
 
-                Route::get('/classrooms/{classroom}', [PhysicalClassroomController::class, 'show'])
-                    ->middleware('permission:classroom.view');
+                Route::put('/classrooms/{classroom}', [PhysicalClassroomController::class, 'update']);
 
-                Route::put('/classrooms/{classroom}', [PhysicalClassroomController::class, 'update'])
-                    ->middleware('permission:classroom.update');
-
-                Route::delete('/classrooms/{classroom}', [PhysicalClassroomController::class, 'destroy'])
-                    ->middleware('permission:classroom.delete');
+                Route::delete('/classrooms/{classroom}', [PhysicalClassroomController::class, 'destroy']);
 
 
                 Route::prefix('teachers')->group(function () {
@@ -255,10 +252,8 @@ Route::middleware('auth:sanctum')->group(function () {
                     Route::put('/{student}', [SchoolStudentProfileController::class, 'update']);
                     Route::delete('/{student}', [SchoolStudentProfileController::class, 'destroy']);
                     Route::put('/{student}/reset-password', [SchoolStudentProfileController::class, 'resetPassword']);
-                    Route::get(
-                        '/by-class/{classModel}',
-                        [SchoolStudentProfileController::class, 'getByClassModel']
-                    );
+                    Route::get('/by-class/{classModel}', [SchoolStudentProfileController::class, 'getByClassModel']);
+                    Route::get('/{student}/details', [SchoolStudentProfileController::class, 'getDetails']);
                 });
                 Route::prefix('students/{profile}/parents')->group(function () {
                     Route::get('/', [StudentParentController::class, 'index']);
@@ -266,6 +261,16 @@ Route::middleware('auth:sanctum')->group(function () {
                     Route::get('/{parent}', [StudentParentController::class, 'show']);
                     Route::put('/{parent}', [StudentParentController::class, 'update']);
                     Route::delete('/{parent}', [StudentParentController::class, 'destroy']);
+                });
+                Route::prefix("students/{profile}/health")->group(function () {
+
+                    Route::get('/', [StudentHealthController::class, 'show']);
+
+                    Route::post('/', [StudentHealthController::class, 'store']);
+
+                    Route::put('/', [StudentHealthController::class, 'update']);
+
+                    Route::delete('/', [StudentHealthController::class, 'destroy']);
                 });
 
                 Route::prefix('classes')->group(function () {

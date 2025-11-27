@@ -29,7 +29,7 @@ class StudentParentController extends Controller
      *     security={{"bearerAuth":{}}},
      *
      *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="profile", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="profile", description="schoolstudentprofile idsi", in="path", required=true, @OA\Schema(type="integer")),
      *
      *     @OA\Response(response=200, description="Parent list"),
      * )
@@ -37,6 +37,7 @@ class StudentParentController extends Controller
 
     public function index(School $school, SchoolStudentProfile $profile)
     {
+
         if ($profile->school_id !== $school->id) {
             abort(403, 'Bu öğrenci bu okula ait değil.');
         }
@@ -46,9 +47,16 @@ class StudentParentController extends Controller
 
 
 
-
+        $parents = $profile->parents;
+        if ($parents->isEmpty()) {
+            return $this->successResponse(
+                [],
+                "Bu öğrenciye ait veli bulunmamaktadır.",
+                200
+            );
+        }
         return $this->successResponse(
-            $profile->parents,
+            $parents,
             "Veliler başarıyla listelendi.",
             200
         );
@@ -61,6 +69,9 @@ class StudentParentController extends Controller
      *     tags={"Manager & Teacher - Student Veli İşlemleri"},
      *     security={{"bearerAuth":{}}},
      *
+     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="profile", description="schoolstudentprofile idsi", in="path", required=true, @OA\Schema(type="integer")),
+     * 
      *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/StoreStudentParentRequest")),
      *
      *     @OA\Response(response=201, description="Parent created")
@@ -83,7 +94,7 @@ class StudentParentController extends Controller
      *     tags={"Manager & Teacher - Student Veli İşlemleri"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="profile", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="profile", description="studentprofile id", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(name="parent", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Response(response=200, description="Parent details")
      * )
@@ -104,7 +115,9 @@ class StudentParentController extends Controller
      *     summary="Veli bilgilerini günceller",
      *     tags={"Manager & Teacher - Student Veli İşlemleri"},
      *     security={{"bearerAuth":{}}},
-     *
+     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="profile", description="studentprofile id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="parent", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/UpdateStudentParentRequest")),
      *
      *     @OA\Response(response=200, description="Parent updated")

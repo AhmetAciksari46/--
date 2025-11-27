@@ -61,7 +61,10 @@ class PackageWeekGradeRuleController extends Controller
      */
     public function store(StorePackageWeekGradeRuleRequest $request, Package $package)
     {
-        $rule = $package->gradeRules()->create($request->validated());
+        $data = $request->validated();
+        $data['package_id'] = $package->id;
+
+        $rule = PackageWeekGradeRule::create($data);
 
         return $this->successResponse($rule, 'Sınıf kuralı başarıyla eklendi.', 201);
     }
@@ -80,10 +83,11 @@ class PackageWeekGradeRuleController extends Controller
      */
     public function update(UpdatePackageWeekGradeRuleRequest $request, Package $package, PackageWeekGradeRule $grade_rule)
     {
-        // Route Model Binding ile gelen kuralın gerçekten bu pakete ait olup olmadığını kontrol et
         if ($grade_rule->package_id !== $package->id) {
             return $this->errorResponse('not_found', 404);
         }
+
+        $grade_rule->update($request->validated());
 
         $grade_rule->update($request->validated());
         return $this->successResponse($grade_rule->refresh(), 'Sınıf kuralı başarıyla güncellendi.');
@@ -157,20 +161,5 @@ class PackageWeekGradeRuleController extends Controller
 
         $package = $subscription->package;
         return $this->successResponse($package->gradeRules, 'Sınıf kuralları listelendi.');
-
-        // 🔥 Sonsuz döngüyü engellemek için SAFE RESPONSE
-        return response()->json([
-            'data' => [
-                'id' => $package->id,
-                'name' => $package->name,
-                'description' => $package->description,
-                'price' => $package->price,
-                'duration_days' => $package->duration_days,
-                'week_count' => $package->week_count,
-                'type' => $package->type,
-                'is_active' => $package->is_active
-            ],
-            'message' => 'Paket bilgisi başarıyla getirildi.'
-        ], 200);
     }
 }

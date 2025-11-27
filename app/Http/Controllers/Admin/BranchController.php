@@ -37,10 +37,15 @@ class BranchController extends Controller
         return $this->successResponse($branches, 'Branşlar başarıyla getirildi', 200);
     }
 
+
+
+
+
+
     /**
      * @OA\Get(
-     *   path="/api/getactivebranches",
-     *   tags={"Admin Branches"},
+     *   path="/api/manager/getactivebranches",
+     *   tags={"Manager Genel İşlemleri"},
      *   summary="Aktif olan branş listesini getir",
      *   security={{"bearerAuth":{}}},
      *   @OA\Response(

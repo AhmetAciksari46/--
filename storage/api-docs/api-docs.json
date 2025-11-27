@@ -453,13 +453,13 @@
                 ]
             }
         },
-        "/api/getactivebranches": {
+        "/api/manager/getactivebranches": {
             "get": {
                 "tags": [
-                    "Admin Branches"
+                    "Manager Genel İşlemleri"
                 ],
                 "summary": "Aktif olan branş listesini getir",
-                "operationId": "4308aa37c1660f22925438c752bc5abd",
+                "operationId": "41c59594629f385271287f7e384a17e0",
                 "responses": {
                     "200": {
                         "description": "Aktif branş listesi",
@@ -1698,6 +1698,45 @@
                 ]
             }
         },
+        "/api/manager/getactivesubjects": {
+            "get": {
+                "tags": [
+                    "Manager Genel İşlemleri"
+                ],
+                "summary": "Aktif olan branş listesini getir",
+                "operationId": "f1f124244721196753d8201fbfea1c25",
+                "responses": {
+                    "200": {
+                        "description": "Aktif branş listesi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "İşlem başarılı."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Yetkiniz yok"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/admin/subjects/{id}": {
             "put": {
                 "tags": [
@@ -2814,13 +2853,25 @@
                 ]
             }
         },
-        "/api/teacher-subjects": {
+        "/api/schools/{school}/teacher-subjects": {
             "get": {
                 "tags": [
                     "TeacherSubjects"
                 ],
                 "summary": "Tüm öğretmen-ders ilişkilerini getir",
-                "operationId": "1607ea2989cd1a074d169629ddd56eca",
+                "operationId": "b1300480d9e8e5c42007b86e11f53cd2",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "description": "Okul ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Liste döndürüldü"
@@ -2837,7 +2888,19 @@
                     "TeacherSubjects"
                 ],
                 "summary": "Öğretmene ders ata",
-                "operationId": "95893de2e806b099a4c6fee01e8fa4bd",
+                "operationId": "68cff9649594fae9556a8b50aafe4fb9",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "description": "Okul ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -2874,14 +2937,24 @@
                 ]
             }
         },
-        "/api/teacher-subjects/{id}": {
+        "/api/schools/{school}/teacher-subjects/{id}": {
             "delete": {
                 "tags": [
                     "TeacherSubjects"
                 ],
                 "summary": "Öğretmen-Ders atamasını sil",
-                "operationId": "0afe882953361100aa09087a5dda2543",
+                "operationId": "50cdaaf5c566f3eebfe99040d35aa18e",
                 "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "description": "Okul ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
                     {
                         "name": "id",
                         "in": "path",
@@ -3516,6 +3589,24 @@
                 ],
                 "summary": "Öğrenci bilgilerini günceller",
                 "operationId": "b738018cd88d74883c8dbcbd9f3d4bbf",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "student",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -3641,6 +3732,202 @@
                 ]
             }
         },
+        "/api/schools/{school}/students/{student}/details": {
+            "get": {
+                "tags": [
+                    "Manager & Teacher - Student Profil İşlemleri"
+                ],
+                "summary": "Belirli öğrenci bilgilerini getirir",
+                "operationId": "d5e64ffe6152f69207c0dfdbdb486a35",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "student",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Student details"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/students/{profile}/health": {
+            "get": {
+                "tags": [
+                    "Manager & Teacher Student Health"
+                ],
+                "summary": "Öğrenci sağlık bilgisi görüntüleme",
+                "operationId": "0b4d30dbb3b145abc5eeddfaf662de20",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "example": 1
+                    },
+                    {
+                        "name": "profile",
+                        "in": "path",
+                        "description": "schoolstudentprofile idsi",
+                        "required": true,
+                        "example": 22
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Başarılı",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Bulunamadı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Manager & Teacher Student Health"
+                ],
+                "summary": "Öğrenci sağlık kaydı güncelleme",
+                "operationId": "6eef61adb07a3c34a1b9de5cde128e9d",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "path",
+                        "description": "schoolstudentprofile idsi"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StudentHealthRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Güncellendi"
+                    },
+                    "404": {
+                        "description": "Bulunamadı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Manager & Teacher Student Health"
+                ],
+                "summary": "Öğrenci sağlık kaydı oluşturma",
+                "operationId": "9963bf7a86ed210852ba26eb71abe57d",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "profile",
+                        "in": "path",
+                        "description": "schoolstudentprofile idsi",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StudentHealthRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Oluşturuldu"
+                    },
+                    "422": {
+                        "description": "Validasyon hatası"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Manager & Teacher Student Health"
+                ],
+                "summary": "Öğrenci sağlık kaydı silme",
+                "operationId": "c9ac25d4633bb35d01834083285deeac",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path"
+                    },
+                    {
+                        "name": "profile",
+                        "in": "path",
+                        "description": "schoolstudentprofile idsi"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Silindi"
+                    },
+                    "404": {
+                        "description": "Bulunamadı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/schools/{school}/students/{profile}/parents": {
             "get": {
                 "tags": [
@@ -3660,6 +3947,7 @@
                     {
                         "name": "profile",
                         "in": "path",
+                        "description": "schoolstudentprofile idsi",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -3683,6 +3971,25 @@
                 ],
                 "summary": "Öğrenciye yeni veli ekler",
                 "operationId": "d75c4281e331f3db0d6511463986cd7f",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "profile",
+                        "in": "path",
+                        "description": "schoolstudentprofile idsi",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -3724,6 +4031,7 @@
                     {
                         "name": "profile",
                         "in": "path",
+                        "description": "studentprofile id",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -3755,6 +4063,33 @@
                 ],
                 "summary": "Veli bilgilerini günceller",
                 "operationId": "becf03de6807a3375cfafa57550ccb14",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "profile",
+                        "in": "path",
+                        "description": "studentprofile id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "parent",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -4531,13 +4866,23 @@
                 ]
             }
         },
-        "/api/classschedules": {
+        "/api/schools/{school}/classschedules": {
             "get": {
                 "tags": [
                     "ClassSchedule"
                 ],
                 "summary": "Tüm ders programlarını listele (Admin/Manager/Teacher)",
-                "operationId": "2235d0c431017a1bcb053d18f32b52f2",
+                "operationId": "dfbf1b21bee09cef7704441b5f4b36a3",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Ders programları listesi"
@@ -4553,13 +4898,23 @@
                 ]
             }
         },
-        "/api/classschedules/store": {
+        "/api/schools/{school}/classschedules/store": {
             "post": {
                 "tags": [
                     "ClassSchedule"
                 ],
                 "summary": "Yeni ders programı oluştur (Admin/Manager)",
-                "operationId": "c6cb2b77e8c11f5e1d73fa0616f708c2",
+                "operationId": "a290c2c74a4153e6ac5ba0b31aff2042",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -4622,14 +4977,22 @@
                 ]
             }
         },
-        "/api/classschedules/{id}": {
+        "/api/schools/{school}/classschedules/{id}": {
             "get": {
                 "tags": [
                     "ClassSchedule"
                 ],
                 "summary": "Belirli bir ders programını getir",
-                "operationId": "250a864d18c6d049f00799febee91399",
+                "operationId": "53730b1942f410838e391a4f53ae3010",
                 "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
                     {
                         "name": "id",
                         "in": "path",
@@ -4652,13 +5015,25 @@
                         "bearerAuth": []
                     }
                 ]
-            },
+            }
+        },
+        "/api/classschedules/{id}": {
             "put": {
                 "tags": [
                     "ClassSchedule"
                 ],
                 "summary": "Ders programını güncelle (Admin/Manager)",
                 "operationId": "212d22bdf3b68532773a14a4f7fc7265",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -4707,6 +5082,16 @@
                 ],
                 "summary": "Ders programını sil (Admin)",
                 "operationId": "ed6a25bd6e4aadd1d0363ceb46aa8e62",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Program silindi"
@@ -6330,15 +6715,15 @@
             "StorePackageWeekGradeRuleRequest": {
                 "title": "Sınıf Kuralı Oluşturma İsteği",
                 "required": [
-                    "grade",
+                    "grade_id",
                     "week_no",
                     "days_required"
                 ],
                 "properties": {
-                    "grade": {
-                        "description": "Kuralın uygulanacağı sınıf seviyesi.",
+                    "grade_id": {
+                        "description": "Grades tablosundaki sınıf seviyesi ID'si",
                         "type": "integer",
-                        "example": 5
+                        "example": 3
                     },
                     "week_no": {
                         "description": "Kuralın geçerli olduğu müfredat haftası.",
@@ -6387,20 +6772,20 @@
             },
             "UpdatePackageWeekGradeRuleRequest": {
                 "title": "Sınıf Kuralı Güncelleme İsteği",
-                "description": "Bir paketin mevcut sınıf kuralını güncellemek için kullanılır. Alanlar isteğe bağlıdır.",
+                "description": "Bir paketin sınıf kuralını güncellemek için kullanılır.",
                 "properties": {
-                    "grade": {
-                        "description": "Kuralın uygulanacağı yeni sınıf seviyesi.",
+                    "grade_id": {
+                        "description": "Yeni sınıf seviyesi ID'si",
                         "type": "integer",
-                        "example": 6
+                        "example": 4
                     },
                     "week_no": {
-                        "description": "Kuralın geçerli olduğu müfredat haftası.",
+                        "description": "Yeni hafta numarası",
                         "type": "integer",
                         "example": 12
                     },
                     "days_required": {
-                        "description": "Bu haftada gerekli minimum gün sayısı (1-7 arası).",
+                        "description": "Yeni gün gereksinimi (1-7 arası)",
                         "type": "integer",
                         "example": 5
                     }
@@ -7250,6 +7635,50 @@
                 },
                 "type": "object"
             },
+            "StudentHealthRequest": {
+                "required": [
+                    "has_chronic_disease"
+                ],
+                "properties": {
+                    "has_chronic_disease": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "chronic_disease_description": {
+                        "type": "string",
+                        "example": "Astım, KOAH"
+                    },
+                    "allergies": {
+                        "type": "string",
+                        "example": "Fıstık alerjisi"
+                    },
+                    "medications": {
+                        "type": "string",
+                        "example": "Ventolin"
+                    },
+                    "special_needs": {
+                        "type": "string",
+                        "example": "Tekerlekli sandalye kullanıyor"
+                    },
+                    "doctor_name": {
+                        "type": "string",
+                        "example": "Dr. Mehmet Yalçın"
+                    },
+                    "doctor_phone": {
+                        "type": "string",
+                        "example": "0555 444 3322"
+                    },
+                    "blood_type": {
+                        "type": "string",
+                        "example": "A+"
+                    },
+                    "health_insurance": {
+                        "type": "string",
+                        "example": "SGK"
+                    }
+                },
+                "type": "object"
+            },
             "ResetStudentPasswordRequest": {
                 "required": [
                     "password"
@@ -7285,6 +7714,10 @@
                         "example": "mehmet@example.com"
                     },
                     "password": {
+                        "type": "string",
+                        "example": "12345678"
+                    },
+                    "password_confirmation": {
                         "type": "string",
                         "example": "12345678"
                     },
@@ -7671,6 +8104,10 @@
                         "type": "boolean",
                         "example": false
                     },
+                    "school_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time"
@@ -7940,7 +8377,7 @@
                         "type": "integer",
                         "example": 1
                     },
-                    "grade": {
+                    "grade_id": {
                         "description": "Kuralın uygulandığı sınıf seviyesi",
                         "type": "integer",
                         "example": 5
@@ -8194,16 +8631,6 @@
                         "example": 2,
                         "nullable": true
                     },
-                    "parent_name": {
-                        "type": "string",
-                        "example": "Fatma Veli",
-                        "nullable": true
-                    },
-                    "parent_phone": {
-                        "type": "string",
-                        "example": "+905559991122",
-                        "nullable": true
-                    },
                     "school_id": {
                         "type": "integer",
                         "example": 5,
@@ -8238,11 +8665,6 @@
                     "is_active": {
                         "type": "boolean",
                         "example": true
-                    },
-                    "parent_status": {
-                        "type": "string",
-                        "example": "reachable",
-                        "nullable": true
                     },
                     "family_notes": {
                         "type": "string",
@@ -8371,6 +8793,104 @@
                         "type": "string",
                         "format": "date-time",
                         "example": "2025-11-06T12:00:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "StudentHealthProfile": {
+                "title": "Öğrenci Sağlık Modeli",
+                "description": "Öğrenci sağlık bilgileri şeması",
+                "properties": {
+                    "id": {
+                        "description": "Kayıt ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "school_student_profile_id": {
+                        "description": "Öğrencinin profil kimliği",
+                        "type": "integer",
+                        "example": 55
+                    },
+                    "has_chronic_disease": {
+                        "description": "Öğrencinin kronik hastalığı var mı?",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "chronic_disease_description": {
+                        "description": "Kronik hastalık açıklaması",
+                        "type": "string",
+                        "example": "Astım ve KOAH",
+                        "nullable": true
+                    },
+                    "allergies": {
+                        "description": "Alerjiler",
+                        "type": "string",
+                        "example": "Fıstık ve çiğ balık",
+                        "nullable": true
+                    },
+                    "medications": {
+                        "description": "Düzenli kullanılan ilaçlar",
+                        "type": "string",
+                        "example": "Ventolin, Bricanyl",
+                        "nullable": true
+                    },
+                    "special_needs": {
+                        "description": "Özel ihtiyaçlar",
+                        "type": "string",
+                        "example": "Fiziksel destek gerektirir",
+                        "nullable": true
+                    },
+                    "doctor_name": {
+                        "description": "Doktorun adı",
+                        "type": "string",
+                        "example": "Dr. Ahmet Yalçın",
+                        "nullable": true
+                    },
+                    "doctor_phone": {
+                        "description": "Doktor telefon numarası",
+                        "type": "string",
+                        "example": "0535 444 22 11",
+                        "nullable": true
+                    },
+                    "blood_type": {
+                        "description": "Kan grubu",
+                        "type": "string",
+                        "enum": [
+                            "A+",
+                            "A-",
+                            "B+",
+                            "B-",
+                            "AB+",
+                            "AB-",
+                            "O+",
+                            "O-",
+                            "bilinmiyor"
+                        ],
+                        "example": "O+"
+                    },
+                    "health_insurance": {
+                        "description": "Sağlık sigortası türü",
+                        "type": "string",
+                        "enum": [
+                            "SGK",
+                            "özel sağlık sigortası",
+                            "yeşil kart",
+                            "sigortasız",
+                            "diğer"
+                        ],
+                        "example": "SGK"
+                    },
+                    "created_at": {
+                        "description": "Kayıt oluşturulma tarihi",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-14T12:45:23Z"
+                    },
+                    "updated_at": {
+                        "description": "Kayıt güncellenme tarihi",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-15T09:16:40Z"
                     }
                 },
                 "type": "object"
@@ -8736,6 +9256,10 @@
             "description": "Okul yöneticisinin öğrenci yönetim işlemleri"
         },
         {
+            "name": "Manager & Teacher Student Health",
+            "description": "Öğrenci sağlık bilgileri işlemleri"
+        },
+        {
             "name": "Manager & Teacher - Student Veli İşlemleri",
             "description": "Öğrenci velileri için CRUD işlemleri"
         },
@@ -8776,12 +9300,12 @@
             "description": "Kullanıcı işlemleri"
         },
         {
-            "name": "Packages-Manager",
-            "description": "Packages-Manager"
-        },
-        {
             "name": "Manager Genel İşlemleri",
             "description": "Manager Genel İşlemleri"
+        },
+        {
+            "name": "Packages-Manager",
+            "description": "Packages-Manager"
         },
         {
             "name": "SchoolHasGrades",

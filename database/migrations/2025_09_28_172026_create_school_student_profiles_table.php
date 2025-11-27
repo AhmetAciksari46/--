@@ -21,8 +21,6 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->unsignedBigInteger('active_course_id')->nullable();
             $table->foreignId('active_class_id')->nullable()->constrained('class_models')->nullOnDelete();
-            $table->string('parent_name')->nullable();
-            $table->string('parent_phone')->nullable();
             $table->date('birth_date');
             $table->string('student_number')->unique();
             $table->string('tc_no')->unique();
@@ -32,7 +30,6 @@ return new class extends Migration
             $table->string('img_path')->nullable();
             $table->string('status')->default('active');
             $table->boolean('is_active')->default(true);
-            $table->enum('parent_status', ['evli', 'boşanmış'])->default('evli');
             $table->text('family_notes')->nullable();
             $table->timestamps();
         });

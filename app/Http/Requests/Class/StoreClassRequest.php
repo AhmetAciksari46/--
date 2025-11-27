@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Class;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\SchoolHasGrade;
 
 /**
  * @OA\Schema(
@@ -49,4 +50,33 @@ class StoreClassRequest extends FormRequest
             'academic_year.required' => 'Akademik yıl zorunludur.'
         ];
     }
+    // /**
+    //  * Okulun bu grade’i kullanma yetkisini doğrula
+    //  */
+    // public function withValidator($validator)
+    // {
+    //     $validator->after(function ($validator) {
+
+    //         // Route model binding’den school'ı al
+    //         $school = $this->route('school');
+    //         $gradeId = $this->input('grade_id');
+
+    //         if (!$school) {
+    //             $validator->errors()->add('school_id', 'Okul bilgisi bulunamadı.');
+    //             return;
+    //         }
+
+    //         // Okulun bu grade’e sahip olup olmadığını kontrol et
+    //         $hasGrade = SchoolHasGrade::where('school_id', $school->id)
+    //             ->where('grade_id', $gradeId)
+    //             ->exists();
+
+    //         if (!$hasGrade) {
+    //             $validator->errors()->add(
+    //                 'grade_id',
+    //                 'Bu okul belirtilen sınıf seviyesinde (grade) sınıf oluşturma yetkisine sahip değildir.'
+    //             );
+    //         }
+    //     });
+    // }
 }

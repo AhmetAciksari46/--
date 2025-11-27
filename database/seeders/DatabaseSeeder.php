@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Subject;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -16,9 +17,10 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             AdminUserSeeder::class,
             BranchSeeder::class,
-            //SubjectSeeder::class,
+            GradeSeeder::class,
             PackageSeeder::class,
             PackageWeekGradeRuleSeeder::class,
+            SubjectSeeder::class,
         ]);
     }
 }

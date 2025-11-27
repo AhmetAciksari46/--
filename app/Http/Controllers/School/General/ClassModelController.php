@@ -112,11 +112,14 @@ class ClassModelController extends Controller
      */
     public function store(StoreClassRequest $request, School $school)
     {
+
         if (!auth()->user()->can('classmodel.create')) {
             return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
         }
+
         $this->authorizeSchoolAccess($school);
         // ✔ 1) Grade bu okula ait mi?
+
         $allowed = SchoolHasGrade::where('school_id', $school->id)
             ->where('grade_id', $request->grade_id)
             ->exists();
@@ -127,7 +130,9 @@ class ClassModelController extends Controller
                 422
             );
         }
+
         $data = $request->validated();
+
         $data['school_id'] = $school->id;
 
         $class = ClassModel::create($data);

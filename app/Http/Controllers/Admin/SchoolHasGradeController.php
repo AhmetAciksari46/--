@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\SchoolHasGrade;
 use App\Models\School;
 use App\Models\Grade;
+use App\Traits\ApiResponser;
 
 /**
  * @OA\Tag(
@@ -18,6 +19,8 @@ use App\Models\Grade;
  */
 class SchoolHasGradeController extends Controller
 {
+    use ApiResponser;
+
     /**
      * @OA\Get(
      *     path="/api/admin/school-has-grades/by-school/{school_id}",
@@ -53,11 +56,7 @@ class SchoolHasGradeController extends Controller
         $records = SchoolHasGrade::where('school_id', $school_id)
             ->with(['school', 'grade'])
             ->get();
-
-        return response()->json([
-            'status' => true,
-            'data' => $records
-        ]);
+        return $this->successResponse($records, 'Okul-seviye ilişkisi başarıyla getirildi.', 200);
     }
     /**
      * @OA\Get(
@@ -71,11 +70,7 @@ class SchoolHasGradeController extends Controller
     public function index()
     {
         $records = SchoolHasGrade::with(['school', 'grade'])->get();
-
-        return response()->json([
-            'status' => true,
-            'data' => $records
-        ]);
+        return $this->successResponse($records, 'Okul-seviye ilişkisi başarıyla getirildi.', 200);
     }
 
     /**
@@ -103,12 +98,7 @@ class SchoolHasGradeController extends Controller
         ]);
 
         $record = SchoolHasGrade::firstOrCreate($validated);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Okul-seviye ilişkisi başarıyla oluşturuldu.',
-            'data' => $record->load(['school', 'grade'])
-        ], 201);
+        return $this->successResponse($record->load(['school', 'grade'],), 'Okul-seviye ilişkisi başarıyla oluşturuldu.', 200);
     }
 
     /**

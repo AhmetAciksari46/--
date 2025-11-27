@@ -14,10 +14,12 @@ return new class extends Migration
         Schema::create('package_week_grade_rules', function (Blueprint $table) {
             $table->id();
             $table->foreignId('package_id')->constrained()->cascadeOnDelete();
-            $table->unsignedTinyInteger('grade');
+            $table->foreignId('grade_id')
+                ->constrained('grades')
+                ->cascadeOnDelete();
             $table->unsignedInteger('week_no');
             $table->unsignedTinyInteger('days_required');
-            $table->unique(['package_id', 'grade', 'week_no']);
+            $table->unique(['package_id', 'grade_id', 'week_no']);
             $table->timestamps();
         });
     }

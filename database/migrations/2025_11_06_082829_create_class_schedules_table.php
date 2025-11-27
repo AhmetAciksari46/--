@@ -21,6 +21,9 @@ return new class extends Migration
             $table->time('end_time');
             $table->boolean('is_active');
             $table->boolean('is_successful')->nullable();
+            $table->foreignId('school_id')
+                ->constrained('schools')
+                ->onDelete('cascade');
             $table->timestamps();
         });
     }

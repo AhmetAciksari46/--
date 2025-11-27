@@ -32,6 +32,10 @@ class PhysicalClassroomController extends Controller
      */
     public function index(School $school)
     {
+        if (!auth()->user()->can('classroom.view',)) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        }
+
         $classrooms = PhysicalClassroom::where('school_id', $school->id)->get();
         return $this->successResponse($classrooms, 'Sınıflar getirildi');
     }
@@ -49,6 +53,10 @@ class PhysicalClassroomController extends Controller
      */
     public function store(PhysicalClassroomStoreRequest $request, School $school)
     {
+        if (!auth()->user()->can('classroom.create',)) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        }
+
         $data = $request->validated();
         $data['school_id'] = $school->id;
 
@@ -70,6 +78,9 @@ class PhysicalClassroomController extends Controller
      */
     public function show(School $school, PhysicalClassroom $classroom)
     {
+        if (!auth()->user()->can('classroom.view',)) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        }
         if ($classroom->school_id !== $school->id) {
             return $this->errorResponse('Bu sınıf bu okula ait değil', 403);
         }
@@ -88,6 +99,9 @@ class PhysicalClassroomController extends Controller
      */
     public function update(PhysicalClassroomUpdateRequest $request, School $school, PhysicalClassroom $classroom)
     {
+        if (!auth()->user()->can('classroom.update',)) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        }
         if ($classroom->school_id !== $school->id) {
             return $this->errorResponse('Bu sınıf bu okula ait değil', 403);
         }
@@ -107,6 +121,9 @@ class PhysicalClassroomController extends Controller
      */
     public function destroy(School $school, PhysicalClassroom $classroom)
     {
+        if (!auth()->user()->can('classroom.delete',)) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        }
         if ($classroom->school_id !== $school->id) {
             return $this->errorResponse('Bu sınıf bu okula ait değil', 403);
         }

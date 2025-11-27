@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ClassSchedule;
 use App\Models\ClassModel;
+use App\Models\School;
 use App\Models\Subject;
 use App\Models\User;
 
@@ -19,15 +20,16 @@ class ClassScheduleController extends Controller
 {
     /**
      * @OA\Get(
-     *     path="/api/classschedules",
+     *     path="/api/schools/{school}/classschedules",
      *     tags={"ClassSchedule"},
      *     summary="Tüm ders programlarını listele (Admin/Manager/Teacher)",
-     *     security={{"bearerAuth":{}}},
+     *     security={{"bearerAuth":{}}},     
+     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Response(response=200, description="Ders programları listesi"),
      *     @OA\Response(response=403, description="Yetkiniz yok")
      * )
      */
-    public function index()
+    public function index(School $school)
     {
         $this->authorize('viewAny', ClassSchedule::class);
 
@@ -53,10 +55,11 @@ class ClassScheduleController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/classschedules/store",
+     *     path="/api/schools/{school}/classschedules/store",
      *     tags={"ClassSchedule"},
      *     summary="Yeni ders programı oluştur (Admin/Manager)",
-     *     security={{"bearerAuth":{}}},
+     *     security={{"bearerAuth":{}}},     
+     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -74,7 +77,7 @@ class ClassScheduleController extends Controller
      *     @OA\Response(response=422, description="Doğrulama hatası")
      * )
      */
-    public function store(Request $request)
+    public function store(Request $request, School $school)
     {
         $this->authorize('create', ClassSchedule::class);
 
@@ -98,10 +101,11 @@ class ClassScheduleController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/classschedules/{id}",
+     *     path="/api/schools/{school}/classschedules/{id}",
      *     tags={"ClassSchedule"},
      *     summary="Belirli bir ders programını getir",
-     *     security={{"bearerAuth":{}}},
+     *     security={{"bearerAuth":{}}},     
+     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -112,7 +116,7 @@ class ClassScheduleController extends Controller
      *     @OA\Response(response=404, description="Program bulunamadı")
      * )
      */
-    public function show($id)
+    public function show($id, School $school)
     {
         $schedule = ClassSchedule::with(['class', 'teacher',])->findOrFail($id);
         $this->authorize('view', $schedule);
@@ -128,7 +132,8 @@ class ClassScheduleController extends Controller
      *     path="/api/classschedules/{id}",
      *     tags={"ClassSchedule"},
      *     summary="Ders programını güncelle (Admin/Manager)",
-     *     security={{"bearerAuth":{}}},
+     *     security={{"bearerAuth":{}}},     
+     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -142,7 +147,7 @@ class ClassScheduleController extends Controller
      *     @OA\Response(response=403, description="Yetkiniz yok")
      * )
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, School $school)
     {
         $schedule = ClassSchedule::findOrFail($id);
         $this->authorize('update', $schedule);
@@ -168,12 +173,13 @@ class ClassScheduleController extends Controller
      *     path="/api/classschedules/{id}",
      *     tags={"ClassSchedule"},
      *     summary="Ders programını sil (Admin)",
-     *     security={{"bearerAuth":{}}},
+     *     security={{"bearerAuth":{}}},     
+     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Response(response=200, description="Program silindi"),
      *     @OA\Response(response=403, description="Yetkiniz yok")
      * )
      */
-    public function destroy($id)
+    public function destroy($id, School $school)
     {
         $schedule = ClassSchedule::findOrFail($id);
         $this->authorize('delete', $schedule);

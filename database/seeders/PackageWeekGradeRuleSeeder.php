@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Package;
 use App\Models\PackageWeekGradeRule;
+use App\Models\Grade;
 
 class PackageWeekGradeRuleSeeder extends Seeder
 {
@@ -31,15 +32,21 @@ class PackageWeekGradeRuleSeeder extends Seeder
         foreach ($ruleMap as $packageName => $rules) {
             $package = Package::where('name', $packageName)->first();
 
-            if (! $package) {
+            if (!$package) {
                 continue;
             }
 
             foreach ($rules as $rule) {
+                $grade = Grade::where('id', $rule['grade'])->first();
+
+                if (!$grade) {
+                    continue;
+                }
+
                 PackageWeekGradeRule::updateOrCreate(
                     [
                         'package_id' => $package->id,
-                        'grade' => $rule['grade'],
+                        'grade_id' => $grade->id,
                         'week_no' => $rule['week_no'],
                     ],
                     ['days_required' => $rule['days_required']]

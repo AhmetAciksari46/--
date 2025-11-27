@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Models\TeacherSubject;
 use App\Models\User;
 use App\Models\Subject;
+use App\Traits\ApiResponser;
+use App\Models\School;
 
 /**
  * @OA\Tag(
@@ -17,29 +19,52 @@ use App\Models\Subject;
  */
 class TeacherSubjectController extends Controller
 {
+    use ApiResponser;
+
     /**
      * @OA\Get(
-     *     path="/api/teacher-subjects",
+     *     path="/api/schools/{school}/teacher-subjects",
      *     tags={"TeacherSubjects"},
      *     summary="Tüm öğretmen-ders ilişkilerini getir",
      *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="school",
+     *         in="path",
+     *         required=true,
+     *         description="Okul ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
      *     @OA\Response(response=200, description="Liste döndürüldü")
      * )
      */
-    public function index()
+    public function index(School $school)
     {
-        $this->authorize('viewAny', TeacherSubject::class);
-        return response()->json(
-            TeacherSubject::with(['teacher', 'subject'])->get()
+        $subjects = TeacherSubject::whereHas('teacher.teacherProfile', function ($q) use ($school) {
+            $q->where('school_id', $school->id);
+        })
+            ->with(['teacher.teacherProfile', 'subject'])
+            ->get();
+
+        return $this->successResponse(
+            $subjects,
+            'Bu okula ait öğretmen-ders ilişkileri başarıyla getirildi.',
+            200
         );
     }
 
     /**
      * @OA\Post(
-     *     path="/api/teacher-subjects",
+     *     path="/api/schools/{school}/teacher-subjects",
      *     tags={"TeacherSubjects"},
      *     summary="Öğretmene ders ata",
      *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="school",
+     *         in="path",
+     *         required=true,
+     *         description="Okul ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -51,7 +76,7 @@ class TeacherSubjectController extends Controller
      *     @OA\Response(response=201, description="Atama başarılı")
      * )
      */
-    public function store(Request $request)
+    public function store(Request $request, School $school)
     {
         $validated = $request->validate([
             'teacher_id' => 'required|exists:users,id',
@@ -59,29 +84,36 @@ class TeacherSubjectController extends Controller
         ]);
 
         $teacher = User::with('teacherProfile')->findOrFail($validated['teacher_id']);
+
         $subject = Subject::with('branch')->findOrFail($validated['subject_id']);
 
         if ($teacher->teacherProfile->branch_id !== $subject->branch_id) {
             return response()->json(['error' => 'Branş uyuşmuyor.'], 422);
         }
 
-        $this->authorize('create', [TeacherSubject::class, $teacher->id]);
 
         $record = TeacherSubject::firstOrCreate($validated);
-        return response()->json($record->load(['teacher', 'subject']), 201);
+        return $this->successResponse($record->load(['teacher', 'subject']), 'Öğretmen-Ders ataması başarıyla oluşturuldu.', 200);
     }
 
     /**
      * @OA\Delete(
-     *     path="/api/teacher-subjects/{id}",
+     *     path="/api/schools/{school}/teacher-subjects/{id}",
      *     tags={"TeacherSubjects"},
      *     summary="Öğretmen-Ders atamasını sil",
      *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="school",
+     *         in="path",
+     *         required=true,
+     *         description="Okul ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Response(response=204, description="Silindi")
      * )
      */
-    public function destroy($id)
+    public function destroy($id, School $school)
     {
         $record = TeacherSubject::findOrFail($id);
         $this->authorize('delete', $record);

@@ -37,6 +37,36 @@ class SubjectController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *   path="/api/manager/getactivesubjects",
+     *   tags={"Manager Genel İşlemleri"},
+     *   summary="Aktif olan branş listesini getir",
+     *   security={{"bearerAuth":{}}},
+     *   @OA\Response(
+     *      response=200,
+     *      description="Aktif branş listesi",
+     *      @OA\JsonContent(
+     *          type="object",
+     *          @OA\Property(property="status", type="boolean", example=true),
+     *          @OA\Property(property="message", type="string", example="İşlem başarılı."),
+     *      )
+     *   ),
+     *   @OA\Response(
+     *      response=403,
+     *      description="Yetkiniz yok"
+     *   )
+     * )
+     */
+    public function activeSubjects()
+    {
+
+        return response()->json(Subject::with(['branch', 'grade'])->get());
+    }
+
+
+
+
+    /**
      * @OA\Post(
      *     path="/api/admin/subjects",
      *     tags={"Subjects"},

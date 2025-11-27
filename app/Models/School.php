@@ -113,4 +113,8 @@ class School extends Model
     {
         return $this->hasMany(SchoolStudentProfile::class, 'school_id');
     }
+    public function classSchedules()
+    {
+        return $this->hasMany(ClassSchedule::class, 'school_id');
+    }
 }

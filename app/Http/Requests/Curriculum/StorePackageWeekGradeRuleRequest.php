@@ -9,8 +9,8 @@ use Illuminate\Validation\Rule;
  * @OA\Schema(
  *     schema="StorePackageWeekGradeRuleRequest",
  *     title="Sınıf Kuralı Oluşturma İsteği",
- *     required={"grade", "week_no", "days_required"},
- *     @OA\Property(property="grade", type="integer", example=5, description="Kuralın uygulanacağı sınıf seviyesi."),
+ *     required={"grade_id", "week_no", "days_required"},
+ *     @OA\Property(property="grade_id", type="integer", example=3, description="Grades tablosundaki sınıf seviyesi ID'si"),
  *     @OA\Property(property="week_no", type="integer", example=10, description="Kuralın geçerli olduğu müfredat haftası."),
  *     @OA\Property(property="days_required", type="integer", example=4, description="Bu haftada gerekli minimum gün sayısı (1-7 arası).")
  * )
@@ -29,7 +29,7 @@ class StorePackageWeekGradeRuleRequest extends FormRequest
         $maxWeeks = is_object($package) ? $package->week_count : 52;
 
         return [
-            'grade' => ['required', 'integer', 'min:1'],
+            'grade_id' => ['required', 'integer', 'exists:grades,id'],
             'week_no' => [
                 'required',
                 'integer',
@@ -46,8 +46,10 @@ class StorePackageWeekGradeRuleRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'grade.required' => 'Sınıf seviyesi zorunludur.',
-            'grade.integer' => 'Sınıf seviyesi sayısal olmalıdır.',
+            'grade_id.required' => 'Sınıf seviyesi zorunludur.',
+            'grade_id.integer' => 'Sınıf seviyesi ID numeric olmalıdır.',
+            'grade_id.exists' => 'Geçerli bir sınıf seviyesi seçilmelidir.',
+
             'week_no.required' => 'Hafta numarası zorunludur.',
             'week_no.integer' => 'Hafta numarası sayısal olmalıdır.',
             'week_no.min' => 'Hafta numarası en az 1 olmalıdır.',

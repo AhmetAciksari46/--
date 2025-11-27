@@ -14,6 +14,7 @@ use Illuminate\Foundation\Http\FormRequest;
  *     @OA\Property(property="userName", type="string", example="mehmetdemir"),
  *     @OA\Property(property="email", type="string", example="mehmet@example.com"),
  *     @OA\Property(property="password", type="string", example="12345678"),
+ *     @OA\Property(property="password_confirmation", type="string", example="12345678"),
  *     @OA\Property(property="birth_date", type="string", format="date", example="2014-05-20"),
  *     @OA\Property(property="student_number", type="string", example="2024-101"),
  *     @OA\Property(property="tc_no", type="string", example="12345678901"),

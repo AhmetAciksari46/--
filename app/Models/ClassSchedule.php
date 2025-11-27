@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  *     @OA\Property(property="end_time", type="string", example="10:00"),
  *     @OA\Property(property="is_active", type="boolean", example=true),
  *     @OA\Property(property="is_successful", type="boolean", example=false),
+ *     @OA\Property(property="school_id", type="integer", example=1),
  *     @OA\Property(property="created_at", type="string", format="date-time"),
  *     @OA\Property(property="updated_at", type="string", format="date-time")
  * )
@@ -30,6 +31,7 @@ class ClassSchedule extends Model
         'physical_classroom_id',
         'teacher_subject_id',
         'day_of_week',
+        'school_id',
         'start_time',
         'end_time',
         'is_active',
@@ -49,5 +51,9 @@ class ClassSchedule extends Model
     public function physicalClassroom()
     {
         return $this->belongsTo(PhysicalClassroom::class);
+    }
+    public function school()
+    {
+        return $this->belongsTo(School::class, 'school_id');
     }
 }

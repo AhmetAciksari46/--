@@ -21,8 +21,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  *     @OA\Property(property="active_course_id", type="integer", example=3, nullable=true),
  *     @OA\Property(property="active_class_id", type="integer", example=7, nullable=true),
  *     @OA\Property(property="active_additional_class_id", type="integer", example=2, nullable=true),
- *     @OA\Property(property="parent_name", type="string", example="Fatma Veli", nullable=true),
- *     @OA\Property(property="parent_phone", type="string", example="+905559991122", nullable=true),
  *     @OA\Property(property="school_id", type="integer", example=5, nullable=true),
  *     @OA\Property(property="gender", type="string", example="female", nullable=true),
  *     @OA\Property(property="description", type="string", example="Robotik kulübü öğrencisi", nullable=true),
@@ -30,7 +28,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  *     @OA\Property(property="img_path", type="string", example="/storage/students/12.png", nullable=true),
  *     @OA\Property(property="status", type="string", example="active", nullable=true),
  *     @OA\Property(property="is_active", type="boolean", example=true),
- *     @OA\Property(property="parent_status", type="string", example="reachable", nullable=true),
  *     @OA\Property(property="family_notes", type="string", example="Hafta sonu etkinliklerine katılamaz.", nullable=true),
  *     @OA\Property(property="created_at", type="string", format="date-time", example="2025-10-21T12:00:00Z"),
  *     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-10-21T12:00:00Z"),
@@ -50,8 +47,6 @@ class SchoolStudentProfile extends Model
         'birth_date',
         'active_course_id',
         'active_class_id',
-        'parent_name',
-        'parent_phone',
         'school_id',
         'gender',
         'description',
@@ -59,7 +54,6 @@ class SchoolStudentProfile extends Model
         'img_path',
         'status',
         'is_active',
-        'parent_status',
         'family_notes',
     ];
 
