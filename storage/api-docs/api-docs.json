@@ -4696,99 +4696,24 @@
                 ]
             }
         },
-        "/api/attendances": {
+        "/api/schools/{school}/lesson-sessions/{session}/attendances": {
             "get": {
                 "tags": [
-                    "Attendance"
+                    "Manager & Teacher Attendance"
                 ],
-                "summary": "Tüm yoklama kayıtlarını listele (Admin/Manager/Teacher)",
-                "operationId": "2b279f5702abb06e43013da34dd65892",
-                "responses": {
-                    "200": {
-                        "description": "Yoklama kayıtları listesi"
-                    },
-                    "403": {
-                        "description": "Yetkiniz yok"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/attendances/store": {
-            "post": {
-                "tags": [
-                    "Attendance"
-                ],
-                "summary": "Bir ders oturumu için yoklama oluştur (Sadece Teacher veya Admin)",
-                "operationId": "48a12c72002306b9d72345eb6db0efc3",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "lesson_session_id",
-                                    "attendances"
-                                ],
-                                "properties": {
-                                    "lesson_session_id": {
-                                        "type": "integer",
-                                        "example": 3
-                                    },
-                                    "attendances": {
-                                        "type": "array",
-                                        "items": {
-                                            "properties": {
-                                                "student_id": {
-                                                    "type": "integer",
-                                                    "example": 12
-                                                },
-                                                "status": {
-                                                    "type": "string",
-                                                    "example": "present"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Yoklama başarıyla kaydedildi"
-                    },
-                    "403": {
-                        "description": "Yetkiniz yok"
-                    },
-                    "422": {
-                        "description": "Doğrulama hatası"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/attendances/session/{lesson_session_id}": {
-            "get": {
-                "tags": [
-                    "Attendance"
-                ],
-                "summary": "Belirli bir oturuma ait yoklama listesini getir",
-                "operationId": "d96274733943f0f550a8250f47c0f811",
+                "summary": "Ders oturumuna ait tüm yoklamaları listele",
+                "operationId": "82b99b60b1ee76ed4473be8b7a4cd971",
                 "parameters": [
                     {
-                        "name": "lesson_session_id",
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "session",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -4798,48 +4723,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Yoklama listesi"
-                    },
-                    "404": {
-                        "description": "Oturum bulunamadı"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/attendances/{id}": {
-            "put": {
-                "tags": [
-                    "Attendance"
-                ],
-                "summary": "Yoklama kaydını güncelle (Teacher veya Admin)",
-                "operationId": "8cc3bdccd949fb97b2fb30e3d6b65e3c",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "status": {
-                                        "type": "string",
-                                        "example": "absent"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Yoklama güncellendi"
-                    },
-                    "403": {
-                        "description": "Yetkiniz yok"
+                        "description": "Liste başarıyla getirildi"
                     }
                 },
                 "security": [
@@ -4848,31 +4732,12 @@
                     }
                 ]
             },
-            "delete": {
+            "post": {
                 "tags": [
-                    "Attendance"
+                    "Manager & Teacher Attendance"
                 ],
-                "summary": "Yoklama kaydını sil (Sadece Admin)",
-                "operationId": "072f438cc111cb61694a9a18303dbb21",
-                "responses": {
-                    "200": {
-                        "description": "Kayıt silindi"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/schools/{school}/classschedules": {
-            "get": {
-                "tags": [
-                    "ClassSchedule"
-                ],
-                "summary": "Tüm ders programlarını listele (Admin/Manager/Teacher)",
-                "operationId": "dfbf1b21bee09cef7704441b5f4b36a3",
+                "summary": "Bu ders oturumu için yoklama oluştur",
+                "operationId": "93763a84895f293c4e9c7cc392c86d3e",
                 "parameters": [
                     {
                         "name": "school",
@@ -4881,33 +4746,9 @@
                         "schema": {
                             "type": "integer"
                         }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Ders programları listesi"
                     },
-                    "403": {
-                        "description": "Yetkiniz yok"
-                    }
-                },
-                "security": [
                     {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/schools/{school}/classschedules/store": {
-            "post": {
-                "tags": [
-                    "ClassSchedule"
-                ],
-                "summary": "Yeni ders programı oluştur (Admin/Manager)",
-                "operationId": "a290c2c74a4153e6ac5ba0b31aff2042",
-                "parameters": [
-                    {
-                        "name": "school",
+                        "name": "session",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -4920,54 +4761,14 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "class_model_id",
-                                    "subject_id",
-                                    "teacher_id",
-                                    "day_of_week",
-                                    "start_time",
-                                    "end_time"
-                                ],
-                                "properties": {
-                                    "class_model_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "teacher_subject_id": {
-                                        "type": "integer",
-                                        "example": 5
-                                    },
-                                    "day_of_week": {
-                                        "type": "string",
-                                        "example": "monday"
-                                    },
-                                    "start_time": {
-                                        "type": "string",
-                                        "example": "09:00"
-                                    },
-                                    "end_time": {
-                                        "type": "string",
-                                        "example": "10:00"
-                                    },
-                                    "physical_classroom_id": {
-                                        "type": "integer",
-                                        "example": 3
-                                    }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/AttendanceStoreRequest"
                             }
                         }
                     }
                 },
                 "responses": {
                     "201": {
-                        "description": "Program oluşturuldu"
-                    },
-                    "403": {
-                        "description": "Yetkiniz yok"
-                    },
-                    "422": {
-                        "description": "Doğrulama hatası"
+                        "description": "Yoklama oluşturuldu"
                     }
                 },
                 "security": [
@@ -4977,235 +4778,16 @@
                 ]
             }
         },
-        "/api/schools/{school}/classschedules/{id}": {
+        "/api/schools/{school}/lesson-sessions/{session}/attendances/{attendance}": {
             "get": {
                 "tags": [
-                    "ClassSchedule"
+                    "Manager & Teacher Attendance"
                 ],
-                "summary": "Belirli bir ders programını getir",
-                "operationId": "53730b1942f410838e391a4f53ae3010",
-                "parameters": [
-                    {
-                        "name": "school",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
+                "summary": "Tekil yoklama detayını getir",
+                "operationId": "f361b3972cd0b5b1baed925d6c9dae65",
                 "responses": {
                     "200": {
-                        "description": "Ders programı bilgisi"
-                    },
-                    "404": {
-                        "description": "Program bulunamadı"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/classschedules/{id}": {
-            "put": {
-                "tags": [
-                    "ClassSchedule"
-                ],
-                "summary": "Ders programını güncelle (Admin/Manager)",
-                "operationId": "212d22bdf3b68532773a14a4f7fc7265",
-                "parameters": [
-                    {
-                        "name": "school",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "day_of_week": {
-                                        "type": "string",
-                                        "example": "friday"
-                                    },
-                                    "start_time": {
-                                        "type": "string",
-                                        "example": "10:00"
-                                    },
-                                    "end_time": {
-                                        "type": "string",
-                                        "example": "11:00"
-                                    },
-                                    "physical_classroom_id": {
-                                        "type": "integer",
-                                        "example": 2
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Program güncellendi"
-                    },
-                    "403": {
-                        "description": "Yetkiniz yok"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "ClassSchedule"
-                ],
-                "summary": "Ders programını sil (Admin)",
-                "operationId": "ed6a25bd6e4aadd1d0363ceb46aa8e62",
-                "parameters": [
-                    {
-                        "name": "school",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Program silindi"
-                    },
-                    "403": {
-                        "description": "Yetkiniz yok"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/lessonsessions": {
-            "get": {
-                "tags": [
-                    "LessonSession"
-                ],
-                "summary": "Tüm ders oturumlarını listele (Admin/Manager/Teacher)",
-                "operationId": "2caeaf3b3d037319a6ee826cd3c3b065",
-                "responses": {
-                    "200": {
-                        "description": "Oturum listesi"
-                    },
-                    "403": {
-                        "description": "Yetkiniz yok"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/lessonsessions/store": {
-            "post": {
-                "tags": [
-                    "LessonSession"
-                ],
-                "summary": "Yeni ders oturumu oluştur (Teacher/Manager/Admin)",
-                "operationId": "9bcf56b85037228a3f0b6b41c7bb79b2",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "class_schedule_id",
-                                    "date"
-                                ],
-                                "properties": {
-                                    "class_schedule_id": {
-                                        "type": "integer",
-                                        "example": 3
-                                    },
-                                    "date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2025-11-10"
-                                    },
-                                    "is_completed": {
-                                        "type": "boolean",
-                                        "example": false
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Oturum başarıyla oluşturuldu"
-                    },
-                    "403": {
-                        "description": "Yetkiniz yok"
-                    },
-                    "422": {
-                        "description": "Doğrulama hatası"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/lessonsessions/{id}": {
-            "get": {
-                "tags": [
-                    "LessonSession"
-                ],
-                "summary": "Belirli bir ders oturumunu getir",
-                "operationId": "36643f361f3bcbe93be83159a3dc1723",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Oturum bilgisi"
-                    },
-                    "404": {
-                        "description": "Oturum bulunamadı"
+                        "description": "Detay başarıyla getirildi"
                     }
                 },
                 "security": [
@@ -5216,34 +4798,69 @@
             },
             "put": {
                 "tags": [
-                    "LessonSession"
+                    "Manager & Teacher Attendance"
                 ],
-                "summary": "Ders oturumunu güncelle (Admin/Manager/Teacher kendi oturumunu)",
-                "operationId": "4168b97bc4727799407ed61165e87f57",
+                "summary": "Yoklama güncelle",
+                "operationId": "0102ceb29936e3f59cf8d8b53a692aa9",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "properties": {
-                                    "date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2025-11-15"
-                                    },
-                                    "is_completed": {
-                                        "type": "boolean",
-                                        "example": true
-                                    }
-                                },
-                                "type": "object"
+                                "$ref": "#/components/schemas/AttendanceUpdateRequest"
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "Oturum güncellendi"
+                        "description": "Güncellendi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Manager & Teacher Attendance"
+                ],
+                "summary": "Yoklamayı sil",
+                "operationId": "91c6103fc30d7c6b348ff37f50ab8090",
+                "responses": {
+                    "200": {
+                        "description": "Yoklama silindi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/class-schedules": {
+            "get": {
+                "tags": [
+                    "Manager & Teacher - ClassSchedule"
+                ],
+                "summary": "Tüm sınıf ders planlarını listele",
+                "operationId": "c039af2d4ff656dc0f254decf0765ee9",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Başarılı listeleme"
                     },
                     "403": {
                         "description": "Yetkiniz yok"
@@ -5255,15 +4872,65 @@
                     }
                 ]
             },
-            "delete": {
+            "post": {
                 "tags": [
-                    "LessonSession"
+                    "Manager & Teacher - ClassSchedule"
                 ],
-                "summary": "Oturumu sil (sadece admin)",
-                "operationId": "45f138f4a174f05e127adb4dafd24802",
+                "summary": "Yeni ders planı oluştur",
+                "operationId": "1df42e18efddbbed3fd7193a786ca156",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ClassScheduleStoreRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Ders planı oluşturuldu"
+                    },
+                    "403": {
+                        "description": "Yetkiniz yok"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/class-schedules/{schedule}": {
+            "get": {
+                "tags": [
+                    "Manager & Teacher - ClassSchedule"
+                ],
+                "summary": "Ders planı detayı",
+                "operationId": "b7f31a1efe9e59fac3467907babaf874",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "schedule",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -5273,10 +4940,287 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Oturum silindi"
+                        "description": "Detay getirildi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Manager & Teacher - ClassSchedule"
+                ],
+                "summary": "Ders planını güncelle",
+                "operationId": "1ba0dced8ebbd74f52e913f55ba5f29b",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "schedule",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ClassScheduleUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Güncellendi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Manager & Teacher - ClassSchedule"
+                ],
+                "summary": "Ders planını sil",
+                "operationId": "29589a416d843ccda4a14c12734a5bd0",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "schedule",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Silindi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/lesson-sessions": {
+            "get": {
+                "tags": [
+                    "Manager & Teacher LessonSession"
+                ],
+                "summary": "Okuldaki tüm ders oturumlarını listele",
+                "operationId": "a0d638ace49f7b0e4c124b016d7ba4e8",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste oluşturuldu"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "LessonSession"
+                ],
+                "summary": "Yeni ders oturumu oluştur",
+                "operationId": "448eabad214976e119d3a34a8b5744ff",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LessonSessionStoreRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Başarıyla oluşturuldu"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/lesson-sessions/{session}": {
+            "get": {
+                "tags": [
+                    "Manager & Teacher LessonSession"
+                ],
+                "summary": "Ders oturumu detayını getir",
+                "operationId": "f9af751374b7f955a3d8759702786ccb",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "session",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detay getirildi"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Manager & Teacher LessonSession"
+                ],
+                "summary": "Ders oturumunu güncelle",
+                "operationId": "ae584a3fbe5e23005f263f8f0a0e065c",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "session",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LessonSessionUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Güncellendi"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Manager & Teacher LessonSession"
+                ],
+                "summary": "Ders oturumunu sil",
+                "operationId": "e27652e633eff9b69e40435c3b0de909",
+                "responses": {
+                    "200": {
+                        "description": "Silindi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/lesson-sessions/generate": {
+            "post": {
+                "tags": [
+                    "LessonSession"
+                ],
+                "summary": "Belirtilen ders planları için belirtilen hafta sayısı kadar otomatik ders oturumu oluşturur.",
+                "operationId": "b455e6cddc14fb785f8a39fc11410a2a",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LessonSessionGenerateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Ders oturumları başarıyla oluşturuldu"
                     },
                     "403": {
-                        "description": "Yetkiniz yok"
+                        "description": "Yetki hatası"
+                    },
+                    "422": {
+                        "description": "Validasyon hatası"
                     }
                 },
                 "security": [
@@ -6543,6 +6487,54 @@
                 },
                 "type": "object"
             },
+            "AttendanceStoreRequest": {
+                "required": [
+                    "student_id",
+                    "status"
+                ],
+                "properties": {
+                    "student_id": {
+                        "type": "integer",
+                        "example": 35
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "present",
+                            "absent",
+                            "late",
+                            "excused"
+                        ],
+                        "example": "present"
+                    },
+                    "absent_excuse_note": {
+                        "type": "string",
+                        "example": "Veli tarafından izinli"
+                    },
+                    "entered_at": {
+                        "type": "string",
+                        "example": "2025-11-10 10:05:00"
+                    }
+                },
+                "type": "object"
+            },
+            "AttendanceUpdateRequest": {
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "example": "late"
+                    },
+                    "absent_excuse_note": {
+                        "type": "string",
+                        "example": "Geç geldi."
+                    },
+                    "entered_at": {
+                        "type": "string",
+                        "example": "2025-11-10 10:20:00"
+                    }
+                },
+                "type": "object"
+            },
             "BranchStoreRequest": {
                 "required": [
                     "name",
@@ -6605,6 +6597,68 @@
                     "icon": {
                         "type": "string",
                         "example": "pi pi-calculator"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "ClassScheduleStoreRequest": {
+                "required": [
+                    "class_model_id",
+                    "subject_id",
+                    "day_of_week",
+                    "start_time",
+                    "end_time"
+                ],
+                "properties": {
+                    "class_model_id": {
+                        "description": "Swagger Gövde Şeması",
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "subject_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "day_of_week": {
+                        "type": "string",
+                        "example": "monday"
+                    },
+                    "start_time": {
+                        "type": "string",
+                        "example": "08:00"
+                    },
+                    "end_time": {
+                        "type": "string",
+                        "example": "10:00"
+                    }
+                },
+                "type": "object"
+            },
+            "ClassScheduleUpdateRequest": {
+                "properties": {
+                    "class_model_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "subject_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "day_of_week": {
+                        "type": "string",
+                        "example": "tuesday"
+                    },
+                    "start_time": {
+                        "type": "string",
+                        "example": "09:00"
+                    },
+                    "end_time": {
+                        "type": "string",
+                        "example": "11:00"
                     },
                     "is_active": {
                         "type": "boolean",
@@ -6815,6 +6869,107 @@
                         "description": "Hafta için planlanan ders saati.",
                         "type": "integer",
                         "example": 4
+                    }
+                },
+                "type": "object"
+            },
+            "LessonSessionGenerateRequest": {
+                "required": [
+                    "schedule_ids",
+                    "start_date"
+                ],
+                "properties": {
+                    "schedule_ids": {
+                        "description": "Swagger Şeması",
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "example": 12
+                        }
+                    },
+                    "weeks": {
+                        "type": "integer",
+                        "example": 40
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "example": "2025-11-10"
+                    }
+                },
+                "type": "object"
+            },
+            "LessonSessionStoreRequest": {
+                "required": [
+                    "class_schedule_id",
+                    "week_number",
+                    "date",
+                    "status",
+                    "is_attendance_required"
+                ],
+                "properties": {
+                    "class_schedule_id": {
+                        "type": "integer",
+                        "example": 12
+                    },
+                    "week_number": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "date": {
+                        "type": "string",
+                        "example": "2025-11-14"
+                    },
+                    "teacher_id": {
+                        "type": "integer",
+                        "example": 22
+                    },
+                    "physical_classroom_id": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "scheduled",
+                            "completed",
+                            "cancelled",
+                            "skipped",
+                            "no_school"
+                        ],
+                        "example": "scheduled"
+                    },
+                    "is_attendance_required": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "LessonSessionUpdateRequest": {
+                "properties": {
+                    "week_number": {
+                        "type": "integer",
+                        "example": 8
+                    },
+                    "date": {
+                        "type": "string",
+                        "example": "2025-11-22"
+                    },
+                    "teacher_id": {
+                        "type": "integer",
+                        "example": 15
+                    },
+                    "physical_classroom_id": {
+                        "type": "integer",
+                        "example": 9
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "completed"
+                    },
+                    "is_attendance_required": {
+                        "type": "boolean",
+                        "example": false
                     }
                 },
                 "type": "object"
@@ -7783,42 +7938,6 @@
                 },
                 "type": "object"
             },
-            "StoreAttendanceRequest": {
-                "title": "Yoklama Kayıt İsteği",
-                "required": [
-                    "attendance_records"
-                ],
-                "properties": {
-                    "attendance_records": {
-                        "description": "Öğrenci yoklama kayıtları listesi",
-                        "type": "array",
-                        "items": {
-                            "properties": {
-                                "student_id": {
-                                    "type": "integer",
-                                    "example": 101
-                                },
-                                "status": {
-                                    "type": "string",
-                                    "enum": [
-                                        "present",
-                                        "absent",
-                                        "late",
-                                        "excused"
-                                    ],
-                                    "example": "present"
-                                },
-                                "note": {
-                                    "type": "string",
-                                    "nullable": true
-                                }
-                            },
-                            "type": "object"
-                        }
-                    }
-                },
-                "type": "object"
-            },
             "TeacherUpdateRequestManager": {
                 "title": "Teacher Update Request (Manager)",
                 "description": "Manager tarafından öğretmen güncelleme isteği",
@@ -7912,53 +8031,23 @@
                 },
                 "type": "object"
             },
-            "UpdateSingleAttendanceRequest": {
-                "title": "Tekil Yoklama Güncelleme İsteği",
-                "properties": {
-                    "status": {
-                        "type": "string",
-                        "enum": [
-                            "present",
-                            "absent",
-                            "late",
-                            "excused"
-                        ],
-                        "example": "absent"
-                    },
-                    "note": {
-                        "type": "string",
-                        "example": "Rahatsızlandığı için izinli ayrıldı.",
-                        "nullable": true
-                    }
-                },
-                "type": "object"
-            },
             "Attendance": {
                 "title": "Attendance",
-                "description": "Ders yoklama kayıtlarını temsil eder.",
+                "description": "Öğrencinin bir ders oturumundaki yoklama bilgisini temsil eder.",
                 "properties": {
                     "id": {
                         "type": "integer",
+                        "example": 100
+                    },
+                    "lesson_session_id": {
+                        "type": "integer",
                         "example": 15
                     },
-                    "class_schedule_id": {
-                        "description": "Yoklamanın ait olduğu dersin programı ID’si",
-                        "type": "integer",
-                        "example": 7
-                    },
                     "student_id": {
-                        "description": "Yoklaması alınan öğrenci ID’si (users tablosundan)",
                         "type": "integer",
-                        "example": 32
-                    },
-                    "date": {
-                        "description": "Yoklamanın alındığı tarih",
-                        "type": "string",
-                        "format": "date",
-                        "example": "2025-11-12"
+                        "example": 55
                     },
                     "status": {
-                        "description": "Öğrencinin derse katılım durumu",
                         "type": "string",
                         "enum": [
                             "present",
@@ -7968,15 +8057,23 @@
                         ],
                         "example": "present"
                     },
-                    "created_at": {
+                    "absent_excuse_note": {
+                        "type": "string",
+                        "example": "Veli tarafından izinli",
+                        "nullable": true
+                    },
+                    "entered_at": {
                         "type": "string",
                         "format": "date-time",
-                        "example": "2025-11-12T09:30:00Z"
+                        "example": "2025-11-11T10:05:00"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
                     },
                     "updated_at": {
                         "type": "string",
-                        "format": "date-time",
-                        "example": "2025-11-12T10:00:00Z"
+                        "format": "date-time"
                     }
                 },
                 "type": "object"
@@ -8063,34 +8160,34 @@
             },
             "ClassSchedule": {
                 "title": "Class Schedule",
-                "description": "Sınıfın haftalık ders programı girişlerini temsil eder.",
+                "description": "Sınıfın haftalık ders planını temsil eder.",
                 "properties": {
                     "id": {
                         "type": "integer",
-                        "example": 10
+                        "example": 1
                     },
-                    "class_model_id": {
-                        "description": "Sınıfın id’si (ClassModel)",
+                    "school_id": {
+                        "description": "Planın ait olduğu okul ID",
                         "type": "integer",
                         "example": 3
                     },
-                    "teacher_subject_id": {
-                        "description": "teacher_subject tablosunun id’si",
+                    "class_model_id": {
+                        "description": "Planın ait olduğu sınıf ID",
                         "type": "integer",
                         "example": 5
                     },
-                    "physical_classroom_id": {
-                        "description": "Dersin yapıldığı fiziksel sınıf ID",
+                    "subject_id": {
+                        "description": "Ders ID",
                         "type": "integer",
-                        "example": 7
+                        "example": 2
                     },
                     "day_of_week": {
                         "type": "string",
-                        "example": "Monday"
+                        "example": "monday"
                     },
                     "start_time": {
                         "type": "string",
-                        "example": "09:00"
+                        "example": "08:00"
                     },
                     "end_time": {
                         "type": "string",
@@ -8099,14 +8196,6 @@
                     "is_active": {
                         "type": "boolean",
                         "example": true
-                    },
-                    "is_successful": {
-                        "type": "boolean",
-                        "example": false
-                    },
-                    "school_id": {
-                        "type": "integer",
-                        "example": 1
                     },
                     "created_at": {
                         "type": "string",
@@ -8125,29 +8214,48 @@
                 "type": "object"
             },
             "LessonSession": {
-                "title": "LessonSession",
-                "description": "Gerçekleşen ders oturumu modeli",
+                "title": "Lesson Session",
+                "description": "Haftalık planlanan dersin belirli bir hafta için gerçek ders işlemesidir.",
                 "properties": {
                     "id": {
                         "type": "integer",
-                        "example": 1
+                        "example": 10
                     },
                     "class_schedule_id": {
                         "type": "integer",
-                        "example": 3
+                        "example": 1
                     },
-                    "teacher_id": {
+                    "week_number": {
                         "type": "integer",
                         "example": 5
                     },
                     "date": {
                         "type": "string",
                         "format": "date",
-                        "example": "2025-11-10"
+                        "example": "2025-11-11"
                     },
-                    "is_completed": {
+                    "teacher_id": {
+                        "type": "integer",
+                        "example": 22
+                    },
+                    "physical_classroom_id": {
+                        "type": "integer",
+                        "example": 7
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "scheduled",
+                            "completed",
+                            "cancelled",
+                            "skipped",
+                            "no_school"
+                        ],
+                        "example": "scheduled"
+                    },
+                    "is_attendance_required": {
                         "type": "boolean",
-                        "example": false
+                        "example": true
                     },
                     "created_at": {
                         "type": "string",
@@ -9272,15 +9380,15 @@
             "description": "Öğretmen profil ayarları"
         },
         {
-            "name": "Attendance",
+            "name": "Manager & Teacher Attendance",
             "description": "Yoklama sistemi yönetimi"
         },
         {
-            "name": "ClassSchedule",
+            "name": "Manager & Teacher - ClassSchedule",
             "description": "Haftalık ders programı yönetimi"
         },
         {
-            "name": "LessonSession",
+            "name": "Manager & Teacher LessonSession",
             "description": "Gerçekleşen ders oturumları yönetimi"
         },
         {
@@ -9322,6 +9430,10 @@
         {
             "name": "Admin - Schools",
             "description": "Admin - Schools"
+        },
+        {
+            "name": "LessonSession",
+            "description": "LessonSession"
         },
         {
             "name": "Müfredat Yönetimi",

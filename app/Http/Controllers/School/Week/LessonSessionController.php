@@ -8,190 +8,224 @@ use Illuminate\Http\Request;
 use App\Models\LessonSession;
 use App\Models\ClassSchedule;
 use Illuminate\Support\Facades\Auth;
+use App\Traits\ApiResponser;
+use App\Models\School;
+use App\Http\Requests\LessonSession\LessonSessionStoreRequest;
+use App\Http\Requests\LessonSession\LessonSessionUpdateRequest;
+use App\Http\Requests\LessonSession\LessonSessionGenerateRequest;
 
 /**
  * @OA\Tag(
- *     name="LessonSession",
+ *     name="Manager & Teacher LessonSession",
  *     description="Gerçekleşen ders oturumları yönetimi"
  * )
  */
 
 class LessonSessionController extends Controller
 {
+    use ApiResponser;
+
     /**
      * @OA\Get(
-     *     path="/api/lessonsessions",
-     *     tags={"LessonSession"},
-     *     summary="Tüm ders oturumlarını listele (Admin/Manager/Teacher)",
+     *     path="/api/schools/{school}/lesson-sessions",
+     *     tags={"Manager & Teacher LessonSession"},
+     *     summary="Okuldaki tüm ders oturumlarını listele",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Oturum listesi"),
-     *     @OA\Response(response=403, description="Yetkiniz yok")
+     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Liste oluşturuldu"),
      * )
      */
-    public function index()
+    public function index(School $school)
     {
-        $this->authorize('viewAny', LessonSession::class);
-
-        $user = Auth::user();
-
-        if ($user->hasRole('teacher')) {
-            // Öğretmen sadece kendi oturumlarını görür
-            $sessions = LessonSession::where('teacher_id', $user->id)
-                ->with(['schedule', 'teacher'])
-                ->get();
-        } elseif ($user->hasRole('manager')) {
-            // Manager sadece kendi okuluna ait sınıfları görür
-            $sessions = LessonSession::whereHas('schedule.class', function ($q) use ($user) {
-                $q->where('school_id', $user->managerProfile->school_id);
-            })->with(['schedule', 'teacher'])->get();
-        } else {
-            // Admin tümünü görebilir
-            $sessions = LessonSession::with(['schedule', 'teacher'])->get();
+        if (!auth()->user()->can('lessonsession.view',)) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
         }
+        $sessions = LessonSession::whereHas('schedule', function ($q) use ($school) {
+            $q->where('school_id', $school->id);
+        })
+            ->with(['schedule.classModel', 'schedule.subject', 'teacher', 'physicalClassroom'])
+            ->get();
 
-        return response()->json([
-            'status' => true,
-            'data' => $sessions
-        ], 200);
+        return $this->successResponse($sessions, "Ders oturumları listelendi.");
     }
 
     /**
      * @OA\Post(
-     *     path="/api/lessonsessions/store",
+     *     path="/api/schools/{school}/lesson-sessions",
      *     tags={"LessonSession"},
-     *     summary="Yeni ders oturumu oluştur (Teacher/Manager/Admin)",
+     *     summary="Yeni ders oturumu oluştur",
      *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"class_schedule_id", "date"},
-     *             @OA\Property(property="class_schedule_id", type="integer", example=3),
-     *             @OA\Property(property="date", type="string", format="date", example="2025-11-10"),
-     *             @OA\Property(property="is_completed", type="boolean", example=false)
-     *         )
-     *     ),
-     *     @OA\Response(response=201, description="Oturum başarıyla oluşturuldu"),
-     *     @OA\Response(response=403, description="Yetkiniz yok"),
-     *     @OA\Response(response=422, description="Doğrulama hatası")
+     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/LessonSessionStoreRequest")),
+     *     @OA\Response(response=201, description="Başarıyla oluşturuldu")
      * )
      */
-    public function store(Request $request)
+    public function store(LessonSessionStoreRequest $request, School $school)
     {
-        $this->authorize('create', LessonSession::class);
+        if (!auth()->user()->can('lessonsession.create',)) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        }
+        $data = $request->validated();
 
-        $validated = $request->validate([
-            'class_schedule_id' => 'required|exists:class_schedules,id',
-            'date' => 'required|date',
-            'is_completed' => 'sometimes|boolean'
-        ]);
+        $schedule = ClassSchedule::find($data['class_schedule_id']);
 
-        $schedule = ClassSchedule::findOrFail($validated['class_schedule_id']);
+        if (!$schedule || $schedule->school_id !== $school->id) {
+            return $this->errorResponse("Bu ders planı bu okula ait değildir.", 403);
+        }
 
-        $session = LessonSession::create([
-            'class_schedule_id' => $schedule->id,
-            'teacher_id' => $schedule->teacher_id,
-            'date' => $validated['date'],
-            'is_completed' => $validated['is_completed'] ?? false,
-        ]);
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Ders oturumu başarıyla oluşturuldu.',
-            'data' => $session->load(['schedule', 'teacher'])
-        ], 201);
+        $session = LessonSession::create($data);
+
+        return $this->successResponse($session, "Ders oturumu başarıyla oluşturuldu.", 200);
     }
 
     /**
      * @OA\Get(
-     *     path="/api/lessonsessions/{id}",
+     *     path="/api/schools/{school}/lesson-sessions/{session}",
+     *     tags={"Manager & Teacher LessonSession"},
+     *     summary="Ders oturumu detayını getir",
+     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="session", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Detay getirildi")
+     * )
+     */
+    public function show(School $school, LessonSession $session)
+    {
+        if (!auth()->user()->can('lessonsession.view',)) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        }
+        if ($session->schedule->school_id != $school->id) {
+            return $this->errorResponse("Bu oturum bu okula ait değildir.", 403);
+        }
+
+        return $this->successResponse(
+            $session->load(['schedule', 'schedule.subject', 'teacher', 'physicalClassroom'], "Detay getirildi", 200)
+        );
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/schools/{school}/lesson-sessions/generate",
      *     tags={"LessonSession"},
-     *     summary="Belirli bir ders oturumunu getir",
+     *     summary="Belirtilen ders planları için belirtilen hafta sayısı kadar otomatik ders oturumu oluşturur.",
      *     security={{"bearerAuth":{}}},
+     *
      *     @OA\Parameter(
-     *         name="id",
+     *         name="school",
      *         in="path",
      *         required=true,
      *         @OA\Schema(type="integer")
      *     ),
-     *     @OA\Response(response=200, description="Oturum bilgisi"),
-     *     @OA\Response(response=404, description="Oturum bulunamadı")
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/LessonSessionGenerateRequest")
+     *     ),
+     *
+     *     @OA\Response(response=201, description="Ders oturumları başarıyla oluşturuldu"),
+     *     @OA\Response(response=403, description="Yetki hatası"),
+     *     @OA\Response(response=422, description="Validasyon hatası")
      * )
      */
-    public function show($id)
+
+
+
+    public function generate(LessonSessionGenerateRequest $request, School $school)
     {
-        $lesson = LessonSession::with(['schedule', 'teacher', 'attendances'])
-            ->findOrFail($id);
+        if (!auth()->user()->can('lessonsession.create')) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        }
+        $data = $request->validated();
 
-        $this->authorize('view', $lesson);
+        $scheduleIds = $data['schedule_ids'];
+        $totalWeeks = $data['weeks'] ?? 40; // <-- HAFTA PARAMETRESİ
+        $startDate = \Carbon\Carbon::parse($data['start_date']);
 
-        return response()->json([
-            'status' => true,
-            'data' => $lesson
-        ]);
+        $createdSessions = [];
+
+        foreach ($scheduleIds as $scheduleId) {
+
+            $schedule = ClassSchedule::find($scheduleId);
+
+            // Güvenlik: bu schedule belirtilen okula mı ait?
+            if (!$schedule || $schedule->school_id !== $school->id) {
+                return $this->errorResponse("Schedule ID {$scheduleId} bu okula ait değildir.", 403);
+            }
+
+            // Haftanın günü (monday, tuesday vs)
+            $day = strtolower($schedule->day_of_week);
+
+            // İlk haftanın ilgili günü
+            $currentDate = $startDate->copy()->next($day);
+
+            for ($week = 1; $week <= $totalWeeks; $week++) {
+
+                $session = LessonSession::create([
+                    'class_schedule_id' => $schedule->id,
+                    'week_number' => $week,
+                    'date' => $currentDate->toDateString(),
+                    'teacher_id' => null,
+                    'physical_classroom_id' => null,
+                    'status' => 'scheduled',
+                    'is_attendance_required' => true,
+                ]);
+
+                $createdSessions[] = $session;
+
+                $currentDate->addWeek();
+            }
+        }
+
+        return $this->successResponse($createdSessions, "Toplam {$totalWeeks} haftalık ders oturumları oluşturuldu.", 201);
     }
+
+
 
     /**
      * @OA\Put(
-     *     path="/api/lessonsessions/{id}",
-     *     tags={"LessonSession"},
-     *     summary="Ders oturumunu güncelle (Admin/Manager/Teacher kendi oturumunu)",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="date", type="string", format="date", example="2025-11-15"),
-     *             @OA\Property(property="is_completed", type="boolean", example=true)
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="Oturum güncellendi"),
-     *     @OA\Response(response=403, description="Yetkiniz yok")
+     *     path="/api/schools/{school}/lesson-sessions/{session}",
+     *     tags={"Manager & Teacher LessonSession"},
+     *     summary="Ders oturumunu güncelle",
+     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="session", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/LessonSessionUpdateRequest")),
+     *     @OA\Response(response=200, description="Güncellendi")
      * )
      */
-    public function update(Request $request, $id)
+    public function update(LessonSessionUpdateRequest $request, School $school, LessonSession $session)
     {
-        $lesson = LessonSession::findOrFail($id);
-        $this->authorize('update', $lesson);
+        if (!auth()->user()->can('lessonsession.update',)) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        }
+        if ($session->schedule->school_id != $school->id) {
+            return $this->errorResponse("Bu oturum bu okula ait değildir.", 403);
+        }
 
-        $validated = $request->validate([
-            'date' => 'sometimes|date',
-            'is_completed' => 'sometimes|boolean'
-        ]);
+        $session->update($request->validated());
 
-        $lesson->update($validated);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Oturum başarıyla güncellendi.',
-            'data' => $lesson
-        ]);
+        return $this->successResponse($session, "Ders oturumu güncellendi.", 200);
     }
 
     /**
      * @OA\Delete(
-     *     path="/api/lessonsessions/{id}",
-     *     tags={"LessonSession"},
-     *     summary="Oturumu sil (sadece admin)",
+     *     path="/api/schools/{school}/lesson-sessions/{session}",
+     *     tags={"Manager & Teacher LessonSession"},
+     *     summary="Ders oturumunu sil",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(response=200, description="Oturum silindi"),
-     *     @OA\Response(response=403, description="Yetkiniz yok")
+     *     @OA\Response(response=200, description="Silindi")
      * )
      */
-    public function destroy($id)
+    public function destroy(School $school, LessonSession $session)
     {
-        $lesson = LessonSession::findOrFail($id);
-        $this->authorize('delete', $lesson);
+        if (!auth()->user()->can('lessonsession.delete',)) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        }
+        if ($session->schedule->school_id != $school->id) {
+            return $this->errorResponse("Bu oturum bu okula ait değildir.", 403);
+        }
 
-        $lesson->delete();
+        $session->delete();
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Oturum başarıyla silindi.'
-        ]);
+        return $this->successResponse([], "Ders oturumu silindi.", 200);
     }
 }

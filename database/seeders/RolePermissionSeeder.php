@@ -29,6 +29,13 @@ class RolePermissionSeeder extends Seeder
             'school.view',
             'school.view.list',
 
+            // TEACHER SUBJECT
+            'teachersubject.create',
+            'teachersubject.update',
+            'teachersubject.delete',
+            'teachersubject.view',
+            'teachersubject.view.list',
+
             // CLASS
             'classmodel.create',
             'classmodel.update',
@@ -74,6 +81,12 @@ class RolePermissionSeeder extends Seeder
             'subscription.view',
             'subscription.view.list',
 
+            'classschedule.create',
+            'classschedule.update',
+            'classschedule.delete',
+            'classschedule.view',
+            'classschedule.view.list',
+
             'grade.create',
             'grade.update',
             'grade.delete',
@@ -89,8 +102,32 @@ class RolePermissionSeeder extends Seeder
             'classroom.update',
             'classroom.delete',
             'classroom.view',
-            'classroom.view.list'
+            'classroom.view.list',
 
+            'lessonsession.create',
+            'lessonsession.update',
+            'lessonsession.delete',
+            'lessonsession.view',
+            'lessonsession.view.list',
+
+            'PhysicalClassroom.create',
+            'PhysicalClassroom.update',
+            'PhysicalClassroom.delete',
+            'PhysicalClassroom.view',
+            'PhysicalClassroom.view.list',
+
+            'attendance.create',
+            'attendance.update',
+            'attendance.delete',
+            'attendance.view',
+            'attendance.view.list',
+
+            // SCHOOL WEEK
+            'schoolweek.create',
+            'schoolweek.update',
+            'schoolweek.delete',
+            'schoolweek.view',
+            'schoolweek.view.list',
         ];
 
 
@@ -159,13 +196,50 @@ class RolePermissionSeeder extends Seeder
         // ]);
         $manager->syncPermissions([
             'profile.update',
+            //ATTENDANCE
+            'attendance.create',
+            'attendance.update',
+            'attendance.delete',
+            'attendance.view',
+            'attendance.view.list',
+            // SCHOOL WEEK
+            'schoolweek.create',
+            'schoolweek.update',
+            'schoolweek.delete',
+            'schoolweek.view',
+            'schoolweek.view.list',
 
+            // PHYSICAL CLASSROOM
+            'PhysicalClassroom.create',
+            'PhysicalClassroom.update',
+            'PhysicalClassroom.delete',
+            'PhysicalClassroom.view',
+            'PhysicalClassroom.view.list',
+            // CLASS SCHEDULE
+            'classschedule.create',
+            'classschedule.update',
+            'classschedule.delete',
+            'classschedule.view',
+            'classschedule.view.list',
             // CLASS
             'classmodel.create',
             'classmodel.update',
             'classmodel.delete',
             'classmodel.view',
             'classmodel.view.list',
+            // TEACHER SUBJECT
+            'teachersubject.create',
+            'teachersubject.update',
+            'teachersubject.delete',
+            'teachersubject.view',
+            'teachersubject.view.list',
+
+            // LESSON SESSION
+            'lessonsession.create',
+            'lessonsession.update',
+            'lessonsession.delete',
+            'lessonsession.view',
+            'lessonsession.view.list',
 
             // STUDENT
             'student.create',

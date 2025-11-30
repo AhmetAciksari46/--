@@ -13,17 +13,24 @@ return new class extends Migration
     {
         Schema::create('class_schedules', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('class_model_id')->constrained()->onDelete('cascade');
-            $table->foreignId('teacher_subject_id')->constrained('teacher_subjects')->onDelete('cascade');
-            $table->foreignId('physical_classroom_id')->nullable()->constrained()->onDelete('set null');
-            $table->string('day_of_week'); // örn: Monday, Tuesday
-            $table->time('start_time');
-            $table->time('end_time');
-            $table->boolean('is_active');
-            $table->boolean('is_successful')->nullable();
             $table->foreignId('school_id')
                 ->constrained('schools')
                 ->onDelete('cascade');
+
+            $table->foreignId('class_model_id')
+                ->constrained('class_models')
+                ->onDelete('cascade');
+
+            $table->foreignId('subject_id')
+                ->constrained('subjects')
+                ->onDelete('cascade');
+
+            $table->string('day_of_week'); // monday, tuesday...
+
+            $table->time('start_time');
+            $table->time('end_time');
+
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

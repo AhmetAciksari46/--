@@ -225,6 +225,48 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::put('/classrooms/{classroom}', [PhysicalClassroomController::class, 'update']);
 
                 Route::delete('/classrooms/{classroom}', [PhysicalClassroomController::class, 'destroy']);
+                Route::prefix('class-schedules')->group(function () {
+
+                    Route::get('/', [ClassScheduleController::class, 'index']);
+
+                    Route::post('/', [ClassScheduleController::class, 'store']);
+
+                    Route::get('/{schedule}', [ClassScheduleController::class, 'show']);
+
+                    Route::put('/{schedule}', [ClassScheduleController::class, 'update']);
+
+                    Route::delete('/{schedule}', [ClassScheduleController::class, 'destroy']);
+                });
+                Route::prefix('lesson-sessions')->group(function () {
+                    Route::post('/generate', [LessonSessionController::class, 'generate']);
+                    Route::get('/', [LessonSessionController::class, 'index']);
+
+                    Route::post('/', [LessonSessionController::class, 'store']);
+
+                    Route::get('/{session}', [LessonSessionController::class, 'show']);
+
+                    Route::put('/{session}', [LessonSessionController::class, 'update']);
+
+                    Route::delete('/{session}', [LessonSessionController::class, 'destroy']);
+                    Route::prefix('/attendances')->group(function () {
+
+                        Route::get('/', [AttendanceController::class, 'index']);
+
+                        Route::post('/', [AttendanceController::class, 'store']);
+
+                        Route::get('/{attendance}', [AttendanceController::class, 'show']);
+
+                        Route::put('/{attendance}', [AttendanceController::class, 'update']);
+
+                        Route::delete('/{attendance}', [AttendanceController::class, 'destroy']);
+                        Route::post('/batch', [AttendanceController::class, 'batchStore']);
+                    });
+                });
+
+
+
+
+
 
 
                 Route::prefix('teachers')->group(function () {
@@ -238,11 +280,6 @@ Route::middleware('auth:sanctum')->group(function () {
                     Route::put('/{teacher}/permissions', [TeacherController::class, 'updatePermissions']); // updateTeacherPermissions
                     Route::put('/{teacher}/reset-password', [TeacherController::class, 'resetPassword']); //resetTeacherPassword
 
-
-                    // Yoklama Yönetimi (Session'a bağlı kaynak)
-                    // Permission: 'record_attendance'
-                    Route::get('sessions/{session}/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
-                    Route::post('sessions/{session}/attendance', [AttendanceController::class, 'store'])->name('attendance.store');
                 });
 
                 Route::prefix('students')->group(function () {
@@ -308,30 +345,6 @@ Route::middleware('auth:sanctum')->group(function () {
                         Route::get('/check', [SchoolWeekDayController::class, 'checkDays']);
                     });
                 });
-
-                // Öğretmen işlemleri
-                Route::prefix('attendance')->group(function () {
-                    Route::get('/{class_schedule_id}', [AttendanceController::class, 'index']);
-                    Route::post('/store', [AttendanceController::class, 'store']);
-                    Route::put('/{id}', [AttendanceController::class, 'update']);
-                });
-                Route::prefix('lessonsessions')->group(function () {
-                    Route::get('/', [LessonSessionController::class, 'index']);
-                    Route::get('/{id}', [LessonSessionController::class, 'show']);
-                    Route::post('/store', [LessonSessionController::class, 'store']);
-                    Route::put('/{id}', [LessonSessionController::class, 'update']);
-                    Route::delete('/{id}', [LessonSessionController::class, 'destroy']);
-                });
-
-                Route::prefix('classschedules')->group(function () {
-                    Route::get('/', [ClassScheduleController::class, 'index']);
-                    Route::get('/{id}', [ClassScheduleController::class, 'show']);
-                    Route::post('/store', [ClassScheduleController::class, 'store']);
-                    Route::put('/{id}', [ClassScheduleController::class, 'update']);
-                    Route::delete('/{id}', [ClassScheduleController::class, 'destroy']);
-                });
-
-
 
                 // Öğrenci işlemleri
                 Route::prefix("students")->group(function () {

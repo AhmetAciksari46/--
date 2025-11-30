@@ -9,186 +9,152 @@ use App\Models\ClassModel;
 use App\Models\School;
 use App\Models\Subject;
 use App\Models\User;
+use App\Traits\ApiResponser;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\ClassSchedule\ClassScheduleStoreRequest;
+use App\Http\Requests\ClassSchedule\ClassScheduleUpdateRequest;
 
 /**
  * @OA\Tag(
- *     name="ClassSchedule",
+ *     name="Manager & Teacher - ClassSchedule",
  *     description="Haftalık ders programı yönetimi"
  * )
  */
 class ClassScheduleController extends Controller
 {
+    use ApiResponser;
+
     /**
      * @OA\Get(
-     *     path="/api/schools/{school}/classschedules",
-     *     tags={"ClassSchedule"},
-     *     summary="Tüm ders programlarını listele (Admin/Manager/Teacher)",
-     *     security={{"bearerAuth":{}}},     
-     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="Ders programları listesi"),
+     *     path="/api/schools/{school}/class-schedules",
+     *     tags={"Manager & Teacher - ClassSchedule"},
+     *     summary="Tüm sınıf ders planlarını listele",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="school",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Başarılı listeleme"
+     *     ),
      *     @OA\Response(response=403, description="Yetkiniz yok")
      * )
      */
     public function index(School $school)
     {
-        $this->authorize('viewAny', ClassSchedule::class);
-
-        $user = Auth::user();
-
-        if ($user->hasRole('teacher')) {
-            $schedules = ClassSchedule::where('teacher_id', $user->id)
-                ->with(['class', 'subject'])
-                ->get();
-        } elseif ($user->hasRole('manager')) {
-            $schedules = ClassSchedule::whereHas('class', function ($q) use ($user) {
-                $q->where('school_id', $user->managerProfile->school_id);
-            })->with(['class', 'subject', 'teacher'])->get();
-        } else {
-            $schedules = ClassSchedule::with(['class', 'subject', 'teacher'])->get();
+        if (!auth()->user()->can('classschedule.view',)) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
         }
+        $schedules = ClassSchedule::where('school_id', $school->id)
+            ->with(['classModel', 'subject'])
+            ->get();
 
-        return response()->json([
-            'status' => true,
-            'data' => $schedules
-        ], 200);
+        return $this->successResponse($schedules, "Ders planları listelendi.", 200);
     }
+
 
     /**
      * @OA\Post(
-     *     path="/api/schools/{school}/classschedules/store",
-     *     tags={"ClassSchedule"},
-     *     summary="Yeni ders programı oluştur (Admin/Manager)",
-     *     security={{"bearerAuth":{}}},     
+     *     path="/api/schools/{school}/class-schedules",
+     *     tags={"Manager & Teacher - ClassSchedule"},
+     *     summary="Yeni ders planı oluştur",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"class_model_id","subject_id","teacher_id","day_of_week","start_time","end_time"},
-     *             @OA\Property(property="class_model_id", type="integer", example=1),
-     *             @OA\Property(property="teacher_subject_id", type="integer", example=5),
-     *             @OA\Property(property="day_of_week", type="string", example="monday"),
-     *             @OA\Property(property="start_time", type="string", example="09:00"),
-     *             @OA\Property(property="end_time", type="string", example="10:00"),
-     *             @OA\Property(property="physical_classroom_id", type="integer", example=3)
-     *         )
-     *     ),
-     *     @OA\Response(response=201, description="Program oluşturuldu"),
-     *     @OA\Response(response=403, description="Yetkiniz yok"),
-     *     @OA\Response(response=422, description="Doğrulama hatası")
+     *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/ClassScheduleStoreRequest")),
+     *     @OA\Response(response=201, description="Ders planı oluşturuldu"),
+     *     @OA\Response(response=403, description="Yetkiniz yok")
      * )
      */
-    public function store(Request $request, School $school)
+    public function store(ClassScheduleStoreRequest $request, School $school)
     {
-        $this->authorize('create', ClassSchedule::class);
+        if (!auth()->user()->can('classschedule.create',)) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        }
+        $data = $request->validated();
+        $data['school_id'] = $school->id;
 
-        $validated = $request->validate([
-            'class_model_id' => 'required|exists:class_models,id',
-            'teacher_subject_id' => 'required|exists:teacher_subjects,id',
-            'day_of_week' => 'required|string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
-            'physical_classroom_id' => 'nullable|exists:physical_classrooms,id',
-        ]);
+        $schedule = ClassSchedule::create($data);
 
-        $schedule = ClassSchedule::create($validated);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Ders programı başarıyla oluşturuldu.',
-            'data' => $schedule->load(['class', 'teacherSubject'])
-        ], 201);
+        return $this->successResponse($schedule, "Ders planı oluşturuldu.", 200);
     }
+
 
     /**
      * @OA\Get(
-     *     path="/api/schools/{school}/classschedules/{id}",
-     *     tags={"ClassSchedule"},
-     *     summary="Belirli bir ders programını getir",
-     *     security={{"bearerAuth":{}}},     
+     *     path="/api/schools/{school}/class-schedules/{schedule}",
+     *     tags={"Manager & Teacher - ClassSchedule"},
+     *     summary="Ders planı detayı",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(response=200, description="Ders programı bilgisi"),
-     *     @OA\Response(response=404, description="Program bulunamadı")
+     *     @OA\Parameter(name="schedule", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Detay getirildi")
      * )
      */
-    public function show($id, School $school)
+    public function show(School $school, ClassSchedule $schedule)
     {
-        $schedule = ClassSchedule::with(['class', 'teacher',])->findOrFail($id);
-        $this->authorize('view', $schedule);
+        if (!auth()->user()->can('classschedule.view',)) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        }
+        if ($schedule->school_id !== $school->id) {
+            return $this->errorResponse("Bu okula ait değil.", 403);
+        }
 
-        return response()->json([
-            'status' => true,
-            'data' => $schedule
-        ]);
+        return $this->successResponse($schedule->load(['classModel', 'subject']), "başarılı", 200);
     }
+
 
     /**
      * @OA\Put(
-     *     path="/api/classschedules/{id}",
-     *     tags={"ClassSchedule"},
-     *     summary="Ders programını güncelle (Admin/Manager)",
-     *     security={{"bearerAuth":{}}},     
+     *     path="/api/schools/{school}/class-schedules/{schedule}",
+     *     tags={"Manager & Teacher - ClassSchedule"},
+     *     summary="Ders planını güncelle",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="day_of_week", type="string", example="friday"),
-     *             @OA\Property(property="start_time", type="string", example="10:00"),
-     *             @OA\Property(property="end_time", type="string", example="11:00"),
-     *             @OA\Property(property="physical_classroom_id", type="integer", example=2)
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="Program güncellendi"),
-     *     @OA\Response(response=403, description="Yetkiniz yok")
+     *     @OA\Parameter(name="schedule", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/ClassScheduleUpdateRequest")),
+     *     @OA\Response(response=200, description="Güncellendi")
      * )
      */
-    public function update(Request $request, $id, School $school)
+    public function update(ClassScheduleUpdateRequest $request, School $school, ClassSchedule $schedule)
     {
-        $schedule = ClassSchedule::findOrFail($id);
-        $this->authorize('update', $schedule);
+        if (!auth()->user()->can('classschedule.update',)) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        }
+        if ($schedule->school_id !== $school->id) {
+            return $this->errorResponse("Bu okula ait değil.", 403);
+        }
 
-        $validated = $request->validate([
-            'day_of_week' => 'sometimes|string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-            'start_time' => 'sometimes|date_format:H:i',
-            'end_time' => 'sometimes|date_format:H:i|after:start_time',
-            'physical_classroom_id' => 'nullable|exists:physical_classrooms,id',
-        ]);
+        $schedule->update($request->validated());
 
-        $schedule->update($validated);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Ders programı başarıyla güncellendi.',
-            'data' => $schedule
-        ]);
+        return $this->successResponse($schedule, "Ders planı güncellendi.", 200);
     }
+
 
     /**
      * @OA\Delete(
-     *     path="/api/classschedules/{id}",
-     *     tags={"ClassSchedule"},
-     *     summary="Ders programını sil (Admin)",
-     *     security={{"bearerAuth":{}}},     
+     *     path="/api/schools/{school}/class-schedules/{schedule}",
+     *     tags={"Manager & Teacher - ClassSchedule"},
+     *     summary="Ders planını sil",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="Program silindi"),
-     *     @OA\Response(response=403, description="Yetkiniz yok")
+     *     @OA\Parameter(name="schedule", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Silindi")
      * )
      */
-    public function destroy($id, School $school)
+    public function destroy(School $school, ClassSchedule $schedule)
     {
-        $schedule = ClassSchedule::findOrFail($id);
-        $this->authorize('delete', $schedule);
+        if (!auth()->user()->can('classschedule.delete',)) {
+            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        }
+        if ($schedule->school_id !== $school->id) {
+            return $this->errorResponse("Bu okula ait değil.", 403);
+        }
 
         $schedule->delete();
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Ders programı başarıyla silindi.'
-        ]);
+        return $this->successResponse([], "Ders planı silindi.", 200);
     }
 }

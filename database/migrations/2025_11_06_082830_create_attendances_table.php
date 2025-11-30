@@ -13,10 +13,24 @@ return new class extends Migration
     {
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('class_schedule_id')->constrained()->onDelete('cascade');
-            $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
-            $table->date('date');
-            $table->enum('status', ['present', 'absent', 'late', 'excused'])->default('present');
+            $table->foreignId('lesson_session_id')
+                ->constrained('lesson_sessions')
+                ->onDelete('cascade');
+
+            $table->foreignId('student_id')
+                ->constrained('school_student_profiles')
+                ->onDelete('cascade');
+
+            $table->enum('status', [
+                'present',  // var
+                'absent',   // yok
+                'late',     // geç
+                'excused'   // izinli
+            ]);
+
+            $table->text('absent_excuse_note')->nullable();
+
+            $table->timestamp('entered_at')->nullable(); // yoklamanın alındığı an
             $table->timestamps();
         });
     }

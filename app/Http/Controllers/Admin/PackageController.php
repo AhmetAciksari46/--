@@ -113,6 +113,10 @@ class PackageController extends Controller
      */
     public function show(Package $package)
     {
+        if ($package->is_empty()) {
+            return $this->successResponse(null, 'Paket bulunamadı.', 404);
+        }
+
         // Paketin kurallarını da eager load ederek tam bir detay sunuyoruz.
         return $this->successResponse(
             $package->load(['gradeRules'])->loadCount('subscriptions'),
