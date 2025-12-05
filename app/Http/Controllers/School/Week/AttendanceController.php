@@ -10,6 +10,7 @@ use App\Models\LessonSession;
 use App\Models\School;
 use App\Http\Requests\Attendance\AttendanceStoreRequest;
 use App\Http\Requests\Attendance\AttendanceUpdateRequest;
+use App\Http\Requests\Attendance\BatchAttendanceRequest;
 
 /**
  * @OA\Tag(

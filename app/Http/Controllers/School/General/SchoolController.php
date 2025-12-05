@@ -88,7 +88,7 @@ class SchoolController extends Controller
     /**
      * @OA\Post(
      *     path="/api/admin/school/createschool",
-     *     tags={"Schools"},
+     *     tags={"Admin - Schools"},
      *     summary="Yeni okul oluştur (admin rolü)",
      *     description="Admin kullanıcılar için yeni okul oluşturma işlemi.",
      *     security={{"bearerAuth":{}}},
@@ -136,7 +136,43 @@ class SchoolController extends Controller
         }
     }
 
-    // Admin için okul güncelleme
+    /**
+     * @OA\Put(
+     *     path="/api/admin/school/update/{school}",
+     *     tags={"Admin - Schools"},
+     *     summary="Okul güncelle (Admin)",
+     *     description="Admin kullanıcı okul bilgilerini günceller.",
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(
+     *         name="school",
+     *         in="path",
+     *         required=true,
+     *         description="Okul ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/UpdateSchoolbyAdminRequest")
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Okul başarılı şekilde güncellendi"
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=403,
+     *         description="Yetkiniz yok"
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=500,
+     *         description="Sunucu hatası"
+     *     )
+     * )
+     */
     public function updateSchool(UpdateSchoolbyAdminRequest $request, School $school)
     {
         // Okul yoksa

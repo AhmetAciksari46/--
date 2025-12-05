@@ -8,10 +8,18 @@ use Illuminate\Foundation\Http\FormRequest;
  * @OA\Schema(
  *     schema="StoreStudentRequest",
  *     type="object",
- *     required={"name","userName","password","birth_date","student_number","tc_no"},
+ *     required={
+ *         "name",
+ *         "userName",
+ *         "password",
+ *         "password_confirmation",
+ *         "birth_date",
+ *         "student_number",
+ *         "tc_no"
+ *     },
  *
  *     @OA\Property(property="name", type="string", example="Mehmet Demir"),
- *     @OA\Property(property="userName", type="string", example="mehmetdemir"),
+ *     @OA\Property(property="userName", type="string", example="mehmetdemir123"),
  *     @OA\Property(property="email", type="string", example="mehmet@example.com"),
  *     @OA\Property(property="password", type="string", example="12345678"),
  *     @OA\Property(property="password_confirmation", type="string", example="12345678"),
@@ -20,8 +28,13 @@ use Illuminate\Foundation\Http\FormRequest;
  *     @OA\Property(property="tc_no", type="string", example="12345678901"),
  *     @OA\Property(property="phone", type="string", example="+905551234567"),
  *     @OA\Property(property="address", type="string", example="İstanbul, Türkiye"),
- *     @OA\Property(property="gender", type="string", example="male"),
- *     @OA\Property(property="active_class_id", type="integer", example=5),  
+ *     @OA\Property(
+ *         property="gender",
+ *         type="string",
+ *         example="male",
+ *         enum={"male","female","other"}
+ *     ),
+ *     @OA\Property(property="active_class_id", type="integer", example=5),
  * )
  */
 class StoreStudentRequest extends FormRequest
@@ -35,15 +48,25 @@ class StoreStudentRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'userName' => 'required|string|unique:users,userName',
-            'email' => 'nullable|email|unique:users,email',
-            'password' => 'required|string|min:6|max:64',
+
+            'userName' => 'required|string|max:255|unique:users,userName',
+
+            'email' => 'nullable|email|max:255|unique:users,email',
+
+            'password' => 'required|string|min:6|max:64|confirmed',
+            'password_confirmation' => 'required',
+
             'birth_date' => 'required|date|before:today',
-            'student_number' => 'required|string|unique:school_student_profiles,student_number',
-            'tc_no' => 'required|string|unique:school_student_profiles,tc_no',
-            'phone' => 'nullable|string',
-            'address' => 'nullable|string',
-            'gender' => 'nullable|string',
+
+            'student_number' => 'required|string|max:50',
+
+            'tc_no' => 'required|string|size:11|unique:school_student_profiles,tc_no',
+
+            'phone' => 'nullable|string|max:20',
+
+            'address' => 'nullable|string|max:255',
+
+            'gender' => 'nullable|string|in:male,female,other',
 
             'active_class_id' => 'nullable|integer|exists:class_models,id',
         ];
@@ -53,13 +76,32 @@ class StoreStudentRequest extends FormRequest
     {
         return [
             'name.required' => 'Öğrenci adı zorunludur.',
+            'name.string' => 'Öğrenci adı metin olmalıdır.',
+
             'userName.required' => 'Kullanıcı adı zorunludur.',
             'userName.unique' => 'Bu kullanıcı adı zaten kullanılıyor.',
+
             'email.email' => 'Geçerli bir e-posta adresi giriniz.',
+            'email.unique' => 'Bu e-posta zaten kayıtlıdır.',
+
+            'password.required' => 'Şifre zorunludur.',
             'password.min' => 'Şifre en az 6 karakter olmalıdır.',
+            'password.confirmed' => 'Şifre doğrulaması eşleşmiyor.',
+            'password_confirmation.required' => 'Şifre doğrulama alanı zorunludur.',
+
+            'birth_date.required' => 'Doğum tarihi zorunludur.',
             'birth_date.before' => 'Doğum tarihi bugünden önce olmalıdır.',
-            'student_number.unique' => 'Bu öğrenci numarası zaten kayıtlı.',
-            'tc_no.unique' => 'Bu TC numarası zaten kayıtlı.',
+
+            'student_number.required' => 'Öğrenci numarası zorunludur.',
+            'student_number.unique' => 'Bu öğrenci numarası zaten kayıtlıdır.',
+
+            'tc_no.required' => 'TC Kimlik numarası zorunludur.',
+            'tc_no.size' => 'TC Kimlik numarası 11 haneli olmalıdır.',
+            'tc_no.unique' => 'Bu TC Kimlik numarası zaten kayıtlıdır.',
+
+            'gender.in' => 'Geçerli bir cinsiyet seçiniz (male, female, other).',
+
+            'active_class_id.exists' => 'Seçilen sınıf mevcut değil veya bu okula ait değil.'
         ];
     }
 }

@@ -13,7 +13,7 @@ use App\Traits\ApiResponser;
 
 /**
  * @OA\Tag(
- *     name="SchoolHasGrade",
+ *     name="Admin - SchoolHasGrade",
  *     description="Okul - seviye (grade) ilişkilerini yönetme"
  * )
  */
@@ -24,7 +24,7 @@ class SchoolHasGradeController extends Controller
     /**
      * @OA\Get(
      *     path="/api/admin/school-has-grades/by-school/{school_id}",
-     *     tags={"SchoolHasGrades"},
+     *     tags={"Admin - SchoolHasGrades"},
      *     summary="Belirli bir okulun tüm sınıf seviyelerini getir (Sadece Admin)",
      *     security={{"bearerAuth":{}}},
      *
@@ -61,7 +61,7 @@ class SchoolHasGradeController extends Controller
     /**
      * @OA\Get(
      *     path="/api/admin/school-has-grades",
-     *     tags={"SchoolHasGrades"},
+     *     tags={"Admin - SchoolHasGrades"},
      *     summary="Tüm okul-seviye ilişkilerini listele (sadece Admin)",
      *     security={{"bearerAuth":{}}},
      *     @OA\Response(response=200, description="Liste döndürüldü")
@@ -76,7 +76,7 @@ class SchoolHasGradeController extends Controller
     /**
      * @OA\Post(
      *     path="/api/admin/school-has-grades",
-     *     tags={"SchoolHasGrades"},
+     *     tags={"Admin - SchoolHasGrades"},
      *     summary="Okula sınıf seviyesi ekle (Admin)",
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
@@ -104,7 +104,7 @@ class SchoolHasGradeController extends Controller
     /**
      * @OA\Delete(
      *     path="/api/admin/school-has-grades/{id}",
-     *     tags={"SchoolHasGrades"},
+     *     tags={"Admin - SchoolHasGrades"},
      *     summary="Okulun bir sınıf seviyesini sil (Admin)",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
@@ -131,7 +131,7 @@ class SchoolHasGradeController extends Controller
     /**
      * @OA\Get(
      *     path="/api/manager/my-grades",
-     *     tags={"SchoolHasGrades"},
+     *     tags={"Admin - SchoolHasGrades"},
      *     summary="Manager/Teacher/Student kendi okulunun sınıf seviyelerini getirir",
      *     security={{"bearerAuth":{}}},
      *     @OA\Response(response=200, description="Kayıtlar getirildi")

@@ -35,6 +35,14 @@ use App\Http\Controllers\School\Week\{
     PhysicalClassroomController
 };
 
+use App\Http\Controllers\School\Student\{
+    StudentLessonController,
+};
+
+use App\Http\Controllers\School\Teacher\{
+    TeacherLessonController,
+};
+
 use App\Http\Controllers\{
     UserController,
     StudentCurriculumOverrideController,
@@ -143,7 +151,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::prefix('grades')->group(function () {
                 Route::get('/', [GradeController::class, 'index']);
                 Route::post('/store', [GradeController::class, 'store']);
-                Route::put('/{id}', [GradeController::class, 'update']);
+                Route::put('/{grade}', [GradeController::class, 'update']);
+                Route::get('/{grade}', [GradeController::class, 'show']);
                 Route::delete('/{id}', [GradeController::class, 'destroy']);
             });
             Route::resource('contents', ContentController::class)->only(['index', 'store', 'update', 'destroy']);
@@ -185,8 +194,6 @@ Route::middleware('auth:sanctum')->group(function () {
         // Paket satın alma
         Route::post('/packages/{package}/purchase', [PackageController::class, 'purchase'])
             ->name('packages.purchase');
-
-        // Admin tarafından ödeme onayı
 
 
 
@@ -248,7 +255,7 @@ Route::middleware('auth:sanctum')->group(function () {
                     Route::put('/{session}', [LessonSessionController::class, 'update']);
 
                     Route::delete('/{session}', [LessonSessionController::class, 'destroy']);
-                    Route::prefix('/attendances')->group(function () {
+                    Route::prefix('/{session}/attendances')->group(function () {
 
                         Route::get('/', [AttendanceController::class, 'index']);
 
@@ -270,6 +277,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
                 Route::prefix('teachers')->group(function () {
+                    Route::get('/today-lessons', [TeacherLessonController::class, 'todayLessons']);
+                    Route::get('/missing-attendance', [TeacherLessonController::class, 'missingAttendance']);
+                    Route::get('/weekly-lessons', [TeacherLessonController::class, 'weeklyLessons']);
+
                     Route::get('/', [TeacherController::class, 'index']); // teacherList
                     Route::get('/{teacher}', [TeacherController::class, 'show']); // getTeacherById
                     Route::post('/', [TeacherController::class, 'store']); // createTeacher
@@ -291,6 +302,8 @@ Route::middleware('auth:sanctum')->group(function () {
                     Route::put('/{student}/reset-password', [SchoolStudentProfileController::class, 'resetPassword']);
                     Route::get('/by-class/{classModel}', [SchoolStudentProfileController::class, 'getByClassModel']);
                     Route::get('/{student}/details', [SchoolStudentProfileController::class, 'getDetails']);
+                    Route::get('/{student}/today-lessons', [StudentLessonController::class, 'todayLessons']);
+                    Route::get('/{student}/next-week-lessons', [StudentLessonController::class, 'nextWeekLessons']);
                 });
                 Route::prefix('students/{profile}/parents')->group(function () {
                     Route::get('/', [StudentParentController::class, 'index']);

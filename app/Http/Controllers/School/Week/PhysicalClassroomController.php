@@ -12,7 +12,7 @@ use App\Http\Requests\Classroom\PhysicalClassroomStoreRequest;
 
 /**
  * @OA\Tag(
- *     name="Physical Classrooms",
+ *     name="Manager & Teacher Physical Classrooms",
  *     description="Okul içi fiziksel derslik CRUD işlemleri"
  * )
  */
@@ -24,7 +24,7 @@ class PhysicalClassroomController extends Controller
      * @OA\Get(
      *     path="/api/schools/{school}/classrooms",
      *     summary="Okuldaki tüm fiziksel derslikleri listeler",
-     *     tags={"Physical Classrooms"},
+     *     tags={"Manager & Teacher Physical Classrooms"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Response(response=200, description="List of classrooms")
@@ -44,7 +44,7 @@ class PhysicalClassroomController extends Controller
      * @OA\Post(
      *     path="/api/schools/{school}/classrooms",
      *     summary="Yeni fiziksel derslik oluşturur",
-     *     tags={"Physical Classrooms"},
+     *     tags={"Manager & Teacher Physical Classrooms"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/PhysicalClassroomStoreRequest")),
@@ -69,7 +69,7 @@ class PhysicalClassroomController extends Controller
      * @OA\Get(
      *     path="/api/schools/{school}/classrooms/{classroom}",
      *     summary="Belirli fiziksel derslik bilgisi",
-     *     tags={"Physical Classrooms"},
+     *     tags={"Manager & Teacher Physical Classrooms"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="school", in="path", required=true),
      *     @OA\Parameter(name="classroom", in="path", required=true),
@@ -91,7 +91,7 @@ class PhysicalClassroomController extends Controller
      * @OA\Put(
      *     path="/api/schools/{school}/classrooms/{classroom}",
      *     summary="Fiziksel derslik günceller",
-     *     tags={"Physical Classrooms"},
+     *     tags={"Manager & Teacher Physical Classrooms"},
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/PhysicalClassroomUpdateRequest")),
      *     @OA\Response(response=200, description="Classroom updated")
@@ -114,7 +114,7 @@ class PhysicalClassroomController extends Controller
      * @OA\Delete(
      *     path="/api/schools/{school}/classrooms/{classroom}",
      *     summary="Fiziksel derslik siler",
-     *     tags={"Physical Classrooms"},
+     *     tags={"Manager & Teacher Physical Classrooms"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Response(response=200, description="Classroom deleted")
      * )

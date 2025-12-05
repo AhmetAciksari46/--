@@ -87,7 +87,7 @@ class SchoolStudentProfileController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/schools/{school}/students",
+     *     path="/api/schools/{school}/students/",
      *     summary="Okula yeni öğrenci ekler",
      *     tags={"Manager & Teacher - Student Profil İşlemleri"},
      *     security={{"bearerAuth":{}}},
@@ -106,43 +106,43 @@ class SchoolStudentProfileController extends Controller
     {
 
         if (!auth()->user()->can('student.create')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
 
         $data = $request->validated();
-        // CLASS OKULA AİT Mİ?
 
+        // Eğer sınıf seçildiyse -> o sınıf gerçekten bu okula mı ait?
         if (!empty($data['active_class_id'])) {
             $classCheck = ClassModel::where('id', $data['active_class_id'])
                 ->where('school_id', $school->id)
                 ->exists();
 
             if (!$classCheck) {
-                return response()->json(['message' => 'Bu sınıf bu okula ait değildir.'], 422);
+                return $this->errorResponse('Bu sınıf bu okula ait değildir.', 422);
             }
         }
 
-
-
-
-
+        DB::beginTransaction();
 
         try {
-            // 1) User
+
+            // 1) User oluştur
             $user = User::create([
                 'name' => $data['name'],
                 'userName' => $data['userName'],
                 'email' => $data['email'] ?? null,
                 'password' => Hash::make($data['password']),
                 'role' => 'schoolstudent',
-                "is_active" => true,
+                'is_active' => true,
             ]);
 
+            // 2) Role ata (Spatie)
             if (Role::where('name', 'school_student')->exists()) {
                 $user->assignRole('school_student');
             }
 
-            SchoolStudentProfile::create([
+            // 3) Student profile oluştur
+            $profile = SchoolStudentProfile::create([
                 'user_id' => $user->id,
                 'school_id' => $school->id,
                 'phone' => $data['phone'] ?? null,
@@ -151,25 +151,22 @@ class SchoolStudentProfileController extends Controller
                 'student_number' => $data['student_number'],
                 'tc_no' => $data['tc_no'],
                 'gender' => $data['gender'] ?? null,
+                'class_model_id' => $data['active_class_id'] ?? null, // <-- EKLENDİ
             ]);
-
 
             DB::commit();
 
             return $this->successResponse(
                 $user->load('schoolStudentProfile'),
-                'Yeni Öğrenci başarıyla oluşturuldu.',
+                'Yeni öğrenci başarıyla oluşturuldu.',
                 201
             );
         } catch (\Throwable $e) {
             DB::rollBack();
-            return $this->errorResponse('Öğrenci oluşturulurken hata: ' . $e->getMessage(), 500);
+            return $this->errorResponse($e->getMessage(), 500);
         }
-
-
-
-        return $this->successResponse($student, 'Öğrenci başarıyla oluşturuldu.', 201);
     }
+
 
     /**
      * @OA\Put(

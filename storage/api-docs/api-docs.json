@@ -649,7 +649,7 @@
         "/api/admin/grades": {
             "get": {
                 "tags": [
-                    "Grades"
+                    "Admin - Grades"
                 ],
                 "summary": "Tüm sınıf seviyelerini listele (sadece Admin)",
                 "operationId": "45a76473a524f186bf4f8add8282d340",
@@ -671,7 +671,7 @@
         "/api/admin/grades/store": {
             "post": {
                 "tags": [
-                    "Grades"
+                    "Admin - Grades"
                 ],
                 "summary": "Yeni sınıf seviyesi oluştur (sadece Admin)",
                 "operationId": "de317eba83a6950f992bfc4faf45a5e7",
@@ -719,7 +719,7 @@
         "/api/admin/grades/{id}": {
             "put": {
                 "tags": [
-                    "Grades"
+                    "Admin - Grades"
                 ],
                 "summary": "Bir sınıf seviyesini güncelle (sadece Admin)",
                 "operationId": "f731f092d893dbb56a10ee063a16e354",
@@ -769,7 +769,7 @@
             },
             "delete": {
                 "tags": [
-                    "Grades"
+                    "Admin - Grades"
                 ],
                 "summary": "Bir sınıf seviyesini sil (sadece Admin)",
                 "operationId": "23608aee50fb178bd6aaa6da57be7356",
@@ -1493,7 +1493,7 @@
         "/api/admin/school-has-grades/by-school/{school_id}": {
             "get": {
                 "tags": [
-                    "SchoolHasGrades"
+                    "Admin - SchoolHasGrades"
                 ],
                 "summary": "Belirli bir okulun tüm sınıf seviyelerini getir (Sadece Admin)",
                 "operationId": "164727bad49d034d027628a347321ad8",
@@ -1527,7 +1527,7 @@
         "/api/admin/school-has-grades": {
             "get": {
                 "tags": [
-                    "SchoolHasGrades"
+                    "Admin - SchoolHasGrades"
                 ],
                 "summary": "Tüm okul-seviye ilişkilerini listele (sadece Admin)",
                 "operationId": "a18918f3c7a277c1127cbbb60f3b4104",
@@ -1544,7 +1544,7 @@
             },
             "post": {
                 "tags": [
-                    "SchoolHasGrades"
+                    "Admin - SchoolHasGrades"
                 ],
                 "summary": "Okula sınıf seviyesi ekle (Admin)",
                 "operationId": "fc5011a2056a9388eaf9dad3f6687cb5",
@@ -1587,7 +1587,7 @@
         "/api/admin/school-has-grades/{id}": {
             "delete": {
                 "tags": [
-                    "SchoolHasGrades"
+                    "Admin - SchoolHasGrades"
                 ],
                 "summary": "Okulun bir sınıf seviyesini sil (Admin)",
                 "operationId": "5fb59b3d84ef1834e23f9c219fd0caf9",
@@ -1618,7 +1618,7 @@
         "/api/manager/my-grades": {
             "get": {
                 "tags": [
-                    "SchoolHasGrades"
+                    "Admin - SchoolHasGrades"
                 ],
                 "summary": "Manager/Teacher/Student kendi okulunun sınıf seviyelerini getirir",
                 "operationId": "2f91232dc76492c900a41141929d4300",
@@ -2699,7 +2699,7 @@
         "/api/admin/school/createschool": {
             "post": {
                 "tags": [
-                    "Schools"
+                    "Admin - Schools"
                 ],
                 "summary": "Yeni okul oluştur (admin rolü)",
                 "description": "Admin kullanıcılar için yeni okul oluşturma işlemi.",
@@ -2750,6 +2750,53 @@
                     },
                     "403": {
                         "description": "Manager zaten bir okula sahip"
+                    },
+                    "500": {
+                        "description": "Sunucu hatası"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/school/update/{school}": {
+            "put": {
+                "tags": [
+                    "Admin - Schools"
+                ],
+                "summary": "Okul güncelle (Admin)",
+                "description": "Admin kullanıcı okul bilgilerini günceller.",
+                "operationId": "460aef3ac751080de438481c3602b6d1",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "description": "Okul ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateSchoolbyAdminRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Okul başarılı şekilde güncellendi"
+                    },
+                    "403": {
+                        "description": "Yetkiniz yok"
                     },
                     "500": {
                         "description": "Sunucu hatası"
@@ -2967,6 +3014,189 @@
                 "responses": {
                     "204": {
                         "description": "Silindi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/students/{student}/today-lessons": {
+            "get": {
+                "tags": [
+                    "Students Ders Programı"
+                ],
+                "summary": "Öğrencinin bugünkü ders programını listeler",
+                "operationId": "d5792b48813cb0d0209081345f50bc5a",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "description": "Okul ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "student",
+                        "in": "path",
+                        "description": "Öğrenci profil ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Bugünkü ders programı başarıyla listelendi"
+                    },
+                    "403": {
+                        "description": "Yetkisiz işlem"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/students/{student}/next-week-lessons": {
+            "get": {
+                "tags": [
+                    "Students Ders Programı"
+                ],
+                "summary": "Öğrencinin bugünden başlayarak gelecek 1 haftalık ders programını listeler",
+                "operationId": "5b5627ca2671447e246c2bea75b0c23c",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "description": "Okul ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "student",
+                        "in": "path",
+                        "description": "Öğrenci profil ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Gelecek 1 haftalık ders programı listelendi"
+                    },
+                    "403": {
+                        "description": "Yetki hatası veya yanlış okul"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/teachers/today-lessons": {
+            "get": {
+                "tags": [
+                    "Teacher Ders Programı"
+                ],
+                "summary": "Öğretmenin bugünkü derslerini listeler",
+                "operationId": "ce2b0dfdb1a4f3ee2f3a417aeb52a50c",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "description": "Okul ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Bugünkü dersler listelendi"
+                    },
+                    "403": {
+                        "description": "Yetki hatası veya okul eşleşmiyor"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/teachers/missing-attendance": {
+            "get": {
+                "tags": [
+                    "Teacher Ders Programı"
+                ],
+                "summary": "Öğretmenin bugünkü yoklaması alınmamış derslerini listeler",
+                "operationId": "150f2a38f5c00f2a01ec3f4fb84af281",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "description": "Okul ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Yoklaması alınmamış dersler başarıyla listelendi"
+                    },
+                    "403": {
+                        "description": "Yetkisiz işlem"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/teachers/weekly-lessons": {
+            "get": {
+                "tags": [
+                    "Teacher Ders Programı"
+                ],
+                "summary": "Öğretmenin içinde bulunulan haftadaki ders programını listeler.",
+                "operationId": "981c1d74c62cbd2c275b736ea4eedb91",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "description": "Okul ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Haftalık ders programı listelendi"
+                    },
+                    "403": {
+                        "description": "Yetki hatası"
                     }
                 },
                 "security": [
@@ -3508,43 +3738,6 @@
                         "bearerAuth": []
                     }
                 ]
-            },
-            "post": {
-                "tags": [
-                    "Manager & Teacher - Student Profil İşlemleri"
-                ],
-                "summary": "Okula yeni öğrenci ekler",
-                "operationId": "bc48463a2f6cd12f28d1c736f6b702f4",
-                "parameters": [
-                    {
-                        "name": "school",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/StoreStudentRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Student created"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
             }
         },
         "/api/schools/{school}/students/{student}": {
@@ -3637,6 +3830,45 @@
                 "responses": {
                     "200": {
                         "description": "Student deleted"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/students/": {
+            "post": {
+                "tags": [
+                    "Manager & Teacher - Student Profil İşlemleri"
+                ],
+                "summary": "Okula yeni öğrenci ekler",
+                "operationId": "9f009f755517ab7610db3196451967a4",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreStudentRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Student created"
                     }
                 },
                 "security": [
@@ -4841,6 +5073,59 @@
                 ]
             }
         },
+        "/api/schools/{school}/lesson-sessions/{session}/attendances/batch": {
+            "post": {
+                "tags": [
+                    "Manager & Teacher Attendance"
+                ],
+                "summary": "Bir derse ait öğrencilerin yoklamasını toplu şekilde kaydeder.",
+                "operationId": "ba233a94c3f09acc81baf991ce18ef4e",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "session",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BatchAttendanceRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Toplu yoklama başarıyla kaydedildi"
+                    },
+                    "403": {
+                        "description": "Yetki yok"
+                    },
+                    "422": {
+                        "description": "Validasyon hatası"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/schools/{school}/class-schedules": {
             "get": {
                 "tags": [
@@ -5060,7 +5345,7 @@
             },
             "post": {
                 "tags": [
-                    "LessonSession"
+                    "Manager & Teacher LessonSession"
                 ],
                 "summary": "Yeni ders oturumu oluştur",
                 "operationId": "448eabad214976e119d3a34a8b5744ff",
@@ -5188,7 +5473,7 @@
         "/api/schools/{school}/lesson-sessions/generate": {
             "post": {
                 "tags": [
-                    "LessonSession"
+                    "Manager & Teacher LessonSession"
                 ],
                 "summary": "Belirtilen ders planları için belirtilen hafta sayısı kadar otomatik ders oturumu oluşturur.",
                 "operationId": "b455e6cddc14fb785f8a39fc11410a2a",
@@ -5233,7 +5518,7 @@
         "/api/schools/{school}/classrooms": {
             "get": {
                 "tags": [
-                    "Physical Classrooms"
+                    "Manager & Teacher Physical Classrooms"
                 ],
                 "summary": "Okuldaki tüm fiziksel derslikleri listeler",
                 "operationId": "e9167daf5ebee7452755f91d70a5b286",
@@ -5260,7 +5545,7 @@
             },
             "post": {
                 "tags": [
-                    "Physical Classrooms"
+                    "Manager & Teacher Physical Classrooms"
                 ],
                 "summary": "Yeni fiziksel derslik oluşturur",
                 "operationId": "58b9b33573bb8ea2fbf2a9bc123c66d6",
@@ -5299,7 +5584,7 @@
         "/api/schools/{school}/classrooms/{classroom}": {
             "get": {
                 "tags": [
-                    "Physical Classrooms"
+                    "Manager & Teacher Physical Classrooms"
                 ],
                 "summary": "Belirli fiziksel derslik bilgisi",
                 "operationId": "74af52fb25a870c217fef3afb4cacf7f",
@@ -5328,7 +5613,7 @@
             },
             "put": {
                 "tags": [
-                    "Physical Classrooms"
+                    "Manager & Teacher Physical Classrooms"
                 ],
                 "summary": "Fiziksel derslik günceller",
                 "operationId": "26901f3504c7e4486360d33c60fc7b49",
@@ -5355,7 +5640,7 @@
             },
             "delete": {
                 "tags": [
-                    "Physical Classrooms"
+                    "Manager & Teacher Physical Classrooms"
                 ],
                 "summary": "Fiziksel derslik siler",
                 "operationId": "a8626106f7c13e487b53a9bd055802b0",
@@ -6535,6 +6820,39 @@
                 },
                 "type": "object"
             },
+            "BatchAttendanceRequest": {
+                "required": [
+                    "attendances"
+                ],
+                "properties": {
+                    "attendances": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "student_id": {
+                                    "type": "integer",
+                                    "example": 35
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "present",
+                                        "absent",
+                                        "late",
+                                        "excused"
+                                    ]
+                                },
+                                "absent_excuse_note": {
+                                    "type": "string",
+                                    "example": "Veli tarafından izinli"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
             "BranchStoreRequest": {
                 "required": [
                     "name",
@@ -6970,6 +7288,37 @@
                     "is_attendance_required": {
                         "type": "boolean",
                         "example": false
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateSchoolbyAdminRequest": {
+                "title": "School Update Request",
+                "description": "Admin tarafından okul güncelleme isteği",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Açıksarı Koleji"
+                    },
+                    "nickname": {
+                        "type": "string",
+                        "example": "ackolej"
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "İstanbul, Türkiye"
+                    },
+                    "img_path": {
+                        "type": "string",
+                        "example": "uploads/schools/logo.png"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "manager_id": {
+                        "type": "integer",
+                        "example": 5
                     }
                 },
                 "type": "object"
@@ -7851,6 +8200,7 @@
                     "name",
                     "userName",
                     "password",
+                    "password_confirmation",
                     "birth_date",
                     "student_number",
                     "tc_no"
@@ -7862,7 +8212,7 @@
                     },
                     "userName": {
                         "type": "string",
-                        "example": "mehmetdemir"
+                        "example": "mehmetdemir123"
                     },
                     "email": {
                         "type": "string",
@@ -7899,6 +8249,11 @@
                     },
                     "gender": {
                         "type": "string",
+                        "enum": [
+                            "male",
+                            "female",
+                            "other"
+                        ],
                         "example": "male"
                     },
                     "active_class_id": {
@@ -9324,7 +9679,7 @@
             "description": "Branch (branş) CRUD operations"
         },
         {
-            "name": "Grades",
+            "name": "Admin - Grades",
             "description": "Sınıf seviyelerini yönetme (yalnızca Admin)"
         },
         {
@@ -9350,6 +9705,14 @@
         {
             "name": "TeacherSubjects",
             "description": "Öğretmen-Ders ilişkilerini yönet (Admin veya Manager)"
+        },
+        {
+            "name": "Students Ders Programı",
+            "description": "Öğrenci ders oturumları yönetimi"
+        },
+        {
+            "name": "Teacher Ders Programı",
+            "description": "Gerçekleşen ders oturumları yönetimi"
         },
         {
             "name": "ManagerUser",
@@ -9392,7 +9755,7 @@
             "description": "Gerçekleşen ders oturumları yönetimi"
         },
         {
-            "name": "Physical Classrooms",
+            "name": "Manager & Teacher Physical Classrooms",
             "description": "Okul içi fiziksel derslik CRUD işlemleri"
         },
         {
@@ -9416,8 +9779,8 @@
             "description": "Packages-Manager"
         },
         {
-            "name": "SchoolHasGrades",
-            "description": "SchoolHasGrades"
+            "name": "Admin - SchoolHasGrades",
+            "description": "Admin - SchoolHasGrades"
         },
         {
             "name": "Subjects",
@@ -9430,10 +9793,6 @@
         {
             "name": "Admin - Schools",
             "description": "Admin - Schools"
-        },
-        {
-            "name": "LessonSession",
-            "description": "LessonSession"
         },
         {
             "name": "Müfredat Yönetimi",

@@ -13,6 +13,7 @@ use App\Models\School;
 use App\Http\Requests\LessonSession\LessonSessionStoreRequest;
 use App\Http\Requests\LessonSession\LessonSessionUpdateRequest;
 use App\Http\Requests\LessonSession\LessonSessionGenerateRequest;
+use App\Models\SchoolStudentProfile;
 
 /**
  * @OA\Tag(
@@ -52,7 +53,7 @@ class LessonSessionController extends Controller
     /**
      * @OA\Post(
      *     path="/api/schools/{school}/lesson-sessions",
-     *     tags={"LessonSession"},
+     *     tags={"Manager & Teacher LessonSession"},
      *     summary="Yeni ders oturumu oluştur",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
@@ -106,7 +107,7 @@ class LessonSessionController extends Controller
     /**
      * @OA\Post(
      *     path="/api/schools/{school}/lesson-sessions/generate",
-     *     tags={"LessonSession"},
+     *     tags={"Manager & Teacher LessonSession"},
      *     summary="Belirtilen ders planları için belirtilen hafta sayısı kadar otomatik ders oturumu oluşturur.",
      *     security={{"bearerAuth":{}}},
      *

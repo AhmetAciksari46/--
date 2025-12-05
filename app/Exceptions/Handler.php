@@ -22,7 +22,11 @@ class Handler extends ExceptionHandler
     public function render($request, Throwable $e)
     {
         // Sadece API isteklerinde özel JSON formatında dön
-        if ($request->expectsJson()) {
+        if (
+            $request->expectsJson() ||
+            $request->is('api/*') ||
+            $request->wantsJson()
+        ) {
 
             // 🔐 Doğrulama hatası
             if ($e instanceof ValidationException) {
