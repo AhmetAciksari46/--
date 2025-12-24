@@ -22,26 +22,27 @@ class ManagerController extends Controller
 {
     use ApiResponser;
 
-    /**
-     * @OA\Get(
-     *     path="/api/manager/me",
-     *     tags={"ManagerUser"},
-     *     summary="(Manager) Kendi user bilgilerini getir",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Bilgiler başarıyla alındı"),
-     *     @OA\Response(response=404, description="Kullanıcı bulunamadı")
-     * )
-     */
-    public function getManagerUser()
-    {
-        $user = Auth::user();
+    // /**
+    //  * @OA\Get(
+    //  *     path="/api/manager/me",
+    //  *     tags={"ManagerUser"},
+    //  *     summary="(Manager) Kendi user bilgilerini getir",
+    //  *     security={{"bearerAuth":{}}},
+    //  *     @OA\Response(response=200, description="Bilgiler başarıyla alındı"),
+    //  *     @OA\Response(response=404, description="Kullanıcı bulunamadı")
+    //  * )
+    //  */
+    // public function getManagerUser()
+    // {
 
-        if (!$user->hasRole('manager')) {
-            return $this->errorResponse('Bu işlem sadece manager kullanıcıları içindir.', 403);
-        }
+    //     $user = Auth::user();
 
-        return $this->successResponse($user->load('managerProfile'), 'Bilgiler başarıyla getirildi.');
-    }
+    //     if ($user->isManager()) {
+    //         return $this->successResponse($user->load('managerProfile'), 'Bilgiler başarıyla getirildi.');
+    //     }
+    //     return $this->errorResponse('sadece managerlar istek atabilir.', 404);
+    //     //return $this->successResponse($user->load('managerProfile'), 'Bilgiler başarıyla getirildi.');
+    // }
 
     /**
      * @OA\Put(
@@ -67,24 +68,28 @@ class ManagerController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->hasRole('manager')) {
-            return $this->errorResponse('Bu işlem sadece manager kullanıcıları içindir.', 403);
+        if (!$user->isManager()) {
+            return $this->errorResponse('sadece managerlar istek atabilir.', 404);
         }
 
-        $validated = $request->validate([
-            'name'      => 'sometimes|string|max:255',
-            'userName'  => 'sometimes|string|max:255|unique:users,userName,' . $user->id,
-            'email'     => 'sometimes|email|unique:users,email,' . $user->id,
-            'password'  => 'sometimes|string|min:6|confirmed',
-        ]);
+        try {
+            $validated = $request->validate([
+                'name'      => 'sometimes|string|max:255',
+                'userName'  => 'sometimes|string|max:255|unique:users,userName,' . $user->id,
+                'email'     => 'sometimes|email|unique:users,email,' . $user->id,
+                'password'  => 'sometimes|string|min:6|confirmed',
+            ]);
 
-        if (isset($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
+            if (isset($validated['password'])) {
+                $validated['password'] = Hash::make($validated['password']);
+            }
+
+            $user->update($validated);
+
+            return $this->successResponse($user, 'Bilgileriniz başarıyla güncellendi.');
+        } catch (\Exception $e) {
+            return $this->errorResponse("manager güncellenirken bir hata oluştu: " . $e->getMessage(), 500);
         }
-
-        $user->update($validated);
-
-        return $this->successResponse($user, 'Bilgileriniz başarıyla güncellendi.');
     }
 
     /**
@@ -108,6 +113,10 @@ class ManagerController extends Controller
      */
     public function getManagerUserById($id)
     {
+
+        if (!auth()->user()->can('manager.view')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
         $user = User::where('role', 'manager')->with('managerProfile')->find($id);
 
         if (!$user) {
@@ -142,26 +151,33 @@ class ManagerController extends Controller
      */
     public function updateManagerUserById(Request $request, $id)
     {
-        $user = User::where('role', 'manager')->find($id);
-
-        if (!$user) {
-            return $this->errorResponse('Manager bulunamadı.', 404);
+        if (!auth()->user()->can('manager.update')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
+        try {
+            $user = User::where('role', 'manager')->find($id);
 
-        $validated = $request->validate([
-            'name'      => 'sometimes|string|max:255',
-            'userName'  => 'sometimes|string|max:255|unique:users,userName,' . $user->id,
-            'email'     => 'sometimes|email|unique:users,email,' . $user->id,
-            'password'  => 'sometimes|string|min:6|confirmed',
-            'is_active' => 'sometimes|boolean',
-        ]);
+            if (!$user) {
+                return $this->errorResponse('Manager bulunamadı.', 404);
+            }
 
-        if (isset($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
+            $validated = $request->validate([
+                'name'      => 'sometimes|string|max:255',
+                'userName'  => 'sometimes|string|max:255|unique:users,userName,' . $user->id,
+                'email'     => 'sometimes|email|unique:users,email,' . $user->id,
+                'password'  => 'sometimes|string|min:6|confirmed',
+                'is_active' => 'sometimes|boolean',
+            ]);
+
+            if (isset($validated['password'])) {
+                $validated['password'] = Hash::make($validated['password']);
+            }
+
+            $user->update($validated);
+
+            return $this->successResponse($user, 'Manager bilgileri admin tarafından güncellendi.');
+        } catch (\Exception $e) {
+            return $this->errorResponse("Doğrulama hatası: " . $e->getMessage(), 500);
         }
-
-        $user->update($validated);
-
-        return $this->successResponse($user, 'Manager bilgileri admin tarafından güncellendi.');
     }
 }

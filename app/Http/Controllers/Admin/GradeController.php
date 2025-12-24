@@ -30,10 +30,10 @@ class GradeController extends Controller
      */
     public function index()
     {
-        return response()->json([
-            'status' => true,
-            'data' => Grade::all()
-        ]);
+        if (!auth()->user()->can('grade.view.list')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
+        return $this->successResponse(Grade::all(), 'Seviyeler başarıyla getirildi.', 200);
     }
 
     /**
@@ -57,6 +57,9 @@ class GradeController extends Controller
      */
     public function store(Request $request)
     {
+        if (!auth()->user()->can('grade.create')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $validated = $request->validate(
             [
                 'name' => 'required|string|max:255|unique:grades,name',
@@ -78,22 +81,31 @@ class GradeController extends Controller
 
     /**
      * @OA\Get(
-     *   path="/api/admin/grades/{id}",
+     *   path="/api/admin/grades/{grade}",
      *   tags={"Admin - Grades"},
-     *   summary="Branş getir",
+     *   summary="Seviye getir",
      *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *   @OA\Response(
-     *       response=200,
-     *       description="Grade başarıyla getirildi",
+     *
+     *   @OA\Parameter(
+     *       name="grade",
+     *       in="path",
+     *       required=true,
+     *       description="Grade ID",
+     *       @OA\Schema(type="integer")
      *   ),
-     *   @OA\Response(response=404, description="Bulunamadı")
+     *
+     *   @OA\Response(response=200, description="Seviye başarıyla getirildi."),
+     *   @OA\Response(response=404, description="Seviye bulunamadı.")
      * )
      */
     public function show(Grade $grade)
     {
+        if (!auth()->user()->can('grade.view')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         return $this->successResponse($grade, 'Seviye getirildi.', 200);
     }
+
 
 
 
@@ -103,7 +115,7 @@ class GradeController extends Controller
      *     tags={"Admin - Grades"},
      *     summary="Bir sınıf seviyesini güncelle (sadece Admin)",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="grade", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -117,7 +129,9 @@ class GradeController extends Controller
      */
     public function update(Request $request, Grade $grade)
     {
-
+        if (!auth()->user()->can('grade.update')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $validated = $request->validate(
             [
                 'name' => 'sometimes|string|max:255|unique:grades,name,' . $grade->id,
@@ -133,7 +147,7 @@ class GradeController extends Controller
         );
 
         $grade->update($validated);
-        return $this->successResponse($grade, 'Seviye Seviye başarıyla güncellendi.', 200);
+        return $this->successResponse($grade, 'Seviye başarıyla güncellendi.', 200);
     }
 
     /**
@@ -149,9 +163,12 @@ class GradeController extends Controller
      */
     public function destroy($id)
     {
+        if (!auth()->user()->can('grade.delete')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $grade = Grade::findOrFail($id);
         $grade->delete();
 
-        return $this->successResponse(null, 'Seviye Seviye başarıyla silindi.', 200);
+        return $this->successResponse(null, 'Seviye başarıyla silindi.', 200);
     }
 }

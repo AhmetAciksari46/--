@@ -9,394 +9,6 @@
         "version": "1.0.0"
     },
     "paths": {
-        "/api/admin/teachers": {
-            "get": {
-                "tags": [
-                    "Admin - Teacher İşlemleri"
-                ],
-                "summary": "Tüm Öğretmenleri listeler",
-                "operationId": "f7cf101d700b751f5819f8bac8111659",
-                "responses": {
-                    "200": {
-                        "description": "List of teachers"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/admin/teachers/getteachersbyschoolid/{school}": {
-            "get": {
-                "tags": [
-                    "Admin - Teacher İşlemleri"
-                ],
-                "summary": "Belirli bir okulun öğretmenlerini listeler",
-                "operationId": "866356983a93c805673fd2e9e7fdcd51",
-                "parameters": [
-                    {
-                        "name": "school",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "List of teachers"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/admin/teachers/{teacher}": {
-            "get": {
-                "tags": [
-                    "Admin - Teacher İşlemleri"
-                ],
-                "summary": "Belirli öğretmeni getirir",
-                "operationId": "787407fab9ec3313a116a2630e9c02ba",
-                "parameters": [
-                    {
-                        "name": "teacher",
-                        "in": "path",
-                        "description": "Öğretmen ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 10
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Teacher details"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "put": {
-                "tags": [
-                    "Admin - Teacher İşlemleri"
-                ],
-                "summary": "Belirli öğretmeni günceller",
-                "operationId": "b85e0cbd68d19a318346aa266374f7d1",
-                "parameters": [
-                    {
-                        "name": "teacher",
-                        "in": "path",
-                        "description": "Öğretmen User ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 10
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/TeacherUpdateRequestManager"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Teacher updated successfully"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Admin - Teacher İşlemleri"
-                ],
-                "summary": "Belirli öğretmeni siler",
-                "operationId": "cf294f20a50422903580e50385821b43",
-                "parameters": [
-                    {
-                        "name": "teacher",
-                        "in": "path",
-                        "description": "Öğretmen ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 10
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Teacher deleted"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/admin/teachers/": {
-            "post": {
-                "tags": [
-                    "Admin - Teacher İşlemleri"
-                ],
-                "summary": "Belirli okula yeni öğretmen ekler",
-                "operationId": "ac148b3212d5fc15efc80c4e10bbfff9",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "name",
-                                    "userName",
-                                    "password",
-                                    "branch_id"
-                                ],
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Ali Yılmaz"
-                                    },
-                                    "userName": {
-                                        "type": "string",
-                                        "example": "aliyilmaz"
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "example": "ali@example.com"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "example": "12345678"
-                                    },
-                                    "password_confirmation": {
-                                        "type": "string",
-                                        "example": "12345678"
-                                    },
-                                    "branch_id": {
-                                        "type": "integer",
-                                        "example": 2
-                                    },
-                                    "school_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "phone": {
-                                        "type": "string",
-                                        "example": "+905551234567"
-                                    },
-                                    "address": {
-                                        "type": "string",
-                                        "example": "İstanbul"
-                                    },
-                                    "birth_date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "1985-05-10"
-                                    },
-                                    "referance": {
-                                        "type": "string",
-                                        "example": "REF001"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Teacher created successfully"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/admin/teachers/{teacher}/permissions": {
-            "get": {
-                "tags": [
-                    "Admin - Teacher İşlemleri"
-                ],
-                "summary": "Öğretmenin tüm izinlerini listeler",
-                "operationId": "6c089a43a7d0240ee9ec608bf6d14128",
-                "parameters": [
-                    {
-                        "name": "teacher",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 10
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Permissions list"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "put": {
-                "tags": [
-                    "Admin - Teacher İşlemleri"
-                ],
-                "summary": "Öğretmenin izinlerini günceller",
-                "operationId": "0904b87ee24b02493e61ae55dc72aaa7",
-                "parameters": [
-                    {
-                        "name": "teacher",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 10
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "permissions": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string",
-                                            "example": "attendance.edit"
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Permissions updated"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Admin - Teacher İşlemleri"
-                ],
-                "summary": "Öğretmenden belirli izinleri kaldırır",
-                "operationId": "9451541da4009cce76fe597b5f99a882",
-                "parameters": [
-                    {
-                        "name": "teacher",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 10
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "permissions": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string",
-                                            "example": "student.view"
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Permissions removed successfully"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/admin/teachers/available-permissions": {
-            "get": {
-                "tags": [
-                    "Admin - Teacher İşlemleri"
-                ],
-                "summary": "Öğretmenlere atanabilir tüm izinleri döner",
-                "operationId": "3ae0d8886ab83679d2b123a02cdc5c29",
-                "responses": {
-                    "200": {
-                        "description": "Tüm teacher permission listesi",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "permissions": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string",
-                                                "example": "classmodel.view"
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/api/admin/branches": {
             "get": {
                 "tags": [
@@ -716,16 +328,47 @@
                 ]
             }
         },
-        "/api/admin/grades/{id}": {
+        "/api/admin/grades/{grade}": {
+            "get": {
+                "tags": [
+                    "Admin - Grades"
+                ],
+                "summary": "Seviye getir",
+                "operationId": "e314bbd585161189aec5d3ef8f77115a",
+                "parameters": [
+                    {
+                        "name": "grade",
+                        "in": "path",
+                        "description": "Grade ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Seviye başarıyla getirildi."
+                    },
+                    "404": {
+                        "description": "Seviye bulunamadı."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
             "put": {
                 "tags": [
                     "Admin - Grades"
                 ],
                 "summary": "Bir sınıf seviyesini güncelle (sadece Admin)",
-                "operationId": "f731f092d893dbb56a10ee063a16e354",
+                "operationId": "a896df9ed213a7241824ebeea753f9b6",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "grade",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -766,7 +409,9 @@
                         "bearerAuth": []
                     }
                 ]
-            },
+            }
+        },
+        "/api/admin/grades/{id}": {
             "delete": {
                 "tags": [
                     "Admin - Grades"
@@ -1499,9 +1144,9 @@
                 "operationId": "164727bad49d034d027628a347321ad8",
                 "parameters": [
                     {
-                        "name": "school_id",
+                        "name": "school",
                         "in": "path",
-                        "description": "Okul ID",
+                        "description": "school ID",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -2424,6 +2069,106 @@
                 }
             }
         },
+        "/api/me": {
+            "get": {
+                "tags": [
+                    "01 Auth İşlemleri"
+                ],
+                "summary": "Giriş yapan kullanıcının bilgilerini ve permission snapshot'ını döner",
+                "operationId": "9703a4a9537e2a957aae6b2985413648",
+                "responses": {
+                    "200": {
+                        "description": "Kullanıcı bilgileri ve permission snapshot döndürüldü",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Bilgiler optimize edildi."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "user": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "example": "Super Admin"
+                                                        },
+                                                        "userName": {
+                                                            "type": "string",
+                                                            "example": "root"
+                                                        },
+                                                        "email": {
+                                                            "type": "string",
+                                                            "example": "root@root.com"
+                                                        },
+                                                        "role": {
+                                                            "type": "string",
+                                                            "example": "admin"
+                                                        },
+                                                        "is_active": {
+                                                            "type": "boolean",
+                                                            "example": true
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "permissionSnapshot": {
+                                                    "description": "Frontend için permission listesi (snapshot)",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "teacher.view.detail"
+                                                    },
+                                                    "example": [
+                                                        "school.view",
+                                                        "teacher.view",
+                                                        "teacher.view.detail",
+                                                        "studentpreregistration.approve"
+                                                    ]
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - token yok veya geçersiz",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/logout": {
             "post": {
                 "tags": [
@@ -2442,6 +2187,2337 @@
                 "security": [
                     {
                         "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/birthdays/parents": {
+            "get": {
+                "tags": [
+                    "Birthday Checks"
+                ],
+                "summary": "Okuldaki velilerin doğum günlerini listeler",
+                "operationId": "e0731cc3682ac6fa3d8e5ab34a60c5b3",
+                "responses": {
+                    "200": {
+                        "description": "Veli doğum günleri listelendi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Veliler başarıyla listelendi."
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Ahmet Yılmaz"
+                                                    },
+                                                    "YAKINLIG": {
+                                                        "type": "string",
+                                                        "example": "Anne"
+                                                    },
+                                                    "veli adı": {
+                                                        "type": "string",
+                                                        "example": "Ayşe Yılmaz"
+                                                    },
+                                                    "birth_date": {
+                                                        "type": "string",
+                                                        "format": "date",
+                                                        "example": "1980-05-12"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Yetkisiz erişim"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/birthdays/students": {
+            "get": {
+                "tags": [
+                    "Birthday Checks"
+                ],
+                "summary": "Öğrencilerin doğum günlerini kontrol eder",
+                "operationId": "18306c038248856852ea4d1f56f2c9ec",
+                "parameters": [
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "description": "Kontrol edilecek tarih",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2025-05-12"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Doğum günü kontrolü",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "is_birthday": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Yetkisiz işlem"
+                    },
+                    "400": {
+                        "description": "Tarih parametresi eksik"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/birthdays/teachers": {
+            "get": {
+                "tags": [
+                    "Birthday Checks"
+                ],
+                "summary": "Öğretmenlerin doğum günlerini listeler",
+                "operationId": "86002f8518e3fb581136255657ff311f",
+                "responses": {
+                    "200": {
+                        "description": "Öğretmenler listelendi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Öğretmenler başarıyla listelendi."
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": {
+                                                "Ali Öğretmen": "1985-04-12",
+                                                "Ayşe Öğretmen": "1990-09-21"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Öğretmen bulunamadı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/messages/{message}/attachments": {
+            "get": {
+                "tags": [
+                    "Chat Attachments"
+                ],
+                "summary": "Get message attachment info",
+                "operationId": "071be8b3384e3cddd113fe2bcc2e6cb5",
+                "parameters": [
+                    {
+                        "name": "attachment",
+                        "in": "path",
+                        "description": "attachment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Attachment details"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Chat Attachments"
+                ],
+                "summary": "Mesaja dosya ekle",
+                "operationId": "3c9735cb99cedafb61821645b87dc053",
+                "parameters": [
+                    {
+                        "name": "message",
+                        "in": "path",
+                        "description": "Message ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreMessageAttachmentRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Dosya yüklendi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/attachments/message/{attachment}/download": {
+            "get": {
+                "tags": [
+                    "Chat Attachments"
+                ],
+                "summary": "Download message attachment file",
+                "operationId": "99c72654097aa1cb392779b972826490",
+                "parameters": [
+                    {
+                        "name": "attachment",
+                        "in": "path",
+                        "description": "attachment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File downloaded"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/attachments/message/{attachment}": {
+            "delete": {
+                "tags": [
+                    "Chat Attachments"
+                ],
+                "summary": "Delete message attachment file",
+                "operationId": "187f2027f9c699d61617de061b27eeac",
+                "parameters": [
+                    {
+                        "name": "attachment",
+                        "in": "path",
+                        "description": "attachment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Attachment deleted"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/attachments/comment/{attachment}": {
+            "get": {
+                "tags": [
+                    "Chat Attachments"
+                ],
+                "summary": "Get comment attachment info",
+                "operationId": "14223ade2af9a937cb8f9f00a7ee9e39",
+                "parameters": [
+                    {
+                        "name": "attachment",
+                        "in": "path",
+                        "description": "attachment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Attachment details"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Chat Attachments"
+                ],
+                "summary": "Delete comment attachment",
+                "operationId": "e25c3ab03bade0668b8576e1fafa1756",
+                "parameters": [
+                    {
+                        "name": "attachment",
+                        "in": "path",
+                        "description": "attachment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Attachment deleted"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/attachments/comment/{attachment}/download": {
+            "get": {
+                "tags": [
+                    "Chat Attachments"
+                ],
+                "summary": "Download comment attachment",
+                "operationId": "c56b2894e4648d70537b0e04f528b019",
+                "parameters": [
+                    {
+                        "name": "attachment",
+                        "in": "path",
+                        "description": "attachment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File downloaded"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/comments/{comment}/attachments": {
+            "post": {
+                "tags": [
+                    "Chat Attachments"
+                ],
+                "summary": "Mesaja dosya ekle",
+                "operationId": "2bf839e3ee4148c2365039e9a148ecf4",
+                "parameters": [
+                    {
+                        "name": "comment",
+                        "in": "path",
+                        "description": "comment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreMessageAttachmentRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Dosya yüklendi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/messages/{message}/comments": {
+            "get": {
+                "tags": [
+                    "Chat Comments"
+                ],
+                "summary": "mesaja ait tüm yorumları gör",
+                "operationId": "d4f301a455a61b5b22231186e15921a9",
+                "parameters": [
+                    {
+                        "name": "message",
+                        "in": "path",
+                        "description": "message ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Comment list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Chat Comments"
+                ],
+                "summary": "Bir Mesaja yorum oluşturma",
+                "operationId": "a9d48e97b1866f343895c59e11552540",
+                "parameters": [
+                    {
+                        "name": "message",
+                        "in": "path",
+                        "description": "message ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateCommentRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Comment created successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/comments/{comment}": {
+            "put": {
+                "tags": [
+                    "Chat Comments"
+                ],
+                "summary": "yorum düzeltme/update",
+                "operationId": "5692c77a2c875c62d08f869e1f7ab7de",
+                "parameters": [
+                    {
+                        "name": "comment",
+                        "in": "path",
+                        "description": "comment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Comment updated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Chat Comments"
+                ],
+                "summary": "Yorumu silme",
+                "operationId": "75aaf3a7546e9a0999c2052bcf36cc52",
+                "parameters": [
+                    {
+                        "name": "comment",
+                        "in": "path",
+                        "description": "comment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Comment deleted"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/groups/global": {
+            "get": {
+                "tags": [
+                    "Chat Groups"
+                ],
+                "summary": "Genel chat grubu",
+                "operationId": "9c424999cbf3ad295f46e64e9e8ae3c9",
+                "responses": {
+                    "200": {
+                        "description": "Genel chat gruplarını listeler."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/chat/groups": {
+            "get": {
+                "tags": [
+                    "Chat Groups"
+                ],
+                "summary": "Okul bazlı genel gruplar",
+                "operationId": "96cb4073b05584b2adc719a277e0180e",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "description": "School ID",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "School chat groups"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/classes/{classModel}/chat/group": {
+            "get": {
+                "tags": [
+                    "Chat Groups"
+                ],
+                "summary": "Sınıf bazlı chat grubu",
+                "operationId": "99a7ae7fcaa8a732d0e743ebe1083ce0",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "description": "School ID",
+                        "required": true
+                    },
+                    {
+                        "name": "classModel",
+                        "in": "path",
+                        "description": "Class ID",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sınıf chat grubu"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Chat Groups"
+                ],
+                "summary": "Sınıf Sohbet Grubu Oluştur",
+                "description": "Belirtilen sınıf için yeni bir sohbet grubu oluşturur. Her sınıf yalnızca bir sohbet grubuna sahip olabilir.",
+                "operationId": "4af2a80dac8992e4c61fdcdcd390fe4d",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "description": "Okul ID",
+                        "required": true
+                    },
+                    {
+                        "name": "classModel",
+                        "in": "path",
+                        "description": "Sınıf ID",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateClassroomGroupRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Sınıf sohbet grubu başarıyla oluşturuldu."
+                    },
+                    "400": {
+                        "description": "Bu sınıf için zaten bir sohbet grubu mevcut."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/groups/{group}": {
+            "get": {
+                "tags": [
+                    "Chat Groups"
+                ],
+                "summary": "sohbet grubu getir.",
+                "operationId": "c91eb3855411289e3ddf8201da68c33e",
+                "parameters": [
+                    {
+                        "name": "group",
+                        "in": "path",
+                        "description": "Group ID",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Group Detayları"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Chat Groups"
+                ],
+                "summary": "Sohbet grubunu güncelle",
+                "operationId": "dbf0ea8048acac306dabc3639d69a108",
+                "parameters": [
+                    {
+                        "name": "group",
+                        "in": "path",
+                        "description": "Group ID",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateGroupRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Grup güncellendi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Chat Groups"
+                ],
+                "summary": "Sohbet grubunu sil",
+                "operationId": "b6e99d03bcbb69d0f491aa49c8f4affe",
+                "parameters": [
+                    {
+                        "name": "group",
+                        "in": "path",
+                        "description": "Group ID",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Grup silindi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/my-groups": {
+            "get": {
+                "tags": [
+                    "Chat Groups"
+                ],
+                "summary": "Kullanıcının üye olduğu grupların ID listesini getir",
+                "operationId": "cdab7faedc2b8e5f42f1d9b876ee26c0",
+                "responses": {
+                    "200": {
+                        "description": "Kullanıcının dahil olduğu grup ID'leri",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "status": true,
+                                    "message": "Kullanıcının dahil olduğu gruplar getirildi.",
+                                    "data": [
+                                        1,
+                                        3,
+                                        5
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/groups/{group}/members": {
+            "get": {
+                "tags": [
+                    "Chat Group Members"
+                ],
+                "summary": "Sınıf sohbet grubu üyelerini göster id bazlı",
+                "operationId": "ed8d3a1b9d1dad41977946053845c4a2",
+                "parameters": [
+                    {
+                        "name": "group",
+                        "in": "path",
+                        "description": "grup ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Grup Üyeleri Listelendi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Chat Group Members"
+                ],
+                "summary": "Add a new member to the classroom group",
+                "operationId": "149c1a51ffb971d5109f5569980459a8",
+                "parameters": [
+                    {
+                        "name": "group",
+                        "in": "path",
+                        "description": "grup ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddGroupMemberRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Member added successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/groups/{group}/members/{member}": {
+            "put": {
+                "tags": [
+                    "Chat Group Members"
+                ],
+                "summary": "Üye Yetki Güncelleme",
+                "operationId": "dfe44f35205acc8fb1a6ba6ebb8926a7",
+                "parameters": [
+                    {
+                        "name": "group",
+                        "in": "path",
+                        "description": "grup ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "member",
+                        "in": "path",
+                        "description": "grup üyesi ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateGroupMemberRoleRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Üye yetkisi güncellendi."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Chat Group Members"
+                ],
+                "summary": "grupda ki bir üyeyi silme işlemi",
+                "operationId": "74629640ac56fead5b0ebebff7048a1d",
+                "parameters": [
+                    {
+                        "name": "group",
+                        "in": "path",
+                        "description": "grup ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "member",
+                        "in": "path",
+                        "description": "grup üyesi ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Üye silindi."
+                    },
+                    "403": {
+                        "description": "Bu işlemi yapmak için yetkiniz yok."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/groups/{group}/last-read": {
+            "post": {
+                "tags": [
+                    "Chat Last Read"
+                ],
+                "summary": "Grup için son okunan mesajı güncelle",
+                "operationId": "1267247d7c6c431948d918021d90ddb8",
+                "parameters": [
+                    {
+                        "name": "group",
+                        "in": "path",
+                        "description": "Grup ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateLastReadMessageRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Son okunan mesaj güncellendi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/groups/{group}/unread-count": {
+            "get": {
+                "tags": [
+                    "Chat Last Read"
+                ],
+                "summary": "Grup için okunmamış mesaj sayısı",
+                "operationId": "fd3cf62c2aff85dd7f0db79f8def7e36",
+                "parameters": [
+                    {
+                        "name": "group",
+                        "in": "path",
+                        "description": "Grup ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Okunmamış mesaj sayısı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/unread-summary": {
+            "get": {
+                "tags": [
+                    "Chat Last Read"
+                ],
+                "summary": "Kullanıcının üye olduğu tüm gruplar için okunmamış mesaj sayılarını getir",
+                "operationId": "e818245b4bd9e61f0bf9ad2ccf7eab0e",
+                "responses": {
+                    "200": {
+                        "description": "Okunmamış mesaj özet listesi",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "status": true,
+                                    "message": "Okunmamış mesaj özeti getirildi.",
+                                    "data": {
+                                        "6": 3,
+                                        "7": 0,
+                                        "10": 12
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/groups/{group}/messages": {
+            "get": {
+                "tags": [
+                    "Chat Messages"
+                ],
+                "summary": "Bir grupda ki mesajları listeleme",
+                "operationId": "2f9ac9eafa06f3dccd492d6d53c73cfe",
+                "parameters": [
+                    {
+                        "name": "group",
+                        "in": "path",
+                        "description": "grup ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of messages"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Chat Messages"
+                ],
+                "summary": "Gruba mesaj gönderme",
+                "operationId": "0538d06bd12f2c4340b5c65d30632e6b",
+                "parameters": [
+                    {
+                        "name": "group",
+                        "in": "path",
+                        "description": "grup ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateMessageRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Message created"
+                    },
+                    "422": {
+                        "description": "Validation error example",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "The given data was invalid.",
+                                    "errors": {
+                                        "message_type": [
+                                            "Message type is required."
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/messages/{message}": {
+            "put": {
+                "tags": [
+                    "Chat Messages"
+                ],
+                "summary": "Bir Mesajı Güncelleme",
+                "operationId": "ea1bd82ea162a3dd1cda333c47333eac",
+                "parameters": [
+                    {
+                        "name": "message",
+                        "in": "path",
+                        "description": "message ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateMessageRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Message updated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Chat Messages"
+                ],
+                "summary": "Mesaj silme",
+                "operationId": "08cb8113b73860532a004cd039cc75c4",
+                "parameters": [
+                    {
+                        "name": "message",
+                        "in": "path",
+                        "description": "message ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message deleted"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/messages/{message}/pin": {
+            "post": {
+                "tags": [
+                    "Chat Messages"
+                ],
+                "summary": "Pin a message inside the group",
+                "operationId": "d33dc2f5c5e5eadecd0a51f3eb66e777",
+                "parameters": [
+                    {
+                        "name": "message",
+                        "in": "path",
+                        "description": "message ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message pinned"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Chat Messages"
+                ],
+                "summary": "Unpin message from group",
+                "operationId": "adf2145785ec440f969339fdc7111512",
+                "parameters": [
+                    {
+                        "name": "message",
+                        "in": "path",
+                        "description": "message ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pinned message removed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/notifications": {
+            "get": {
+                "tags": [
+                    "Chat Notifications"
+                ],
+                "summary": "Kullanıcının bildirimlerini getir",
+                "operationId": "9ec49a9bc474afaa3df57e1780eee962",
+                "responses": {
+                    "200": {
+                        "description": "Bildirim listesi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/notifications/unread-count": {
+            "get": {
+                "tags": [
+                    "Chat Notifications"
+                ],
+                "summary": "Okunmamış bildirim sayısı",
+                "operationId": "9628c6e6c256bd9e4c40bca692f697d0",
+                "responses": {
+                    "200": {
+                        "description": "Okunmamış bildirim sayısı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/notifications/{notification}/read": {
+            "post": {
+                "tags": [
+                    "Chat Notifications"
+                ],
+                "summary": "Bildirim okundu olarak işaretle",
+                "operationId": "ba6804e64575b0bb5569a07e4579f513",
+                "parameters": [
+                    {
+                        "name": "notification",
+                        "in": "path",
+                        "description": "Bildirim ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Bildirim okundu"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/notifications/read-all": {
+            "post": {
+                "tags": [
+                    "Chat Notifications"
+                ],
+                "summary": "Tüm bildirimleri okundu olarak işaretle",
+                "operationId": "3b80eb9ae03f95ec413a840b1ac87933",
+                "responses": {
+                    "200": {
+                        "description": "Tüm bildirimler okundu olarak işaretlendi",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "status": true,
+                                    "message": "Tüm bildirimler okundu olarak işaretlendi.",
+                                    "data": {
+                                        "updated": 12
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/notifications/{notification}": {
+            "delete": {
+                "tags": [
+                    "Chat Notifications"
+                ],
+                "summary": "Bir bildirimi sil",
+                "operationId": "7ff248367d108f81cf5bcf14a29da919",
+                "parameters": [
+                    {
+                        "name": "notification",
+                        "in": "path",
+                        "description": "Bildirim ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Bildirim silindi",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "status": true,
+                                    "message": "Bildirim silindi."
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/messages/{message}/reactions": {
+            "get": {
+                "tags": [
+                    "Chat Reactions"
+                ],
+                "summary": "List all reactions for a message",
+                "operationId": "eb7421edb3e9611e814e96fa7891d7b2",
+                "parameters": [
+                    {
+                        "name": "message",
+                        "in": "path",
+                        "description": "message ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Reaction list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Chat Reactions"
+                ],
+                "summary": "Add reaction to a message",
+                "operationId": "4d03055e47d0efdb476f034cc9fbe3f5",
+                "parameters": [
+                    {
+                        "name": "message",
+                        "in": "path",
+                        "description": "message ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReactionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Reaction added"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/messages/{message}/reactions/{reaction}": {
+            "delete": {
+                "tags": [
+                    "Chat Reactions"
+                ],
+                "summary": "Remove a reaction from a message",
+                "operationId": "e6dae5666e2f835ac418d942f847ba19",
+                "parameters": [
+                    {
+                        "name": "message",
+                        "in": "path",
+                        "description": "message ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Reaction removed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/comments/{comment}/reactions": {
+            "get": {
+                "tags": [
+                    "Chat Reactions"
+                ],
+                "summary": "List all reactions for a comment",
+                "operationId": "cd57b27689fd9e96a53167f842379f0a",
+                "parameters": [
+                    {
+                        "name": "comment",
+                        "in": "path",
+                        "description": "comment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Reaction list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Chat Reactions"
+                ],
+                "summary": "Add reaction to a comment",
+                "operationId": "076002e8d2a1e7c5190e31e3b25d15e7",
+                "parameters": [
+                    {
+                        "name": "comment",
+                        "in": "path",
+                        "description": "comment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReactionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Reaction added"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/chat/comments/{comment}/reactions/{reaction}": {
+            "delete": {
+                "tags": [
+                    "Chat Reactions"
+                ],
+                "summary": "Remove a reaction from a comment",
+                "operationId": "c10fdde6e4cd46489f27fe614e343633",
+                "parameters": [
+                    {
+                        "name": "comment",
+                        "in": "path",
+                        "description": "comment ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Reaction removed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/media": {
+            "post": {
+                "tags": [
+                    "Media Upload"
+                ],
+                "summary": "Yeni medya dosyası yükle",
+                "operationId": "5e38417516c2aef632c2eed62621b1b2",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "file",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "file_name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Medya başarıyla yüklendi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/media/{media}": {
+            "get": {
+                "tags": [
+                    "Media Upload"
+                ],
+                "summary": "ID ile dosya bilgisi getir",
+                "operationId": "9798938971c528b29d264a5c4569207e",
+                "parameters": [
+                    {
+                        "name": "media",
+                        "in": "path",
+                        "description": "Media ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dosya bilgisi getirildi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Media Upload"
+                ],
+                "summary": "Medya dosyası adını güncelle",
+                "operationId": "5fa6be203cb8a1ad00136eb874219da3",
+                "parameters": [
+                    {
+                        "name": "media",
+                        "in": "path",
+                        "description": "Media ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateMediaFileRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Medya güncellendi"
+                    },
+                    "403": {
+                        "description": "Yetkiniz yok"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Media Upload"
+                ],
+                "summary": "Dosyayı sil",
+                "operationId": "0b464c286ea82bf15790ffcaab114767",
+                "parameters": [
+                    {
+                        "name": "media",
+                        "in": "path",
+                        "description": "Media ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dosya silindi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/manager/self/permissions/assignable": {
+            "get": {
+                "tags": [
+                    "Manager - Self Permissions"
+                ],
+                "summary": "Manager'ın kendisine ekleyebileceği permission listesini döner",
+                "operationId": "15f16868b8ade17929e4c7229d19763b",
+                "responses": {
+                    "200": {
+                        "description": "Assignable permission listesi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Atanabilir yetkiler listelendi."
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "teacher.view.detail"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Yetkisiz erişim"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/manager/self/permissions/assign": {
+            "post": {
+                "tags": [
+                    "Manager - Self Permissions"
+                ],
+                "summary": "Manager kendisine permission ekler",
+                "operationId": "8dab3bfb906226a1c35d41838703f146",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ManagerSelfPermissionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permission eklendi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Yetkiler başarıyla eklendi."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Yetkisiz işlem"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/manager/self/permissions/revoke": {
+            "post": {
+                "tags": [
+                    "Manager - Self Permissions"
+                ],
+                "summary": "Manager kendisinden permission kaldırır",
+                "operationId": "296313c1e7ca9d57623b14a9ac02482d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ManagerSelfPermissionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permission kaldırıldı",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Yetkiler başarıyla kaldırıldı."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Yetkisiz işlem"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/students/assignable-permissions": {
+            "get": {
+                "tags": [
+                    "Manager & Teacher - Student Permission Management"
+                ],
+                "summary": "Manager veya Teacher'ın öğrenciye atayabileceği permission listesini döner",
+                "operationId": "c7fad0a844f582b8387916bad5199e4f",
+                "responses": {
+                    "200": {
+                        "description": "Assignable permission listesi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/students/{student}/permissions": {
+            "get": {
+                "tags": [
+                    "Manager & Teacher - Student Permission Management"
+                ],
+                "summary": "Öğrencinin sahip olduğu tüm permission'ları döner",
+                "operationId": "3edce27b11701fdc0a2c05a8e8ab717a",
+                "responses": {
+                    "200": {
+                        "description": "Student permission listesi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Manager & Teacher - Student Permission Management"
+                ],
+                "summary": "Manager veya Teacher tarafından öğrenciye permission atanır",
+                "operationId": "a398f61a43213f1f422ef4094dbadb9b",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "student",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "permissions"
+                                ],
+                                "properties": {
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "attendance.view"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permission atandı"
+                    },
+                    "403": {
+                        "description": "Yetkisiz işlem"
+                    },
+                    "422": {
+                        "description": "Geçersiz permission"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Manager & Teacher - Student Permission Management"
+                ],
+                "summary": "Manager veya Teacher tarafından öğrenciden permission kaldırılır",
+                "operationId": "af5e420ef6e20f945f286eccd1bf1a41",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "student",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "permissions"
+                                ],
+                                "properties": {
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "attendance.view"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permission kaldırıldı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/teachers/assignable-permissions": {
+            "get": {
+                "tags": [
+                    "Manager - Teacher Permission Management"
+                ],
+                "summary": "Manager'ın öğretmene atayabileceği permission listesini döner",
+                "operationId": "908df5167755864e755fe1bb8e1a21e7",
+                "responses": {
+                    "200": {
+                        "description": "Assignable permission listesi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/teachers/{teacher}/permissions": {
+            "get": {
+                "tags": [
+                    "Manager - Teacher Permission Management"
+                ],
+                "summary": "Öğretmenin sahip olduğu tüm permission'ları döner",
+                "operationId": "8f87d3886de52f8522fdc66b6490ec9e",
+                "responses": {
+                    "200": {
+                        "description": "Teacher permission listesi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Manager - Teacher Permission Management"
+                ],
+                "summary": "Manager tarafından öğretmene permission atanır",
+                "operationId": "8a6d8e8f68c1fe2544d15888717115d7",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "teacher",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "permissions"
+                                ],
+                                "properties": {
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "class.create"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permission atandı"
+                    },
+                    "403": {
+                        "description": "Yetkisiz işlem"
+                    },
+                    "422": {
+                        "description": "Geçersiz permission"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Manager - Teacher Permission Management"
+                ],
+                "summary": "Manager tarafından öğretmenden permission kaldırılır",
+                "operationId": "92cf0597f8d4a463076061249174079a",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "name": "teacher",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "permissions"
+                                ],
+                                "properties": {
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "class.create"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permission kaldırıldı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/users/assignable-permissions": {
+            "get": {
+                "tags": [
+                    "Admin - User Permission Management"
+                ],
+                "summary": "Admin'in ilgili kullanıcıya atayabileceği permission listesini döner",
+                "operationId": "4fedad9c30924ca54636b7196f853be5",
+                "responses": {
+                    "200": {
+                        "description": "Assignable permission listesi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/users/{user}/permissions": {
+            "get": {
+                "tags": [
+                    "Admin - User Permission Management"
+                ],
+                "summary": "Kullanıcının sahip olduğu tüm permissionları döner (default + assigned)",
+                "operationId": "534f60977bdafa73d507b4aa0132669e",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User permission listesi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin - User Permission Management"
+                ],
+                "summary": "Admin tarafından kullanıcıya permission atanır",
+                "operationId": "eddef34cca144eb8b156388c0848dbe4",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "permissions"
+                                ],
+                                "properties": {
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "school.update"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permission eklendi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin - User Permission Management"
+                ],
+                "summary": "Admin tarafından kullanıcıdan permission kaldırılır",
+                "operationId": "f7998a825276ab152c76fe9d7c327c96",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "permissions"
+                                ],
+                                "properties": {
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "school.update"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permission kaldırıldı"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -2654,7 +4730,7 @@
         "/api/school/info": {
             "get": {
                 "tags": [
-                    "Schools"
+                    "Genel - Schools"
                 ],
                 "summary": "Kullanıcının bağlı olduğu okul bilgisini getirir",
                 "description": "Manager, teacher veya student rollü kullanıcının okul bilgisini döner.",
@@ -2674,32 +4750,10 @@
                 ]
             }
         },
-        "/api/getschool": {
-            "get": {
-                "tags": [
-                    "Schools"
-                ],
-                "summary": "Okul bilgisi (aktif oturumdan alınır)",
-                "operationId": "5c8c1aafcdb1fa5fdf3e69c7bf70e0a0",
-                "responses": {
-                    "200": {
-                        "description": "Okul bilgisi başarıyla getirildi"
-                    },
-                    "404": {
-                        "description": "Okul bulunamadı"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/api/admin/school/createschool": {
             "post": {
                 "tags": [
-                    "Admin - Schools"
+                    "Genel - Schools"
                 ],
                 "summary": "Yeni okul oluştur (admin rolü)",
                 "description": "Admin kullanıcılar için yeni okul oluşturma işlemi.",
@@ -2765,7 +4819,7 @@
         "/api/admin/school/update/{school}": {
             "put": {
                 "tags": [
-                    "Admin - Schools"
+                    "Genel - Schools"
                 ],
                 "summary": "Okul güncelle (Admin)",
                 "description": "Admin kullanıcı okul bilgilerini günceller.",
@@ -2812,7 +4866,7 @@
         "/api/admin/school/getschools": {
             "get": {
                 "tags": [
-                    "Admin - Schools"
+                    "Genel - Schools"
                 ],
                 "summary": "Tüm okulları listele (Admin)",
                 "description": "Sadece school.view iznine sahip adminler listeyi görebilir.",
@@ -2835,7 +4889,7 @@
         "/api/admin/school/getschoolbyid/{id}": {
             "get": {
                 "tags": [
-                    "Admin - Schools"
+                    "Genel - Schools"
                 ],
                 "summary": "Tek okul bilgisi getir (Admin)",
                 "operationId": "0d80c9bb60cd7c77a96ce63fd9bf35c0",
@@ -2870,7 +4924,7 @@
         "/api/admin/schools/{id}": {
             "delete": {
                 "tags": [
-                    "Admin - Schools"
+                    "Genel - Schools"
                 ],
                 "summary": "Okul sil (Admin)",
                 "description": "Sadece school.delete iznine sahip adminler okul silebilir.",
@@ -2891,6 +4945,112 @@
                     },
                     "403": {
                         "description": "Yetkiniz yok"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/schools/{school}/pre-registrations": {
+            "get": {
+                "tags": [
+                    "Öğrenci Ön Kayıt"
+                ],
+                "summary": "Ön kayıtları listeler",
+                "operationId": "448d14355b5dff7673aef1b16f9a5e41",
+                "parameters": [
+                    {
+                        "name": "school",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste getirildi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Öğrenci Ön Kayıt"
+                ],
+                "summary": "Yeni öğrenci ön kayıt oluşturur",
+                "operationId": "66bfb70fbdf3c13779494573f06b17f5",
+                "requestBody": {
+                    "$ref": "#/components/schemas/StorePreRegistrationRequest"
+                },
+                "responses": {
+                    "201": {
+                        "description": "Ön kayıt oluşturuldu"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/pre-registrations/{preRegistration}/submit": {
+            "post": {
+                "tags": [
+                    "Öğrenci Ön Kayıt"
+                ],
+                "summary": "Ön kaydı incelemeye gönderir",
+                "operationId": "0baaddbc465f56109a97ce39b77c3f0c",
+                "responses": {
+                    "200": {
+                        "description": "Gönderildi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/pre-registrations/{preRegistration}/approve": {
+            "post": {
+                "tags": [
+                    "Öğrenci Ön Kayıt"
+                ],
+                "summary": "Ön kaydı onaylayarak öğrenciye dönüştürür",
+                "operationId": "242815e8cf8ecf55161b2fc42f2343e9",
+                "requestBody": {
+                    "$ref": "#/components/schemas/ApprovePreRegistrationRequest"
+                },
+                "responses": {
+                    "200": {
+                        "description": "Öğrenci oluşturuldu"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/pre-registrations/{preRegistration}/cancel": {
+            "post": {
+                "tags": [
+                    "Öğrenci Ön Kayıt"
+                ],
+                "summary": "Ön kaydı iptal eder",
+                "operationId": "e272e2f5e8c0a3f9c20c52d36c45e90f",
+                "responses": {
+                    "200": {
+                        "description": "İptal edildi"
                     }
                 },
                 "security": [
@@ -3207,26 +5367,6 @@
             }
         },
         "/api/manager/me": {
-            "get": {
-                "tags": [
-                    "ManagerUser"
-                ],
-                "summary": "(Manager) Kendi user bilgilerini getir",
-                "operationId": "46240490bca45afa48605c788d74625d",
-                "responses": {
-                    "200": {
-                        "description": "Bilgiler başarıyla alındı"
-                    },
-                    "404": {
-                        "description": "Kullanıcı bulunamadı"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
             "put": {
                 "tags": [
                     "ManagerUser"
@@ -3374,26 +5514,6 @@
             }
         },
         "/api/manager/profile/me": {
-            "get": {
-                "tags": [
-                    "ManagerProfile"
-                ],
-                "summary": "(Manager) Kendi profilini getir",
-                "operationId": "03bd9c05e7adc499dcd222a428eb696e",
-                "responses": {
-                    "200": {
-                        "description": "Profil bilgileri"
-                    },
-                    "404": {
-                        "description": "Profil bulunamadı"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
             "put": {
                 "tags": [
                     "ManagerProfile"
@@ -3461,36 +5581,6 @@
             }
         },
         "/api/admin/manager/{user_id}/profile": {
-            "get": {
-                "tags": [
-                    "ManagerProfile"
-                ],
-                "summary": "(Admin) Manager profilini user_id ile getir",
-                "operationId": "25d49d70731c85cecee4fef38fc00590",
-                "parameters": [
-                    {
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Profil bilgileri"
-                    },
-                    "404": {
-                        "description": "Profil bulunamadı"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
             "put": {
                 "tags": [
                     "ManagerProfile"
@@ -4668,67 +6758,21 @@
                 ]
             }
         },
-        "/api/schools/{school}/teachers/{teacher}/permissions": {
-            "get": {
-                "tags": [
-                    "Manager & Teacher - Teacher İşlemleri"
-                ],
-                "summary": "Öğretmenin tüm izinlerini listeler",
-                "operationId": "054b1eef7ce0281041a607d4fbf392fe",
-                "parameters": [
-                    {
-                        "name": "school",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 1
-                        }
-                    },
-                    {
-                        "name": "teacher",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 10
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Permissions list"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
+        "/api/teacher/{user_id}/update": {
             "put": {
                 "tags": [
-                    "Manager & Teacher - Teacher İşlemleri"
+                    "TeacherProfileSettings"
                 ],
-                "summary": "Öğretmenin izinlerini günceller",
-                "operationId": "d9cb4ffddb6d919a2a5349b32424abb5",
+                "summary": "Öğretmen profilini güncelle",
+                "operationId": "49966b63ddc76e98adb7a6e9f5b754cc",
                 "parameters": [
                     {
-                        "name": "school",
+                        "name": "user_id",
                         "in": "path",
+                        "description": "Güncellenecek öğretmenin kullanıcı ID'si",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "example": 1
-                        }
-                    },
-                    {
-                        "name": "teacher",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 10
+                            "type": "integer"
                         }
                     }
                 ],
@@ -4738,12 +6782,13 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "permissions": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string",
-                                            "example": "attendance.edit"
-                                        }
+                                    "cv_path": {
+                                        "description": "Özgeçmiş yolu",
+                                        "type": "string"
+                                    },
+                                    "certification_level": {
+                                        "description": "Sertifikasyon seviyesi",
+                                        "type": "string"
                                     }
                                 },
                                 "type": "object"
@@ -4753,98 +6798,20 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Permissions updated"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Manager & Teacher - Teacher İşlemleri"
-                ],
-                "summary": "Öğretmenden belirli izinleri kaldırır",
-                "operationId": "5d46f0d9d5e4c512771f8eb54da1b038",
-                "parameters": [
-                    {
-                        "name": "school",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 1
-                        }
-                    },
-                    {
-                        "name": "teacher",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 10
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "permissions": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string",
-                                            "example": "student.view"
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Permissions removed successfully"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/manager/teachers/available-permissions": {
-            "get": {
-                "tags": [
-                    "Manager & Teacher - Teacher İşlemleri"
-                ],
-                "summary": "Öğretmenlere atanabilir tüm izinleri döner",
-                "operationId": "110bb951b716abdd66fa6921baf9c976",
-                "responses": {
-                    "200": {
-                        "description": "Tüm teacher permission listesi",
+                        "description": "Profil başarıyla güncellendi",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "permissions": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string",
-                                                "example": "classmodel.view"
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
+                                    "$ref": "#/components/schemas/TeacherProfile"
                                 }
                             }
                         }
+                    },
+                    "403": {
+                        "description": "Yetkisiz erişim"
+                    },
+                    "422": {
+                        "description": "Doğrulama hatası"
                     }
                 },
                 "security": [
@@ -6923,6 +8890,156 @@
                 },
                 "type": "object"
             },
+            "AddGroupMemberRequest": {
+                "title": "Add Group Member Request",
+                "description": "Add a new member to a classroom chat group",
+                "properties": {
+                    "user_id": {
+                        "type": "integer",
+                        "example": 150
+                    },
+                    "role_in_group": {
+                        "type": "string",
+                        "example": "student"
+                    }
+                },
+                "type": "object"
+            },
+            "CreateClassroomGroupRequest": {
+                "title": "Sınıf Sohbet Grubu Oluşturma İsteği",
+                "description": "Sınıfa ait sohbet grubunun isteğe bağlı olarak özelleştirilebilmesi için kullanılan istek yapısı.",
+                "properties": {
+                    "name": {
+                        "description": "Sohbet grubu için isteğe bağlı özel bir isim. Gönderilmezse sınıf adından otomatik üretilir.",
+                        "type": "string",
+                        "example": "5A Sınıfı Sohbet Grubu",
+                        "nullable": true
+                    },
+                    "description": {
+                        "description": "Grup hakkında isteğe bağlı açıklama alanı.",
+                        "type": "string",
+                        "example": "5A sınıfı ders içi duyurular ve öğretmen paylaşımları için oluşturulan grup.",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "CreateCommentRequest": {
+                "title": "Create Comment Request",
+                "description": "Body required for creating a comment under a message",
+                "properties": {
+                    "content": {
+                        "type": "string",
+                        "example": "Teşekkür ederiz öğretmenim!"
+                    }
+                },
+                "type": "object"
+            },
+            "CreateMessageRequest": {
+                "title": "Create Message Request",
+                "description": "Body required to send a message inside a group",
+                "properties": {
+                    "content": {
+                        "type": "string",
+                        "example": "Bugünkü ödeviniz sayfa 23.",
+                        "nullable": true
+                    },
+                    "message_type": {
+                        "type": "string",
+                        "example": "normal"
+                    }
+                },
+                "type": "object"
+            },
+            "ReactionRequest": {
+                "title": "Reaction Request",
+                "description": "Schema for adding a reaction to a message or comment",
+                "properties": {
+                    "reaction": {
+                        "description": "Reaction type such as like, heart, wow, smile, etc.",
+                        "type": "string",
+                        "example": "like"
+                    }
+                },
+                "type": "object"
+            },
+            "StoreMessageAttachmentRequest": {
+                "required": [
+                    "file"
+                ],
+                "properties": {
+                    "file": {
+                        "description": "Mesaja eklenecek dosya",
+                        "type": "string",
+                        "format": "binary"
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateCommentRequest": {
+                "title": "Update Comment Request",
+                "description": "Body required for updating a comment",
+                "properties": {
+                    "content": {
+                        "type": "string",
+                        "example": "Hocam içerik güncellendi."
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateGroupMemberRoleRequest": {
+                "title": "Update Group Member Role Request",
+                "description": "Update role of an existing group member",
+                "properties": {
+                    "role_in_group": {
+                        "type": "string",
+                        "example": "student"
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateGroupRequest": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Yeni Grup Adı"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Grup açıklaması",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateLastReadMessageRequest": {
+                "title": "Update Last Read Message Request",
+                "description": "Request body for updating last read message in a group",
+                "properties": {
+                    "last_read_message_id": {
+                        "description": "Okundu olarak işaretlenecek son mesaj ID (opsiyonel)",
+                        "type": "integer",
+                        "example": 120,
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateMessageRequest": {
+                "title": "Update Message Request",
+                "description": "Body required to update a message",
+                "properties": {
+                    "content": {
+                        "type": "string",
+                        "example": "Güncellenmiş mesaj içeriği."
+                    },
+                    "message_type": {
+                        "type": "string",
+                        "example": "announcement"
+                    }
+                },
+                "type": "object"
+            },
             "ClassScheduleStoreRequest": {
                 "required": [
                     "class_model_id",
@@ -7323,6 +9440,37 @@
                 },
                 "type": "object"
             },
+            "StoreMediaFileRequest": {
+                "required": [
+                    "file",
+                    "type"
+                ],
+                "properties": {
+                    "file": {
+                        "description": "Yüklenecek dosya",
+                        "type": "string",
+                        "format": "binary"
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "avatar"
+                    },
+                    "file_name": {
+                        "type": "string",
+                        "example": "profil_resmi"
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateMediaFileRequest": {
+                "properties": {
+                    "file_name": {
+                        "type": "string",
+                        "example": "yeni_dosya_adi"
+                    }
+                },
+                "type": "object"
+            },
             "PackageStoreSubscriptionRequest": {
                 "title": "Yeni Abonelik Request",
                 "required": [
@@ -7561,6 +9709,25 @@
                         "description": "Deneme süresi (sadece is_trial true ise geçerli)",
                         "type": "integer",
                         "example": 7
+                    }
+                },
+                "type": "object"
+            },
+            "ManagerSelfPermissionRequest": {
+                "required": [
+                    "permissions"
+                ],
+                "properties": {
+                    "permissions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "teacher.view.detail"
+                        },
+                        "example": [
+                            "teacher.view.detail",
+                            "studentpreregistration.approve"
+                        ]
                     }
                 },
                 "type": "object"
@@ -8077,6 +10244,71 @@
                 },
                 "type": "object"
             },
+            "ApprovePreRegistrationRequest": {
+                "required": [
+                    "classroom_id"
+                ],
+                "properties": {
+                    "classroom_id": {
+                        "type": "integer",
+                        "example": 5
+                    }
+                },
+                "type": "object"
+            },
+            "StorePreRegistrationRequest": {
+                "required": [
+                    "student_name",
+                    "student_surname"
+                ],
+                "properties": {
+                    "student_name": {
+                        "type": "string",
+                        "example": "Ahmet"
+                    },
+                    "student_surname": {
+                        "type": "string",
+                        "example": "Yılmaz"
+                    },
+                    "student_tc": {
+                        "type": "string",
+                        "example": "12345678901"
+                    },
+                    "birth_date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "gender": {
+                        "type": "string",
+                        "example": "erkek"
+                    },
+                    "student_phone": {
+                        "type": "string"
+                    },
+                    "student_email": {
+                        "type": "string"
+                    },
+                    "address": {
+                        "type": "string"
+                    },
+                    "mother": {
+                        "type": "object"
+                    },
+                    "father": {
+                        "type": "object"
+                    },
+                    "parent_status": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "notes": {
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
             "CompleteStudentProfileRequest": {
                 "required": [
                     "school_id",
@@ -8563,9 +10795,176 @@
                 },
                 "type": "object"
             },
+            "Comment": {
+                "title": "Comment Schema",
+                "description": "Comments under classroom posts",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "message_id": {
+                        "type": "integer",
+                        "example": 33
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 120
+                    },
+                    "content": {
+                        "type": "string",
+                        "example": "Teşekkür ederiz öğretmenim!"
+                    },
+                    "edited_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "CommentAttachment": {
+                "title": "CommentAttachment Schema",
+                "description": "Files attached to comments",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "comment_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "file_path": {
+                        "type": "string",
+                        "example": "/uploads/comments/a.png"
+                    }
+                },
+                "type": "object"
+            },
+            "CommentReaction": {
+                "title": "CommentReaction Schema",
+                "description": "Reactions given by users to comment messages",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "comment_id": {
+                        "type": "integer",
+                        "example": 33
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 45
+                    },
+                    "reaction": {
+                        "type": "string",
+                        "example": "heart"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "Grade": {
                 "title": "Grade Model",
                 "description": "Sınıf seviyesini temsil eder",
+                "type": "object"
+            },
+            "Group": {
+                "title": "Group Schema",
+                "description": "Chat Group structure",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "classroom"
+                    },
+                    "school_id": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "class_model_id": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "5A Sınıfı"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "5A sınıf duyuruları"
+                    },
+                    "pinned_message_id": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "visibility": {
+                        "type": "string",
+                        "example": "restricted"
+                    },
+                    "created_by": {
+                        "type": "integer",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "GroupMember": {
+                "title": "GroupMember Schema",
+                "description": "Members of classroom groups",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "group_id": {
+                        "type": "integer",
+                        "example": 22
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 150
+                    },
+                    "role_in_group": {
+                        "type": "string",
+                        "example": "student"
+                    }
+                },
+                "type": "object"
+            },
+            "LastReadMessage": {
+                "title": "LastReadMessage Schema",
+                "description": "Tracks last message a user read in each group",
+                "properties": {
+                    "user_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "group_id": {
+                        "type": "integer",
+                        "example": 4
+                    },
+                    "last_read_message_id": {
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "last_read_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
                 "type": "object"
             },
             "LessonSession": {
@@ -8694,6 +11093,153 @@
                                 "$ref": "#/components/schemas/School"
                             }
                         ],
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "MediaFile": {
+                "title": "MediaFile",
+                "description": "Genel dosya yükleme kaydı",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 12
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "image"
+                    },
+                    "file_name": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "file_path": {
+                        "type": "string"
+                    },
+                    "mime_type": {
+                        "type": "string"
+                    },
+                    "size": {
+                        "type": "integer"
+                    },
+                    "url": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "Message": {
+                "title": "Message Schema",
+                "description": "Chat Message model",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "group_id": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 42
+                    },
+                    "content": {
+                        "type": "string",
+                        "example": "Merhaba sınıf!"
+                    },
+                    "message_type": {
+                        "type": "string",
+                        "example": "announcement"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active"
+                    },
+                    "edited_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "MessageAttachment": {
+                "title": "MessageAttachment Schema",
+                "description": "Files attached to messages",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "message_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "file_path": {
+                        "type": "string",
+                        "example": "/uploads/messages/abc.pdf"
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "pdf"
+                    }
+                },
+                "type": "object"
+            },
+            "MessageReaction": {
+                "title": "MessageReaction Schema",
+                "description": "Reactions given by users to messages",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "message_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 45
+                    },
+                    "reaction": {
+                        "type": "string",
+                        "example": "like"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Notification": {
+                "title": "Notification Schema",
+                "description": "User notifications",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 33
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 150
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "new_message"
+                    },
+                    "data": {
+                        "type": "object"
+                    },
+                    "read_at": {
+                        "type": "string",
                         "nullable": true
                     }
                 },
@@ -9671,10 +12217,6 @@
     },
     "tags": [
         {
-            "name": "Admin - Teacher İşlemleri",
-            "description": "Admin tarafından öğretmen yönetimi işlemleri"
-        },
-        {
             "name": "Admin Branches",
             "description": "Branch (branş) CRUD operations"
         },
@@ -9695,12 +12237,68 @@
             "description": "Kullanıcı kimlik doğrulama işlemleri"
         },
         {
+            "name": "Birthday Checks",
+            "description": "Öğrenci, veli ve öğretmen doğum günü kontrolleri"
+        },
+        {
+            "name": "Chat Attachments",
+            "description": "File management for message and comment attachments"
+        },
+        {
+            "name": "Chat Comments",
+            "description": "Mesajlara yazılan yorumların kontrolü"
+        },
+        {
+            "name": "Chat Groups",
+            "description": "Operations about chat groups (global, school, classroom)"
+        },
+        {
+            "name": "Chat Group Members",
+            "description": "Sınıf sohbet grubu üyelerinin yönetimi"
+        },
+        {
+            "name": "Chat Last Read",
+            "description": "Chat okundu/okunmadı işlemleri"
+        },
+        {
+            "name": "Chat Messages",
+            "description": "Gruplardaki mesajların yönetim endpointleri"
+        },
+        {
+            "name": "Chat Notifications",
+            "description": "Chat bildirim yönetimi"
+        },
+        {
+            "name": "Chat Reactions",
+            "description": "Manage reactions for messages and comments"
+        },
+        {
+            "name": "Manager - Self Permissions",
+            "description": "Manager'ın sadece kendisine permission ekleyip kaldırması"
+        },
+        {
+            "name": "Manager & Teacher - Student Permission Management",
+            "description": "Manager ve Teacher tarafından öğrencilerin permission yönetimi"
+        },
+        {
+            "name": "Manager - Teacher Permission Management",
+            "description": "Manager tarafından öğretmenlerin permission yönetimi"
+        },
+        {
+            "name": "Admin - User Permission Management",
+            "description": "Admin tarafından kullanıcıların permission yönetimi"
+        },
+        {
             "name": "Manager & Teacher ClassModel İşlemleri",
             "description": "Okul sınıf yönetimi"
         },
         {
-            "name": "Schools",
+            "name": "Genel - Schools",
             "description": "Okul yönetimi işlemleri (Manager, Teacher, Student, Admin)"
+        },
+        {
+            "name": "Öğrenci Ön Kayıt",
+            "description": "Öğrenci ön kayıt işlemleri"
         },
         {
             "name": "TeacherSubjects",
@@ -9791,8 +12389,8 @@
             "description": "Admin: Subscriptions"
         },
         {
-            "name": "Admin - Schools",
-            "description": "Admin - Schools"
+            "name": "Media Upload",
+            "description": "Media Upload"
         },
         {
             "name": "Müfredat Yönetimi",

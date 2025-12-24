@@ -14,7 +14,45 @@ class RolePermissionSeeder extends Seeder
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         // Permissions
-        $permissions = [
+        $permissionss = [
+
+            // BRANCH
+            'branch.create',
+            'branch.update',
+            'branch.delete',
+            'branch.view',
+            'branch.view.list',
+
+            // GRADE
+            'grade.create',
+            'grade.update',
+            'grade.delete',
+            'grade.view',
+            'grade.view.list',
+
+            //PACKAGE GRADE RULE
+            'packagegrade.create',
+            'packagegrade.update',
+            'packagegrade.delete',
+            'packagegrade.view',
+            'packagegrade.view.list',
+
+            // SUBJECT
+            'subject.create',
+            'subject.update',
+            'subject.delete',
+            'subject.view',
+            'subject.view.list',
+
+            //MANAGER
+            'manager.create',
+            'manager.update',
+            'manager.delete',
+            'manager.view',
+            'manager.view.list',
+            'manager.view.detail',
+
+
 
             // USER
             'user.create',
@@ -23,11 +61,12 @@ class RolePermissionSeeder extends Seeder
             'user.view',
             'user.view.list',
             // SCHOOL
-            'school.create',
-            'school.update',
-            'school.delete',
-            'school.view',
-            'school.view.list',
+            'school.create',    //admin için
+            'school.update', //admin ve managerlar için
+            'school.delete', //admin için
+            'school.view', //tüm roller için
+            'school.view.detail', //manager ve adminler için
+            'school.view.list', //admin için
 
             // TEACHER SUBJECT
             'teachersubject.create',
@@ -54,8 +93,9 @@ class RolePermissionSeeder extends Seeder
             'teacher.create',
             'teacher.update',
             'teacher.delete',
-            'teacher.view',
-            'teacher.view.list',
+            'teacher.view', //herkes için
+            'teacher.view.list',    //admin ve managerlar için
+            'teacher.view.detail', //admin ve managerlar için
 
             // WORKER
             'worker.create',
@@ -86,17 +126,16 @@ class RolePermissionSeeder extends Seeder
             'classschedule.delete',
             'classschedule.view',
             'classschedule.view.list',
+            'studentlesson.view.list',
+            'teacherlesson.view.list',
+            // PERMISSIONS
 
-            'grade.create',
-            'grade.update',
-            'grade.delete',
-            'grade.view',
-            'grade.view.list',
 
             'teacher.permissions.update',
             'teacher.permissions.view',
             'teacher.available.permissions.view',
             'teacher.reset.password',
+            'teacher.permissions.remove',
 
             'classroom.create',
             'classroom.update',
@@ -128,8 +167,20 @@ class RolePermissionSeeder extends Seeder
             'schoolweek.delete',
             'schoolweek.view',
             'schoolweek.view.list',
+
+            //birthday
+            'parentbirthdays.view.detail',
+            'teacherbirthdays.view.detail',
+            'studentbirthdays.view',
+            //pre student
+            'studentpreregistration.create',
+            'studentpreregistration.update',
+            'studentpreregistration.view',
+            'studentpreregistration.approve',
+            'studentpreregistration.cancel',
         ];
 
+        $permissions = config('permissions');
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate([
@@ -194,120 +245,122 @@ class RolePermissionSeeder extends Seeder
         //     'organization.view',
 
         // ]);
-        $manager->syncPermissions([
-            'profile.update',
-            //ATTENDANCE
-            'attendance.create',
-            'attendance.update',
-            'attendance.delete',
-            'attendance.view',
-            'attendance.view.list',
-            // SCHOOL WEEK
-            'schoolweek.create',
-            'schoolweek.update',
-            'schoolweek.delete',
-            'schoolweek.view',
-            'schoolweek.view.list',
+        // $manager->syncPermissions([
+        //     'profile.update',
+        //     //ATTENDANCE
+        //     'attendance.create',
+        //     'attendance.update',
+        //     'attendance.delete',
+        //     'attendance.view',
+        //     'attendance.view.list',
+        //     // SCHOOL WEEK
+        //     'schoolweek.create',
+        //     'schoolweek.update',
+        //     'schoolweek.delete',
+        //     'schoolweek.view',
+        //     'schoolweek.view.list',
 
-            // PHYSICAL CLASSROOM
-            'PhysicalClassroom.create',
-            'PhysicalClassroom.update',
-            'PhysicalClassroom.delete',
-            'PhysicalClassroom.view',
-            'PhysicalClassroom.view.list',
-            // CLASS SCHEDULE
-            'classschedule.create',
-            'classschedule.update',
-            'classschedule.delete',
-            'classschedule.view',
-            'classschedule.view.list',
-            // CLASS
-            'classmodel.create',
-            'classmodel.update',
-            'classmodel.delete',
-            'classmodel.view',
-            'classmodel.view.list',
-            // TEACHER SUBJECT
-            'teachersubject.create',
-            'teachersubject.update',
-            'teachersubject.delete',
-            'teachersubject.view',
-            'teachersubject.view.list',
+        //     // PHYSICAL CLASSROOM
+        //     'PhysicalClassroom.create',
+        //     'PhysicalClassroom.update',
+        //     'PhysicalClassroom.delete',
+        //     'PhysicalClassroom.view',
+        //     'PhysicalClassroom.view.list',
+        //     // CLASS SCHEDULE
+        //     'classschedule.create',
+        //     'classschedule.update',
+        //     'classschedule.delete',
+        //     'classschedule.view',
+        //     'classschedule.view.list',
+        //     // CLASS
+        //     'classmodel.create',
+        //     'classmodel.update',
+        //     'classmodel.delete',
+        //     'classmodel.view',
+        //     'classmodel.view.list',
+        //     // TEACHER SUBJECT
+        //     'teachersubject.create',
+        //     'teachersubject.update',
+        //     'teachersubject.delete',
+        //     'teachersubject.view',
+        //     'teachersubject.view.list',
 
-            // LESSON SESSION
-            'lessonsession.create',
-            'lessonsession.update',
-            'lessonsession.delete',
-            'lessonsession.view',
-            'lessonsession.view.list',
+        //     'studentlesson.view.list',
+        //     'teacherlesson.view.list',
+        //     // LESSON SESSION
+        //     'lessonsession.create',
+        //     'lessonsession.update',
+        //     'lessonsession.delete',
+        //     'lessonsession.view',
+        //     'lessonsession.view.list',
 
-            // STUDENT
-            'student.create',
-            'student.update',
-            'student.delete',
-            'student.view',
-            'student.view.list',
+        //     // STUDENT
+        //     'student.create',
+        //     'student.update',
+        //     'student.delete',
+        //     'student.view',
+        //     'student.view.list',
 
-            // WORKER
-            'worker.create',
-            'worker.update',
-            'worker.delete',
-            'worker.view',
-            'worker.view.list',
+        //     // WORKER
+        //     'worker.create',
+        //     'worker.update',
+        //     'worker.delete',
+        //     'worker.view',
+        //     'worker.view.list',
 
-            // TEACHER
-            'teacher.create',
-            'teacher.update',
-            'teacher.delete',
-            'teacher.view',
-            'teacher.view.list',
+        //     // TEACHER
+        //     'teacher.create',
+        //     'teacher.update',
+        //     'teacher.delete',
+        //     'teacher.view',
+        //     'teacher.view.list',
 
-            // SCHOOL
-            'school.view',
-            'school.update',
-            //permissiosnlar
-            'teacher.permissions.update',
-            'teacher.permissions.view',
-            'teacher.available.permissions.view',
-            'teacher.reset.password',
-            'classroom.create',
-            'classroom.update',
-            'classroom.delete',
-            'classroom.view',
-            'classroom.view.list'
-        ]);
-
-
-
-        $teacher->syncPermissions([
-            'profile.update',
-
-            // TEACHER Görevleri
-            'student.view',
-            'student.view.list',
-            'classmodel.view',
-            'classmodel.view.list',
-
-            // Eğer öğretmene CRUD yetkisi vermek istersen:
-            // 'student.create', 'student.update', 'student.delete',
-            // 'class.create', 'class.update', 'class.delete',
-        ]);
+        //     // SCHOOL
+        //     'school.view',
+        //     'school.update',
+        //     //permissiosnlar
+        //     'teacher.permissions.update',
+        //     'teacher.permissions.view',
+        //     'teacher.available.permissions.view',
+        //     'teacher.reset.password',
+        //     'classroom.create',
+        //     'classroom.update',
+        //     'classroom.delete',
+        //     'classroom.view',
+        //     'classroom.view.list'
+        // ]);
 
 
-        $individualstudent->givePermissionTo([
-            'profile.update',
-        ]);
-        // $schoolstudent->givePermissionTo([
+
+        // $teacher->syncPermissions([
+        //     'profile.update',
+
+        //     // TEACHER Görevleri
+        //     'student.view',
+        //     'student.view.list',
+        //     'classmodel.view',
+        //     'classmodel.view.list',
+
+        //     // Eğer öğretmene CRUD yetkisi vermek istersen:
+        //     // 'student.create', 'student.update', 'student.delete',
+        //     // 'class.create', 'class.update', 'class.delete',
+        // ]);
+
+
+        // $individualstudent->givePermissionTo([
+        //     'profile.update',
+        // ]);
+        // // $schoolstudent->givePermissionTo([
+        // //     'profile.update',
+        // //     'student.view.list',
+        // // ]);
+        // // ---- SCHOOL STUDENT ----
+        // $schoolstudent->syncPermissions([
         //     'profile.update',
         //     'student.view.list',
         // ]);
-        // ---- SCHOOL STUDENT ----
-        $schoolstudent->syncPermissions([
-            'profile.update',
-            'student.view.list',
-        ]);
-        $worker->givePermissionTo([
-            'profile.update',
-        ]);
+        // $worker->givePermissionTo([
+        //     'profile.update',
+        // ]);
     }
 }

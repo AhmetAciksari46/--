@@ -12,6 +12,7 @@ use App\Traits\ApiResponser;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Profile\ManagerUpdateProfileSettingRequest;
+use App\Models\User;
 
 
 /**
@@ -27,27 +28,7 @@ class ManagerProfileController extends Controller
 {
 
     use ApiResponser;
-    /**
-     * @OA\Get(
-     *     path="/api/manager/profile/me",
-     *     tags={"ManagerProfile"},
-     *     summary="(Manager) Kendi profilini getir",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Profil bilgileri"),
-     *     @OA\Response(response=404, description="Profil bulunamadı")
-     * )
-     */
-    public function getManagerProfile(Request $request)
-    {
-        $user = Auth::user(); // role: manager
-        $profile = ManagerProfile::with('user')->where('user_id', $user->id)->first();
 
-        if (!$profile) {
-            return $this->errorResponse('Manager profili bulunamadı.', 404);
-        }
-
-        return $this->successResponse($profile, 'Profil bilgileri başarıyla getirildi.');
-    }
 
     /**
      * @OA\Put(
@@ -74,17 +55,25 @@ class ManagerProfileController extends Controller
      */
     public function updateManagerProfile(Request $request)
     {
+
         $user = Auth::user(); // role: manager
+        if (!$user->isManager()) {
+            return $this->errorResponse('sadece managerlar istek atabilir.', 404);
+        }
+
+
 
         $profile = ManagerProfile::firstOrCreate(['user_id' => $user->id]);
-
+        if (!$profile) {
+            return $this->errorResponse('Profil bulunamadı.', 404);
+        }
         $validated = $request->validate([
-            'phone'            => ['nullable', 'string', 'max:20'],
-            'address'          => ['nullable', 'string', 'max:255'],
-            'birth_date'       => ['nullable', 'date', 'before:today'],
-            'note'             => ['nullable', 'string', 'max:500'],
-            'referance'        => ['nullable', 'string', 'max:255'],
-            'school_id'        => ['sometimes', 'nullable', 'integer', 'exists:schools,id'],
+            'phone'            => ['sometimes', 'string', 'max:20'],
+            'address'          => ['sometimes', 'string', 'max:255'],
+            'birth_date'       => ['sometimes', 'date', 'before:today'],
+            'note'             => ['sometimes', 'string', 'max:500'],
+            'referance'        => ['sometimes', 'string', 'max:255'],
+            'school_id'        => ['sometimes', 'integer', 'exists:schools,id'],
             'payment_reminder' => ['sometimes', 'boolean'],
         ]);
 
@@ -99,29 +88,7 @@ class ManagerProfileController extends Controller
      * =========================
      */
 
-    /**
-     * @OA\Get(
-     *     path="/api/admin/manager/{user_id}/profile",
-     *     tags={"ManagerProfile"},
-     *     summary="(Admin) Manager profilini user_id ile getir",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="user_id", in="path", required=true, @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(response=200, description="Profil bilgileri"),
-     *     @OA\Response(response=404, description="Profil bulunamadı")
-     * )
-     */
-    public function getManagerProfileById(int $user_id)
-    {
-        $profile = ManagerProfile::with('user')->where('user_id', $user_id)->first();
 
-        if (!$profile) {
-            return $this->errorResponse('Manager profili bulunamadı.', 404);
-        }
-
-        return $this->successResponse($profile, 'Profil bilgileri başarıyla getirildi.');
-    }
 
     /**
      * @OA\Put(
@@ -151,24 +118,30 @@ class ManagerProfileController extends Controller
      */
     public function updateManagerProfileById(Request $request, int $user_id)
     {
-        $profile = ManagerProfile::firstOrCreate(['user_id' => $user_id]);
-        $validated = $request->validate(
-            [
-                'phone'            => ['nullable', 'string', 'max:20'],
-                'address'          => ['nullable', 'string', 'max:255'],
-                'birth_date'       => ['nullable', 'date', 'before:today'],
-                'note'             => ['nullable', 'string', 'max:500'],
-                'referance'        => ['nullable', 'string', 'max:255'],
-                'school_id'        => ['sometimes', 'nullable', 'integer', 'exists:schools,id'],
-                'payment_reminder' => ['sometimes', 'boolean'],
-            ]
-        );
+        if (!auth()->user()->can('manager.update')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
+        try {
+            $profile = ManagerProfile::firstOrCreate(['user_id' => $user_id]);
+            $validated = $request->validate(
+                [
+                    'phone'            => ['nullable', 'string', 'max:20'],
+                    'address'          => ['nullable', 'string', 'max:255'],
+                    'birth_date'       => ['nullable', 'date', 'before:today'],
+                    'note'             => ['nullable', 'string', 'max:500'],
+                    'referance'        => ['nullable', 'string', 'max:255'],
+                    'school_id'        => ['sometimes', 'nullable', 'integer', 'exists:schools,id'],
+                    'payment_reminder' => ['sometimes', 'boolean'],
+                ]
+            );
 
-        $profile->update($validated);
+            $profile->update($validated);
 
-        return $this->successResponse($profile->load('user'), 'Manager profili admin tarafından güncellendi.');
+            return $this->successResponse($profile->load('user'), 'Manager profili admin tarafından güncellendi.');
+        } catch (\Exception $e) {
+            return $this->errorResponse("Manager profile güncellenirken bir hata oluştu: " . $e->getMessage(), 500);
+        }
     }
-
 
 
     /**
@@ -197,31 +170,39 @@ class ManagerProfileController extends Controller
      */
     public function storeManagerProfile(Request $request)
     {
+        if (!auth()->user()->can('manager.create')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
         $user = Auth::user();
 
-        if (!$user->hasRole('manager')) {
-            return $this->errorResponse('Bu işlemi sadece manager kullanıcıları yapabilir.', 403);
+        try {
+
+            if (!$user->hasRole('manager')) {
+                return $this->errorResponse('Bu işlemi sadece manager kullanıcıları yapabilir.', 403);
+            }
+
+            if (ManagerProfile::where('user_id', $user->id)->exists()) {
+                return $this->errorResponse('Bu kullanıcıya ait profil zaten mevcut.', 409);
+            }
+
+            $validated = $request->validate([
+                'phone'            => ['nullable', 'string', 'max:20'],
+                'address'          => ['nullable', 'string', 'max:255'],
+                'birth_date'       => ['nullable', 'date', 'before:today'],
+                'note'             => ['nullable', 'string', 'max:500'],
+                'referance'        => ['nullable', 'string', 'max:255'],
+                'school_id'        => ['sometimes', 'nullable', 'integer', 'exists:schools,id'],
+                'payment_reminder' => ['sometimes', 'boolean'],
+            ]);
+
+            $profile = ManagerProfile::create(array_merge($validated, [
+                'user_id' => $user->id,
+            ]));
+
+            return $this->successResponse($profile->load('user'), 'Profil başarıyla oluşturuldu.', 200);
+        } catch (\Exception $e) {
+            return $this->errorResponse("Ders oturumları getirilirken bir hata oluştu: " . $e->getMessage(), 500);
         }
-
-        if (ManagerProfile::where('user_id', $user->id)->exists()) {
-            return $this->errorResponse('Bu kullanıcıya ait profil zaten mevcut.', 409);
-        }
-
-        $validated = $request->validate([
-            'phone'            => ['nullable', 'string', 'max:20'],
-            'address'          => ['nullable', 'string', 'max:255'],
-            'birth_date'       => ['nullable', 'date', 'before:today'],
-            'note'             => ['nullable', 'string', 'max:500'],
-            'referance'        => ['nullable', 'string', 'max:255'],
-            'school_id'        => ['sometimes', 'nullable', 'integer', 'exists:schools,id'],
-            'payment_reminder' => ['sometimes', 'boolean'],
-        ]);
-
-        $profile = ManagerProfile::create(array_merge($validated, [
-            'user_id' => $user->id,
-        ]));
-
-        return $this->successResponse($profile->load('user'), 'Profil başarıyla oluşturuldu.', 201);
     }
 
     /**
@@ -259,30 +240,40 @@ class ManagerProfileController extends Controller
      */
     public function storeManagerProfileById(Request $request, $user_id)
     {
-        $targetUser = User::findOrFail($user_id);
-
-        if ($targetUser->role !== 'manager') {
-            return $this->errorResponse('Seçilen kullanıcı bir manager değildir.', 422);
+        if (!auth()->user()->can('manager.create')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
 
-        if (ManagerProfile::where('user_id', $user_id)->exists()) {
-            return $this->errorResponse('Bu kullanıcıya ait profil zaten mevcut.', 409);
+
+        try {
+
+            $targetUser = User::findOrFail($user_id);
+
+            if ($targetUser->role !== 'manager') {
+                return $this->errorResponse('Seçilen kullanıcı bir manager değildir.', 422);
+            }
+
+            if (ManagerProfile::where('user_id', $user_id)->exists()) {
+                return $this->errorResponse('Bu kullanıcıya ait profil zaten mevcut.', 409);
+            }
+
+            $validated = $request->validate([
+                'phone'            => ['nullable', 'string', 'max:20'],
+                'address'          => ['nullable', 'string', 'max:255'],
+                'birth_date'       => ['nullable', 'date', 'before:today'],
+                'note'             => ['nullable', 'string', 'max:500'],
+                'referance'        => ['nullable', 'string', 'max:255'],
+                'school_id'        => ['sometimes', 'nullable', 'integer', 'exists:schools,id'],
+                'payment_reminder' => ['sometimes', 'boolean'],
+            ]);
+
+            $profile = ManagerProfile::create(array_merge($validated, [
+                'user_id' => $user_id,
+            ]));
+
+            return $this->successResponse($profile->load('user'), 'Manager profili admin tarafından oluşturuldu.', 201);
+        } catch (\Exception $e) {
+            return $this->errorResponse("Ders oturumları getirilirken bir hata oluştu: " . $e->getMessage(), 500);
         }
-
-        $validated = $request->validate([
-            'phone'            => ['nullable', 'string', 'max:20'],
-            'address'          => ['nullable', 'string', 'max:255'],
-            'birth_date'       => ['nullable', 'date', 'before:today'],
-            'note'             => ['nullable', 'string', 'max:500'],
-            'referance'        => ['nullable', 'string', 'max:255'],
-            'school_id'        => ['sometimes', 'nullable', 'integer', 'exists:schools,id'],
-            'payment_reminder' => ['sometimes', 'boolean'],
-        ]);
-
-        $profile = ManagerProfile::create(array_merge($validated, [
-            'user_id' => $user_id,
-        ]));
-
-        return $this->successResponse($profile->load('user'), 'Manager profili admin tarafından oluşturuldu.', 201);
     }
 }

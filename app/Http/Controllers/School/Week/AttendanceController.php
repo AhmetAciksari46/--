@@ -37,7 +37,7 @@ class AttendanceController extends Controller
     public function index(School $school, LessonSession $session)
     {
         if (!auth()->user()->can('attendance.view')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
 
         if ($session->schedule->school_id != $school->id) {
@@ -69,7 +69,7 @@ class AttendanceController extends Controller
     public function store(AttendanceStoreRequest $request, School $school, LessonSession $session)
     {
         if (!auth()->user()->can('attendance.create')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         if ($session->schedule->school_id != $school->id) {
             return $this->errorResponse("Bu oturum bu okula ait değildir.", 403);
@@ -101,7 +101,7 @@ class AttendanceController extends Controller
     public function show(School $school, LessonSession $session, Attendance $attendance)
     {
         if (!auth()->user()->can('attendance.view')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         if (
             $attendance->lesson_session_id != $session->id ||
@@ -128,7 +128,7 @@ class AttendanceController extends Controller
     public function update(AttendanceUpdateRequest $request, School $school, LessonSession $session, Attendance $attendance)
     {
         if (!auth()->user()->can('attendance.update')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         if (
             $attendance->lesson_session_id != $session->id ||
@@ -155,7 +155,7 @@ class AttendanceController extends Controller
     public function destroy(School $school, LessonSession $session, Attendance $attendance)
     {
         if (!auth()->user()->can('attendance.delete')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         if (
             $attendance->lesson_session_id != $session->id ||
@@ -203,7 +203,7 @@ class AttendanceController extends Controller
     public function batchStore(BatchAttendanceRequest $request, School $school, LessonSession $session)
     {
         if (!auth()->user()->can('attendance.update')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         // Oturum okula ait mi?
         if ($session->schedule->school_id !== $school->id) {
@@ -214,38 +214,41 @@ class AttendanceController extends Controller
 
         $created = [];
         $updated = [];
+        try {
+            foreach ($data as $item) {
 
-        foreach ($data as $item) {
+                // Daha önce yoklama var mı?
+                $existing = Attendance::where('lesson_session_id', $session->id)
+                    ->where('student_id', $item['student_id'])
+                    ->first();
 
-            // Daha önce yoklama var mı?
-            $existing = Attendance::where('lesson_session_id', $session->id)
-                ->where('student_id', $item['student_id'])
-                ->first();
+                if ($existing) {
+                    // Var olan yoklamayı güncelle
+                    $existing->update([
+                        'status' => $item['status'],
+                        'absent_excuse_note' => $item['absent_excuse_note'] ?? null,
+                        'entered_at' => now(),
+                    ]);
 
-            if ($existing) {
-                // Var olan yoklamayı güncelle
-                $existing->update([
-                    'status' => $item['status'],
-                    'absent_excuse_note' => $item['absent_excuse_note'] ?? null,
-                    'entered_at' => now(),
-                ]);
-
-                $updated[] = $existing;
-            } else {
-                // Yeni yoklama oluştur
-                $created[] = Attendance::create([
-                    'lesson_session_id' => $session->id,
-                    'student_id' => $item['student_id'],
-                    'status' => $item['status'],
-                    'absent_excuse_note' => $item['absent_excuse_note'] ?? null,
-                    'entered_at' => now(),
-                ]);
+                    $updated[] = $existing;
+                } else {
+                    // Yeni yoklama oluştur
+                    $created[] = Attendance::create([
+                        'lesson_session_id' => $session->id,
+                        'student_id' => $item['student_id'],
+                        'status' => $item['status'],
+                        'absent_excuse_note' => $item['absent_excuse_note'] ?? null,
+                        'entered_at' => now(),
+                    ]);
+                }
             }
-        }
 
-        return $this->successResponse([
-            'created' => $created,
-            'updated' => $updated
-        ], "Toplu yoklama kaydedildi.");
+            return $this->successResponse([
+                'created' => $created,
+                'updated' => $updated
+            ], "Toplu yoklama kaydedildi.", 200);
+        } catch (\Exception $e) {
+            return $this->errorResponse("Ders oturumları getirilirken bir hata oluştu: " . $e->getMessage(), 500);
+        }
     }
 }

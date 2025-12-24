@@ -50,7 +50,9 @@ class PackageController extends Controller
      */
     public function index()
     {
-        // Tüm paketleri paginated olarak çekiyoruz.
+        if (!auth()->user()->can('package.view.list')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $packages = Package::with(['gradeRules'])
             ->get();
 
@@ -82,7 +84,9 @@ class PackageController extends Controller
      */
     public function store(CreatePackageRequest $request)
     {
-        // StorePackageRequest, yetkilendirme ve doğrulamayı halletti.
+        if (!auth()->user()->can('package.create')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $package = Package::create($request->validated());
         return $this->successResponse(
             $package->load(['gradeRules'])->loadCount('subscriptions'),
@@ -113,10 +117,10 @@ class PackageController extends Controller
      */
     public function show(Package $package)
     {
-        if ($package->is_empty()) {
-            return $this->successResponse(null, 'Paket bulunamadı.', 404);
-        }
 
+        if (!auth()->user()->can('package.view')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         // Paketin kurallarını da eager load ederek tam bir detay sunuyoruz.
         return $this->successResponse(
             $package->load(['gradeRules'])->loadCount('subscriptions'),
@@ -164,6 +168,9 @@ class PackageController extends Controller
      */
     public function update(UpdatePackageRequest $request, Package $package)
     {
+        if (!auth()->user()->can('package.update')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $package->update($request->validated());
         return $this->successResponse(
             $package->load(['gradeRules'])->loadCount('subscriptions'),
@@ -205,9 +212,13 @@ class PackageController extends Controller
      */
     public function destroy(Package $package)
     {
+        if (!auth()->user()->can('package.delete')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
+
         // Kural: Aktif abonelikleri olan paket silinemez.
         if ($package->subscriptions()->exists()) {
-            return $this->errorResponse('package_has_subscriptions', 409);
+            return $this->errorResponse('paketin aktif veya geçmiş abonelikleri olduğu için silinemez.', 404);
         }
 
         // İlişkili kuralları siliyoruz (Veritabanında CASCADE yoksa gereklidir)

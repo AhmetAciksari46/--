@@ -43,12 +43,15 @@ class TeacherController extends Controller
     public function index(School $school)
     {
         if (!auth()->user()->can('teacher.view.list')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         $teachers = User::where('role', 'teacher')
             ->whereHas('teacherProfile', fn($q) => $q->where('school_id', $school->id))
             ->with('teacherProfile')
             ->get();
+        if ($teachers->isEmpty()) {
+            return $this->errorResponse('Bu okula ait öğretmen bulunamadı.', 404);
+        }
         return $this->successResponse($teachers, 'Okula ait öğretmenler getirildi.', 200);
     }
     /**
@@ -79,8 +82,8 @@ class TeacherController extends Controller
      */
     public function show(School $school, User $teacher)
     {
-        if (!auth()->user()->can('teacher.view')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        if (!auth()->user()->can('teacher.view.detail')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
 
         if (!$teacher->teacherProfile || $teacher->teacherProfile->school_id != $school->id) {
@@ -129,41 +132,43 @@ class TeacherController extends Controller
     public function store(Request $request, School $school)
     {
         if (!auth()->user()->can('teacher.create')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
-
-        $data = $request->validate([
-            'name' => 'required|string',
-            'userName' => 'required|string|unique:users',
-            'email' => 'nullable|email|unique:users',
-            'password' => 'required|string|min:6',
-            'branch_id' => 'required|exists:branches,id',
-            'phone' => 'nullable|string',
-            'address' => 'nullable|string',
-            'birth_date' => 'nullable|date|before:today',
-            'referance' => 'nullable|string|max:255',
-        ]);
-
-        $teacher = DB::transaction(function () use ($data, $school) {
-            $user = User::create([
-                'name' => $data['name'],
-                'userName' => $data['userName'],
-                'email' => $data['email'] ?? null,
-                'password' => bcrypt($data['password']),
-                'role' => 'teacher',
+        try {
+            $data = $request->validate([
+                'name' => 'required|string',
+                'userName' => 'required|string|unique:users',
+                'email' => 'nullable|email|unique:users',
+                'password' => 'required|string|min:6',
+                'branch_id' => 'required|exists:branches,id',
+                'phone' => 'nullable|string',
+                'address' => 'nullable|string',
+                'birth_date' => 'nullable|date|before:today',
+                'referance' => 'nullable|string|max:255',
             ]);
-            $user->assignRole('teacher');
-            $profile = $user->teacherProfile()->create([
-                'school_id' => $school->id,
-                'branch_id' => $data['branch_id'],
-                'phone' => $data['phone'] ?? null,
-                'address' => $data['address'] ?? null,
-            ]);
+            DB::transaction(function () use ($data, $school) {
+                $user = User::create([
+                    'name' => $data['name'],
+                    'userName' => $data['userName'],
+                    'email' => $data['email'] ?? null,
+                    'password' => bcrypt($data['password']),
+                    'role' => 'teacher',
+                ]);
+                $user->assignRole('teacher');
+                $user->teacherProfile()->create([
+                    'school_id' => $school->id,
+                    'branch_id' => $data['branch_id'],
+                    'birth_date' => $data['birth_date'] ?? null,
+                    'referance' => $data['referance'] ?? null,
+                    'phone' => $data['phone'] ?? null,
+                    'address' => $data['address'] ?? null,
+                ]);
 
-            return $user->load('teacherProfile');
-        });
-
-        return $this->successResponse($teacher, 'Yeni öğretmen oluşturuldu.', 200);
+                return $this->successResponse($user->load('teacherProfile'), 'Yeni öğretmen oluşturuldu.', 200);
+            });
+        } catch (\Exception $e) {
+            return $this->errorResponse('Öğretmen oluşturulurken bir hata oluştu: ' . $e->getMessage(), 500);
+        }
     }
 
     /**
@@ -208,37 +213,66 @@ class TeacherController extends Controller
 
             return $this->errorResponse('Bu öğretmen bu okula ait değil.', 403);
         }
+        try {
+            $validated = $request->validated();
 
-        $validated = $request->validated();
+            // USER alanları
+            $userFields = array_filter(
+                $validated,
+                fn($k) =>
+                in_array($k, ['name', 'email']),
+                ARRAY_FILTER_USE_KEY
+            );
 
-        // USER alanları
-        $userFields = array_filter(
-            $validated,
-            fn($k) =>
-            in_array($k, ['name', 'email']),
-            ARRAY_FILTER_USE_KEY
-        );
+            // TEACHER PROFILE alanları
+            $profileFields = array_filter(
+                $validated,
+                fn($k) =>
+                !in_array($k, ['name', 'email']),
+                ARRAY_FILTER_USE_KEY
+            );
 
-        // TEACHER PROFILE alanları
-        $profileFields = array_filter(
-            $validated,
-            fn($k) =>
-            !in_array($k, ['name', 'email']),
-            ARRAY_FILTER_USE_KEY
-        );
+            if (!empty($userFields)) {
+                $teacher->update($userFields);
+            }
 
-        if (!empty($userFields)) {
-            $teacher->update($userFields);
+            if (!empty($profileFields)) {
+                $teacher->teacherProfile->update($profileFields);
+            }
+
+
+            return $this->successResponse($teacher->load('teacherProfile'), 'Öğretmen başarıyla güncellendi.', 200);
+        } catch (\Exception $e) {
+            return $this->errorResponse("öğretmen güncellenirken bir hata oluştu: " . $e->getMessage(), 500);
         }
-
-        if (!empty($profileFields)) {
-            $teacher->teacherProfile->update($profileFields);
-        }
-
-
-        return $this->successResponse($teacher->load('teacherProfile'), 'Öğretmen başarıyla güncellendi.', 200);
     }
+    public function updateTeacherUser(UpdateProfileRequest $request)
+    {
+        $user = Auth::user();
 
+        if (!$user->isTeacher()) {
+            return $this->errorResponse('Sadece teacherlar istek atabilir.', 404);
+        }
+
+        try {
+            $validated = $request->validate([
+                'name'      => 'sometimes|string|max:255',
+                'userName'  => 'sometimes|string|max:255|unique:users,userName,' . $user->id,
+                'email'     => 'sometimes|email|unique:users,email,' . $user->id,
+                'password'  => 'sometimes|string|min:6|confirmed',
+            ]);
+
+            if (isset($validated['password'])) {
+                $validated['password'] = Hash::make($validated['password']);
+            }
+
+            $user->update($validated);
+
+            return $this->successResponse($user, 'Bilgileriniz başarıyla güncellendi.');
+        } catch (\Exception $e) {
+            return $this->errorResponse("teacher güncellenirken bir hata oluştu: " . $e->getMessage(), 500);
+        }
+    }
 
     /**
      * @OA\Delete(
@@ -268,11 +302,10 @@ class TeacherController extends Controller
      */
     public function destroy(School $school, User $teacher)
     {
-        $user = auth()->user();
-
-        if (!$user->hasAnyRole(['admin', 'manager'])) {
-            return response()->json(['message' => 'Yetkisiz erişim.'], 403);
+        if (!auth()->user()->can('teacher.delete')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
+        // 🔒 Öğretmen bu okula mı ait?
         if ($teacher->teacherProfile->school_id != $school->id) {
             return $this->errorResponse('Bu öğretmen bu okula ait değil.', 403);
         }
@@ -320,19 +353,13 @@ class TeacherController extends Controller
      */
     public function resetPassword(Request $request, School $school, User $teacher)
     {
-        // 🛡 1. Rol kontrolü — sadece admin & manager
-        if (!auth()->user()->hasAnyRole(['admin', 'manager'])) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        if (!auth()->user()->can('teacher.update')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
 
         // 🛡 2. Teacher doğru okula mı bağlı?
         if (!$teacher->teacherProfile || $teacher->teacherProfile->school_id !== $school->id) {
-            return response()->json(['message' => 'Bu öğretmen bu okula ait değil.'], 403);
-        }
-
-        // 🛡 3. Bu kullanıcı gerçekten teacher mı?
-        if (!$teacher->hasRole('teacher')) {
-            return response()->json(['message' => 'Bu kullanıcı öğretmen değil.'], 422);
+            return $this->errorResponse('Bu öğretmen bu okula ait değil.', 403);
         }
 
         // 4. Validation
@@ -346,213 +373,104 @@ class TeacherController extends Controller
 
         return $this->successResponse(null, 'Öğretmenin şifresi başarıyla sıfırlandı.', 200);
     }
-
-
-
-    /**
-     * @OA\Get(
-     *     path="/api/schools/{school}/teachers/{teacher}/permissions",
-     *     summary="Öğretmenin tüm izinlerini listeler",
-     *     tags={"Manager & Teacher - Teacher İşlemleri"},
-     *     security={{"bearerAuth":{}}},
-     *
-     *     @OA\Parameter(
-     *         name="school",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer", example=1)
-     *     ),
-     *
-     *     @OA\Parameter(
-     *         name="teacher",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer", example=10)
-     *     ),
-     *
-     *     @OA\Response(response=200, description="Permissions list")
-     * )
-     */
-    public function getPermissions(School $school, User $teacher)
-    {
-        $user = auth()->user();
-
-        if (!$user->hasAnyRole(['admin', 'manager'])) {
-            return response()->json(['message' => 'Yetkisiz erişim.'], 403);
-        }
-        if (!$teacher->teacherProfile || $teacher->teacherProfile->school_id !== $school->id) {
-            return response()->json(['message' => 'Bu öğretmen bu okula ait değil.'], 403);
-        }
-        return $this->successResponse($teacher->getAllPermissions()->pluck('name'), 'Öğretmenin izinleri getirildi.', 200);
-    }
-
-    /**
-     * @OA\Put(
-     *     path="/api/schools/{school}/teachers/{teacher}/permissions",
-     *     summary="Öğretmenin izinlerini günceller",
-     *     tags={"Manager & Teacher - Teacher İşlemleri"},
-     *     security={{"bearerAuth":{}}},
-     *
-     *     @OA\Parameter(
-     *         name="school",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer", example=1)
-     *     ),
-     *
-     *     @OA\Parameter(
-     *         name="teacher",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer", example=10)
-     *     ),
-     *
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(
-     *                 property="permissions",
-     *                 type="array",
-     *                 @OA\Items(type="string", example="attendance.edit")
-     *             )
-     *         )
-     *     ),
-     *
-     *     @OA\Response(response=200, description="Permissions updated")
-     * )
-     */
-    public function updatePermissions(Request $request, School $school, User $teacher)
-    {
-        $user = auth()->user();
-
-        if (!$user->hasAnyRole(['admin', 'manager'])) {
-            return response()->json(['message' => 'Yetkisiz erişim.'], 403);
-        }
-        if (!auth()->user()->can('teacher.permissions.update')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
-        }
-
-        // 🔥 Okul - öğretmen doğrulaması
-        if (!$teacher->teacherProfile || $teacher->teacherProfile->school_id !== $school->id) {
-            return response()->json(['message' => 'Bu öğretmen bu okula ait değil.'], 403);
-        }
-        if (!$teacher->hasRole('teacher')) {
-            return response()->json(['message' => 'Bu kullanıcı öğretmen değil.'], 422);
-        }
-
-        $data = $request->validate([
-            'permissions' => 'required|array',
-            'permissions.*' => 'string|exists:permissions,name',
-        ]);
-        if (empty($data['permissions'])) {
-            return response()->json(['message' => 'En az 1 permission seçilmelidir.'], 422);
-        }
-
-        $teacher->syncPermissions($data['permissions']);
-        return $this->successResponse(null, 'Öğretmen izinleri başarıyla güncellendi.', 200);
-    }
-
-    /**
-     * @OA\Get(
-     *     path="/api/manager/teachers/available-permissions",
-     *     summary="Öğretmenlere atanabilir tüm izinleri döner",
-     *     tags={"Manager & Teacher - Teacher İşlemleri"},
-     *     security={{"bearerAuth":{}}},
-     *
-     *     @OA\Response(
-     *         response=200,
-     *         description="Tüm teacher permission listesi",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="permissions", type="array",
-     *                 @OA\Items(type="string", example="classmodel.view")
-     *             )
-     *         )
-     *     )
-     * )
-     */
-    public function availablePermissionsForTeachers()
-    {
-
-        $user = auth()->user();
-
-        if (!$user->hasAnyRole(['admin', 'manager'])) {
-            return response()->json(['message' => 'Yetkisiz erişim.'], 403);
-        }
-        $teacherRole = Role::where('name', 'teacher')->first();
-
-        if (!$teacherRole) {
-            return response()->json(['message' => 'Teacher rolü bulunamadı.'], 500);
-        }
-
-        $permissions = $teacherRole->permissions->pluck('name');
-
-        return $this->successResponse([
-            'available_permissions' => $permissions
-        ], 'Teacher rolüne atanabilir izinler listelendi.', 200);
-    }
-
-    /**
-     * @OA\Delete(
-     *     path="/api/schools/{school}/teachers/{teacher}/permissions",
-     *     summary="Öğretmenden belirli izinleri kaldırır",
-     *     tags={"Manager & Teacher - Teacher İşlemleri"},
-     *     security={{"bearerAuth":{}}},
-     *
-     *     @OA\Parameter(
-     *         name="school",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer", example=1)
-     *     ),
-     *
-     *     @OA\Parameter(
-     *         name="teacher",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer", example=10)
-     *     ),
-     *
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(
-     *                 property="permissions",
-     *                 type="array",
-     *                 @OA\Items(type="string", example="student.view")
-     *             )
-     *         )
-     *     ),
-     *
-     *     @OA\Response(response=200, description="Permissions removed successfully")
-     * )
-     */
-    public function removePermissions(Request $request, School $school, User $teacher)
-    {
-        $user = auth()->user();
-
-        if (!$user->hasAnyRole(['admin', 'manager'])) {
-            return response()->json(['message' => 'Yetkisiz erişim.'], 403);
-        }
-        // 🔥 Öğretmen bu okula mı ait?
-        if (!$teacher->teacherProfile || $teacher->teacherProfile->school_id !== $school->id) {
-            return response()->json(['message' => 'Bu öğretmen bu okula ait değil.'], 403);
-        }
-
-        $data = $request->validate([
-            'permissions' => 'required|array',
-            'permissions.*' => 'string|exists:permissions,name',
-        ]);
-
-        foreach ($data['permissions'] as $permission) {
-            if ($teacher->hasPermissionTo($permission)) {
-                $teacher->revokePermissionTo($permission);
-            }
-        }
-
-        return $this->successResponse(
-            null,
-            'Belirtilen izinler öğretmenden kaldırıldı.',
-            200
-        );
-    }
 }
+
+    // /**
+    //  * @OA\Post(
+    //  *     path="/api/admin/teachers/",
+    //  *     summary="Belirli okula yeni öğretmen ekler",
+    //  *     tags={"Admin - Teacher İşlemleri"},
+    //  *     security={{"bearerAuth":{}}},
+    //  *
+    //  *
+    //  *     @OA\RequestBody(
+    //  *         required=true,
+    //  *         @OA\JsonContent(
+    //  *             required={"name","userName","password","branch_id"},
+    //  *             @OA\Property(property="name", type="string", example="Ali Yılmaz"),
+    //  *             @OA\Property(property="userName", type="string", example="aliyilmaz"),
+    //  *             @OA\Property(property="email", type="string", example="ali@example.com"),
+    //  *             @OA\Property(property="password", type="string", example="12345678"),
+    //  *             @OA\Property(property="password_confirmation", type="string", example="12345678"),
+    //  *             @OA\Property(property="branch_id", type="integer", example=2),
+    //  *             @OA\Property(property="school_id", type="integer", example=1),
+    //  *             @OA\Property(property="phone", type="string", example="+905551234567"),
+    //  *             @OA\Property(property="address", type="string", example="İstanbul"),
+    //  *             @OA\Property(property="birth_date", type="string", format="date", example="1985-05-10"),
+    //  *             @OA\Property(property="referance", type="string", example="REF001")
+    //  *         )
+    //  *     ),
+    //  *
+    //  *     @OA\Response(response=201, description="Teacher created successfully")
+    //  * )
+    //  */
+    // public function store(Request $request)
+    // {
+    //     $data = $request->validate(
+    //         [
+    //             'name' => 'required|string',
+    //             'userName' => 'required|string|unique:users',
+    //             'email' => 'nullable|email|unique:users',
+    //             'password' => 'required|string|min:6',
+    //             'branch_id' => 'required|exists:branches,id',
+    //             'school_id' => 'required|exists:schools,id',
+    //             'phone' => 'nullable|string',
+    //             'address' => 'nullable|string',
+    //             'birth_date' => 'nullable|date|before:today',
+    //             'referance' => 'nullable|string|max:255',
+    //         ],
+    //         [
+    //             'name.required' => 'Ad alanı zorunludur.',
+    //             'name.string'   => 'Ad alanı geçerli bir metin olmalıdır.',
+
+    //             'userName.required' => 'Kullanıcı adı zorunludur.',
+    //             'userName.string'   => 'Kullanıcı adı geçerli bir metin olmalıdır.',
+    //             'userName.unique'   => 'Bu kullanıcı adı zaten kullanılmaktadır.',
+
+    //             'email.email'  => 'Lütfen geçerli bir e-posta adresi giriniz.',
+    //             'email.unique' => 'Bu e-posta adresi zaten kayıtlıdır.',
+
+    //             'password.required' => 'Şifre zorunludur.',
+    //             'password.string'   => 'Şifre geçerli bir metin olmalıdır.',
+    //             'password.min'      => 'Şifre en az :min karakter olmalıdır.',
+
+    //             'branch_id.required' => 'Şube alanı zorunludur.',
+    //             'branch_id.exists'   => 'Seçilen şube bulunamadı.',
+
+    //             'school_id.required' => 'Okul alanı zorunludur.',
+    //             'school_id.exists'   => 'Seçilen okul bulunamadı.',
+
+    //             'phone.string'  => 'Telefon alanı geçerli bir metin olmalıdır.',
+
+    //             'address.string' => 'Adres alanı geçerli bir metin olmalıdır.',
+
+    //             'birth_date.date'   => 'Doğum tarihi geçerli bir tarih olmalıdır.',
+    //             'birth_date.before' => 'Doğum tarihi bugünden ileri bir tarih olamaz.',
+
+    //             'referance.string' => 'Referans alanı geçerli bir metin olmalıdır.',
+    //             'referance.max'    => 'Referans en fazla :max karakter olabilir.',
+    //         ]
+    //     );
+    //     $schoolId = $request->school_id;
+    //     //TODO: Okul yoksa hata dönebilir.
+    //     $teacher = DB::transaction(function () use ($data, $schoolId) {
+    //         $user = User::create([
+    //             'name' => $data['name'],
+    //             'userName' => $data['userName'],
+    //             'email' => $data['email'] ?? null,
+    //             'password' => bcrypt($data['password']),
+    //             'role' => 'teacher',
+    //         ]);
+    //         $user->assignRole('teacher');
+    //         $profile = $user->teacherProfile()->create([
+    //             'school_id' => $schoolId,
+    //             'branch_id' => $data['branch_id'],
+    //             'phone' => $data['phone'] ?? null,
+    //             'address' => $data['address'] ?? null,
+    //         ]);
+
+    //         return $user->load('teacherProfile');
+    //     });
+
+    //     return $this->successResponse($teacher, 'Yeni öğretmen oluşturuldu.', 200);
+    // }

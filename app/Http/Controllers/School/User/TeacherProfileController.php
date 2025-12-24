@@ -19,15 +19,50 @@ use App\Http\Requests\Profile\TeacherUpdateProfileSettingRequest;
 class TeacherProfileController extends Controller
 {
     use ApiResponser;
+
+    /**
+     * @OA\Put(
+     *     path="/api/teacher/{user_id}/update",
+     *     tags={"TeacherProfileSettings"},
+     *     summary="Öğretmen profilini güncelle",
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="user_id",
+     *         in="path",
+     *         required=true,
+     *         description="Güncellenecek öğretmenin kullanıcı ID'si",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="cv_path", type="string", description="Özgeçmiş yolu"),
+     *             @OA\Property(property="certification_level", type="string", description="Sertifikasyon seviyesi")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Profil başarıyla güncellendi",
+     *         @OA\JsonContent(ref="#/components/schemas/TeacherProfile")
+     *     ),
+     *     @OA\Response(response=403, description="Yetkisiz erişim"),
+     *     @OA\Response(response=422, description="Doğrulama hatası")
+     * )
+     */
+
+
     public function update(Request $request, $user_id)
     {
+        if (!auth()->user()->can('teacher.update')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $profile = TeacherProfile::where('user_id', $user_id)->firstOrFail();
 
         // 1. Yetki Kontrolü: 
         // Eğer istek atan kullanıcı (Auth::user()) ne Admin ne de Manager ise,
         // güncellenmeye çalışılan profilin kendi profili olduğundan emin ol!
         if (Auth::user()->role === 'teacher' && Auth::id() !== $user_id) {
-            return response()->json(['message' => 'Sadece kendi profilinizi güncelleyebilirsiniz.'], 403);
+            return $this->errorResponse('Sadece kendi profilinizi güncelleyebilirsiniz.', 403);
         }
 
         // 2. Validation
@@ -40,7 +75,7 @@ class TeacherProfileController extends Controller
         // 3. Güncelleme
         $profile->update($request->only('cv_path', 'certification_level'));
 
-        return response()->json($profile);
+        return $this->successResponse($profile, "Profil başarıyla güncellendi.", 200);
     }
 
     /**
@@ -62,6 +97,9 @@ class TeacherProfileController extends Controller
     public function getprofilesettings(Request $request)
     {
         $user = Auth::user();
+        if (!$user->isTeacher()) {
+            return $this->errorResponse('Sadece teacherlar istek atabilir.', 404);
+        }
         $profile = TeacherProfile::where('user_id', $user->id)
             ->with('user')
             ->firstOrFail();
@@ -90,14 +128,15 @@ class TeacherProfileController extends Controller
     public function updateprofilesettings(TeacherUpdateProfileSettingRequest $request)
     {
         $user = Auth::user();
+        if (!$user->isTeacher()) {
+            return $this->errorResponse('Sadece teacherlar istek atabilir.', 404);
+        }
         $profile = TeacherProfile::firstOrCreate(
-            ['user_id' => $user->id],
-            ['payment_reminder' => false]
+            ['user_id' => $user->id]
         );
+
         $profile->fill($request->validated());
         $profile->save();
-        return $this->successResponse($profile->fresh(), __('api.profile_fetched'));
+        return $this->successResponse($profile->fresh(), __('api.profile_fetched'), 200);
     }
-
-    public function show($user_id) {}
 }

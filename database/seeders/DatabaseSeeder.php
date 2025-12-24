@@ -21,6 +21,10 @@ class DatabaseSeeder extends Seeder
             PackageSeeder::class,
             PackageWeekGradeRuleSeeder::class,
             SubjectSeeder::class,
+            SystemChatGroupSeeder::class,
+            PermissionSeeder::class,
+            DefaultPermissionSeeder::class,
+            AssignLevelPermissionSeeder::class,
         ]);
     }
 }

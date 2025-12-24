@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use App\Enums\GroupType;
 
 /**
  * @OA\Schema(
@@ -154,5 +155,119 @@ class User extends Authenticatable
     public function isIndividualStudent()
     {
         return $this->role === 'individualstudent';
+    }
+    public function groupMemberships()
+    {
+        return $this->hasMany(GroupMember::class, 'user_id');
+    }
+
+    public function classroomGroups()
+    {
+        return $this->belongsToMany(Group::class, 'group_members', 'user_id', 'group_id');
+    }
+    public function permissions()
+    {
+        return $this->belongsToMany(
+            Permission::class,
+            'user_permissions'
+        )->withTimestamps();
+    }
+    public function getSchoolId()
+    {
+        // Admin → tüm okullara erişebilir, istersek null döndürür
+        if ($this->hasRole('admin')) {
+            return null;
+        }
+
+        // Manager → manager_profiles.school_id
+        if ($this->hasRole('manager')) {
+            return $this->managerProfile->school_id ?? null;
+        }
+
+        // Teacher → teacher_profiles.school_id
+        if ($this->hasRole('teacher')) {
+            return $this->teacherProfile->school_id ?? null;
+        }
+
+        // Student → school_student_profiles.school_id
+        if ($this->hasRole('schoolstudent')) {
+            return $this->schoolStudentProfile->school_id ?? null;
+        }
+
+        return null;
+    }
+
+
+    public function isMemberOf(Group $group): bool
+    {
+
+        // ADMIN → TÜM GRUPLARIN OTOMATİK ÜYESİ
+        if ($this->hasRole('admin')) {
+            return true;
+        }
+
+        /** ---------------------------------------------
+         * GLOBAL GRUPLAR
+         * -------------------------------------------- */
+
+        // Global Genel Grup → tüm kullanıcılar otomatik üye
+        if ($group->type === GroupType::GlobalGeneral) {
+            return true;
+        }
+
+        // Global Manager Grubu → manager + admin
+        if ($group->type === GroupType::GlobalManager) {
+            return $this->hasRole('manager');
+        }
+
+        // Global Yönetim Grubu → admin + manager + teacher
+        if ($group->type === GroupType::GlobalYonetim) {
+            return $this->hasAnyRole(['manager', 'teacher']);
+        }
+
+        /** ---------------------------------------------
+         * SCHOOL GRUPLARI
+         * -------------------------------------------- */
+
+        $userSchoolId = $this->getSchoolId();
+
+        if ($group->school_id && $userSchoolId !== $group->school_id) {
+            return false;
+        }
+
+        // Okul Genel Grup → okulun tüm üyeleri otomatik üye
+        if ($group->type === GroupType::SchoolGeneral) {
+            return true;
+        }
+
+        // Okul Yönetim Grubu → sadece school's manager + admin
+        if ($group->type === GroupType::SchoolManagement) {
+            return $this->hasRole('manager');
+        }
+
+        /** ---------------------------------------------
+         * CLASSROOM GRUBU
+         * -------------------------------------------- */
+
+        if ($group->type === GroupType::Classroom) {
+
+            // Öğrenci veya Öğretmen explicit group_members içinde olmalı
+            $isExplicitMember = $group->members()
+                ->where('user_id', $this->id)
+                ->exists();
+
+            if ($isExplicitMember) {
+                return true;
+            }
+
+            // Manager (okul manager’ı) classroom grubuna implicit üye
+            if ($this->hasRole('manager')) {
+                return $this->school_id === $group->school_id;
+            }
+
+            return false;
+        }
+
+        return false;
     }
 }

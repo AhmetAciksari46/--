@@ -29,10 +29,10 @@ class SchoolHasGradeController extends Controller
      *     security={{"bearerAuth":{}}},
      *
      *     @OA\Parameter(
-     *         name="school_id",
+     *         name="school",
      *         in="path",
      *         required=true,
-     *         description="Okul ID",
+     *         description="school ID",
      *         @OA\Schema(type="integer", example=3)
      *     ),
      *
@@ -40,24 +40,18 @@ class SchoolHasGradeController extends Controller
      *     @OA\Response(response=404, description="Okul bulunamadı")
      * )
      */
-    public function getBySchoolId($school_id)
+    public function getBySchoolId(School $school)
     {
-        // Okul var mı kontrol et
-        $school = School::find($school_id);
-
-        if (!$school) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Okul bulunamadı.'
-            ], 404);
+        if (!auth()->user()->can('grade.view.list')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
-
         // İlişkili grade kayıtlarını getir
-        $records = SchoolHasGrade::where('school_id', $school_id)
+        $records = SchoolHasGrade::where('school_id', $school->id)
             ->with(['school', 'grade'])
             ->get();
         return $this->successResponse($records, 'Okul-seviye ilişkisi başarıyla getirildi.', 200);
     }
+
     /**
      * @OA\Get(
      *     path="/api/admin/school-has-grades",
@@ -69,6 +63,9 @@ class SchoolHasGradeController extends Controller
      */
     public function index()
     {
+        if (!auth()->user()->can('grade.view.list')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $records = SchoolHasGrade::with(['school', 'grade'])->get();
         return $this->successResponse($records, 'Okul-seviye ilişkisi başarıyla getirildi.', 200);
     }
@@ -92,6 +89,9 @@ class SchoolHasGradeController extends Controller
      */
     public function store(Request $request)
     {
+        if (!auth()->user()->can('grade.create')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $validated = $request->validate([
             'school_id' => 'required|exists:schools,id',
             'grade_id' => 'required|exists:grades,id',
@@ -119,13 +119,12 @@ class SchoolHasGradeController extends Controller
      */
     public function destroy($id)
     {
+        if (!auth()->user()->can('grade.delete')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $record = SchoolHasGrade::findOrFail($id);
         $record->delete();
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Okul-seviye ilişkisi başarıyla silindi.'
-        ]);
+        return $this->successResponse(null, 'Okul-seviye ilişkisi başarıyla silindi.', 200);
     }
 
     /**
@@ -139,6 +138,9 @@ class SchoolHasGradeController extends Controller
      */
     public function myGrades()
     {
+        if (!auth()->user()->can('grade.view')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $user = Auth::user();
 
         // School ID'yi kullanıcıdan al
@@ -149,19 +151,12 @@ class SchoolHasGradeController extends Controller
             null;
 
         if (!$schoolId) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Okul bilgisi bulunamadı.'
-            ], 403);
+            return $this->errorResponse('Kullanıcıya ait okul bilgisi bulunamadı.', 403);
         }
 
         $records = SchoolHasGrade::where('school_id', $schoolId)
             ->with(['school', 'grade'])
             ->get();
-
-        return response()->json([
-            'status' => true,
-            'data' => $records
-        ]);
+        return $this->successResponse($records, 'Kullanıcının okuluna ait sınıf seviyeleri başarıyla getirildi.', 200);
     }
 }

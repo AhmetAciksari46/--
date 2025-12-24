@@ -39,17 +39,24 @@ class TeacherSubjectController extends Controller
      */
     public function index(School $school)
     {
-        $subjects = TeacherSubject::whereHas('teacher.teacherProfile', function ($q) use ($school) {
-            $q->where('school_id', $school->id);
-        })
-            ->with(['teacher.teacherProfile', 'subject'])
-            ->get();
+        if (!auth()->user()->can('teachersubject.view.list')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
+        try {
+            $subjects = TeacherSubject::whereHas('teacher.teacherProfile', function ($q) use ($school) {
+                $q->where('school_id', $school->id);
+            })
+                ->with(['teacher.teacherProfile', 'subject'])
+                ->get();
 
-        return $this->successResponse(
-            $subjects,
-            'Bu okula ait öğretmen-ders ilişkileri başarıyla getirildi.',
-            200
-        );
+            return $this->successResponse(
+                $subjects,
+                'Bu okula ait öğretmen-ders ilişkileri başarıyla getirildi.',
+                200
+            );
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -78,22 +85,29 @@ class TeacherSubjectController extends Controller
      */
     public function store(Request $request, School $school)
     {
-        $validated = $request->validate([
-            'teacher_id' => 'required|exists:users,id',
-            'subject_id' => 'required|exists:subjects,id',
-        ]);
-
-        $teacher = User::with('teacherProfile')->findOrFail($validated['teacher_id']);
-
-        $subject = Subject::with('branch')->findOrFail($validated['subject_id']);
-
-        if ($teacher->teacherProfile->branch_id !== $subject->branch_id) {
-            return response()->json(['error' => 'Branş uyuşmuyor.'], 422);
+        if (!auth()->user()->can('teachersubject.create')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
+        try {
+            $validated = $request->validate([
+                'teacher_id' => 'required|exists:users,id',
+                'subject_id' => 'required|exists:subjects,id',
+            ]);
+
+            $teacher = User::with('teacherProfile')->findOrFail($validated['teacher_id']);
+
+            $subject = Subject::with('branch')->findOrFail($validated['subject_id']);
+
+            if ($teacher->teacherProfile->branch_id !== $subject->branch_id) {
+                return $this->errorResponse('Branş uyuşmuyor.', 422);
+            }
 
 
-        $record = TeacherSubject::firstOrCreate($validated);
-        return $this->successResponse($record->load(['teacher', 'subject']), 'Öğretmen-Ders ataması başarıyla oluşturuldu.', 200);
+            $record = TeacherSubject::firstOrCreate($validated);
+            return $this->successResponse($record->load(['teacher', 'subject']), 'Öğretmen-Ders ataması başarıyla oluşturuldu.', 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -115,10 +129,13 @@ class TeacherSubjectController extends Controller
      */
     public function destroy($id, School $school)
     {
-        $record = TeacherSubject::findOrFail($id);
+        if (!auth()->user()->can('teachersubject.delete')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
         $this->authorize('delete', $record);
-        $record->delete();
 
-        return response()->json(['message' => 'Silindi'], 204);
+        $record = TeacherSubject::findOrFail($id);
+        $record->delete();
+        return $this->successResponse(null, 'Öğretmen-Ders ataması başarıyla silindi.', 200);
     }
 }

@@ -42,7 +42,7 @@ class StudentParentController extends Controller
             abort(403, 'Bu öğrenci bu okula ait değil.');
         }
         if (!auth()->user()->can('student.view')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
 
 
@@ -82,6 +82,9 @@ class StudentParentController extends Controller
         if ($profile->school_id !== $school->id) {
             abort(403, 'Bu öğrenci bu okula ait değil.');
         }
+        if (!auth()->user()->can('student.create')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
         $parent = $profile->parents()->create($request->validated());
 
         return $this->successResponse($parent, "Veli başarıyla oluşturuldu.", 201);
@@ -101,6 +104,9 @@ class StudentParentController extends Controller
      */
     public function show(School $school, SchoolStudentProfile $profile, StudentParent $parent)
     {
+        if (!auth()->user()->can('student.view')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
 
         if ($parent->school_student_profile_id !== $profile->id) {
             return $this->errorResponse("Bu veli bu öğrenciye ait değil.", 403);
@@ -125,6 +131,9 @@ class StudentParentController extends Controller
      */
     public function update(UpdateStudentParentRequest $request, School $school, SchoolStudentProfile $profile, StudentParent $parent)
     {
+        if (!auth()->user()->can('student.update')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
         if ($profile->school_id !== $school->id) {
             abort(403, 'Bu öğrenci bu okula ait değil.');
         }
@@ -149,6 +158,9 @@ class StudentParentController extends Controller
      */
     public function destroy(School $school, SchoolStudentProfile $profile, StudentParent $parent)
     {
+        if (!auth()->user()->can('student.delete')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
         if ($profile->school_id !== $school->id) {
             abort(403, 'Bu öğrenci bu okula ait değil.');
         }
@@ -159,16 +171,5 @@ class StudentParentController extends Controller
         $parent->delete();
 
         return $this->successResponse(null, "Veli silindi.", 200);
-    }
-
-    private function authorizeParentAccess(School $school, SchoolStudentProfile $profile)
-    {
-        if (!auth()->user()->s(['admin', 'manager'])) {
-            abort(403, "Yetkiniz yok.");
-        }
-
-        if ($profile->school_id !== $school->id) {
-            abort(403, "Bu öğrenci bu okula ait değil.");
-        }
     }
 }

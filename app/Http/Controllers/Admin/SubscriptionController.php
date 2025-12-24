@@ -58,6 +58,9 @@ class SubscriptionController extends Controller
      */
     public function index()
     {
+        if (!auth()->user()->can('subscription.view.list')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $subscriptions = Subscription::latest()->get();
         return $this->successResponse($subscriptions, 'Abonelikler başarıyla getirildi', 200);
     }
@@ -87,6 +90,9 @@ class SubscriptionController extends Controller
      */
     public function store(Request $request)
     {
+        if (!auth()->user()->can('subscription.create')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $validated = $request->validate([
             'subscribable_type' => 'required|string',
             'subscribable_id'   => 'required|integer',
@@ -116,6 +122,9 @@ class SubscriptionController extends Controller
      */
     public function show(Subscription $subscription)
     {
+        if (!auth()->user()->can('subscription.view')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         return $this->successResponse($subscription, 'Abonelik getirildi.', 200);
     }
     /**
@@ -138,6 +147,9 @@ class SubscriptionController extends Controller
      */
     public function createUnlimited(Request $request)
     {
+        if (!auth()->user()->can('subscription.create')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $validated = $request->validate([
             'school_id'  => 'required|exists:schools,id',
             'package_id' => 'required|exists:packages,id',
@@ -186,6 +198,9 @@ class SubscriptionController extends Controller
      */
     public function upgrade(Request $request, $id)
     {
+        if (!auth()->user()->can('subscription.update')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $subscription = Subscription::findOrFail($id);
         $package = Package::findOrFail($request->package_id);
 
@@ -226,6 +241,9 @@ class SubscriptionController extends Controller
      */
     public function renew(Request $request, $id)
     {
+        if (!auth()->user()->can('subscription.create')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $subscription = Subscription::findOrFail($id);
 
         $subscription->update([
@@ -255,6 +273,9 @@ class SubscriptionController extends Controller
      */
     public function cancel(Request $request, $id)
     {
+        if (!auth()->user()->can('subscription.delete')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $subscription = Subscription::findOrFail($id);
 
         $subscription->update([
@@ -286,6 +307,9 @@ class SubscriptionController extends Controller
      */
     public function updatePayment(Request $request, $id)
     {
+        if (!auth()->user()->can('subscription.create')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $subscription = Subscription::findOrFail($id);
 
         $subscription->update($request->only([
@@ -310,6 +334,9 @@ class SubscriptionController extends Controller
      */
     public function deactivate($id)
     {
+        if (!auth()->user()->can('subscription.create')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $subscription = Subscription::findOrFail($id);
         $subscription->update(['is_active' => false]);
         return $this->successResponse($subscription, 'Abonelik pasif edildi', 200);
@@ -329,6 +356,9 @@ class SubscriptionController extends Controller
      */
     public function activate($id)
     {
+        if (!auth()->user()->can('subscription.create')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $subscription = Subscription::findOrFail($id);
         $subscription->update(['is_active' => true, 'status' => 'active']);
         return $this->successResponse($subscription, 'Abonelik aktifleştirildi', 200);

@@ -65,4 +65,8 @@ class ClassModel extends Model
     {
         return $this->hasMany(ClassSchedule::class, 'class_model_id');
     }
+    public function chatGroup()
+    {
+        return $this->hasOne(Group::class, 'class_model_id');
+    }
 }

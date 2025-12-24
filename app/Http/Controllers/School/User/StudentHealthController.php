@@ -40,6 +40,9 @@ class StudentHealthController extends Controller
      */
     public function show(School $school, SchoolStudentProfile $profile)
     {
+        if (!auth()->user()->can('student.view')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
 
         if ($profile->school_id !== $school->id) {
             abort(403, 'Bu öğrenci bu okula ait değil.');
@@ -78,11 +81,15 @@ class StudentHealthController extends Controller
      */
     public function store(StudentHealthRequest $request, School $school, SchoolStudentProfile $profile)
     {
+        if (!auth()->user()->can('student.create')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
+
         if ($profile->school_id !== $school->id) {
             abort(403, 'Bu öğrenci bu okula ait değil.');
         }
         if (!auth()->user()->can('student.create')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
 
         $data = $request->validated();
@@ -118,7 +125,7 @@ class StudentHealthController extends Controller
             abort(403, 'Bu öğrenci bu okula ait değil.');
         }
         if (!auth()->user()->can('student.update')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
 
         $health = StudentHealthProfile::where('school_student_profile_id', $profile->id)->first();
@@ -152,7 +159,7 @@ class StudentHealthController extends Controller
             abort(403, 'Bu öğrenci bu okula ait değil.');
         }
         if (!auth()->user()->can('student.delete')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
 
         $health = StudentHealthProfile::where('school_student_profile_id', $profile->id)->first();

@@ -28,6 +28,9 @@ class PackageWeekGradeRuleController extends Controller
      */
     public function index(Package $package)
     {
+        if (!auth()->user()->can('packagegrade.view.list')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         return $this->successResponse($package->gradeRules, 'Sınıf kuralları listelendi.');
     }
     /**
@@ -43,6 +46,9 @@ class PackageWeekGradeRuleController extends Controller
      */
     public function show(Package $package, PackageWeekGradeRule $grade_rule)
     {
+        if (!auth()->user()->can('packagegrade.view')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $grade_details = $package->gradeRules()->where('id', $grade_rule->id)->first();
         return $this->successResponse($grade_details, 'Kural getirildi');
     }
@@ -61,6 +67,9 @@ class PackageWeekGradeRuleController extends Controller
      */
     public function store(StorePackageWeekGradeRuleRequest $request, Package $package)
     {
+        if (!auth()->user()->can('packagegrade.create')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $data = $request->validated();
         $data['package_id'] = $package->id;
 
@@ -83,6 +92,9 @@ class PackageWeekGradeRuleController extends Controller
      */
     public function update(UpdatePackageWeekGradeRuleRequest $request, Package $package, PackageWeekGradeRule $grade_rule)
     {
+        if (!auth()->user()->can('packagegrade.update')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         if ($grade_rule->package_id !== $package->id) {
             return $this->errorResponse('not_found', 404);
         }
@@ -106,6 +118,9 @@ class PackageWeekGradeRuleController extends Controller
      */
     public function destroy(Package $package, PackageWeekGradeRule $grade_rule)
     {
+        if (!auth()->user()->can('packagegrade.delete')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         if ($grade_rule->package_id !== $package->id) {
             return $this->errorResponse('not_found', 404);
         }
@@ -139,6 +154,9 @@ class PackageWeekGradeRuleController extends Controller
      */
     public function showManagerPackage(Package $package)
     {
+        if (!auth()->user()->can('packagegrade.view')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $user = auth()->user();
         // 🔐 Rol Doğrulama
         if (!$user->hasRole('manager')) {

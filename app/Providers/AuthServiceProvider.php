@@ -25,6 +25,8 @@ use App\Policies\SchoolPolicy;
 use App\Models\School;
 use App\Policies\AttendancePolicy;
 use App\Policies\SchoolHasGradePolicy;
+use App\Policies\MessagePolicy;
+use App\Policies\CommentPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -60,6 +62,10 @@ class AuthServiceProvider extends ServiceProvider
             }
         });
         // Ek gate tanımları gerekiyorsa buraya
+
+        Gate::define('send-message', [MessagePolicy::class, 'send']);
+        Gate::define('create-comment', [CommentPolicy::class, 'create']);
+
         // örn: Gate::define('admin-only', fn($user) => $user->role === 'admin');
     }
 }

@@ -32,8 +32,10 @@ class BranchController extends Controller
      */
     public function index()
     {
+        if (!auth()->user()->can('branch.view.list')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $branches = Branch::all();
-
         return $this->successResponse($branches, 'Branşlar başarıyla getirildi', 200);
     }
 
@@ -77,8 +79,8 @@ class BranchController extends Controller
      */
     public function activeBranches()
     {
-        if (!Auth::user()->can('teacher.create')) {
-            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        if (!auth()->user()->can('branch.view.list')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         $branches = Branch::select('id', 'name', 'code', 'color')
             ->where('is_active', 1)
@@ -98,9 +100,15 @@ class BranchController extends Controller
      */
     public function store(StoreBranchRequest $request)
     {
-        $branch = Branch::create($request->validated());
-
-        return $this->successResponse($branch, 'Branş başarıyla oluşturuldu.', 200);
+        if (!auth()->user()->can('branch.create')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
+        try {
+            $branch = Branch::create($request->validated());
+            return $this->successResponse($branch, 'Branş oluşturuldu.', 200);
+        } catch (\Exception $e) {
+            return $this->errorResponse('Branş oluşturma bir hata oluştu: ' . $e->getMessage(), 500);
+        }
     }
 
 
@@ -121,7 +129,9 @@ class BranchController extends Controller
      */
     public function show(Branch $branch)
     {
-
+        if (!auth()->user()->can('branch.view')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         return $this->successResponse($branch, 'Branş getirildi.', 200);
     }
 
@@ -144,9 +154,15 @@ class BranchController extends Controller
      */
     public function update(UpdateBranchRequest $request, Branch $branch)
     {
-        $branch->update($request->validated());
-
-        return $this->successResponse($branch, 'Branş güncellendi.', 200);
+        if (!auth()->user()->can('branch.update')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
+        try {
+            $branch->update($request->validated());
+            return $this->successResponse($branch, 'Branş güncellendi.', 200);
+        } catch (\Exception $e) {
+            return $this->errorResponse('Branş güncelleme bir hata oluştu: ' . $e->getMessage(), 500);
+        }
     }
 
     /**
@@ -178,6 +194,9 @@ class BranchController extends Controller
      */
     public function destroy(Branch $branch)
     {
+        if (!auth()->user()->can('branch.delete')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $branch->delete();
         return $this->successResponse(null, 'Branş silindi.', 200);
     }

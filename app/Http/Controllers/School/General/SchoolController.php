@@ -18,7 +18,7 @@ use App\Models\User;
 
 /**
  * @OA\Tag(
- *     name="Schools",
+ *     name="Genel - Schools",
  *     description="Okul yönetimi işlemleri (Manager, Teacher, Student, Admin)",
  * )
  */
@@ -28,7 +28,7 @@ class SchoolController extends Controller
     /**
      * @OA\Get(
      *     path="/api/school/info",
-     *     tags={"Schools"},
+     *     tags={"Genel - Schools"},
      *     summary="Kullanıcının bağlı olduğu okul bilgisini getirir",
      *     description="Manager, teacher veya student rollü kullanıcının okul bilgisini döner.",
      *     security={{"bearerAuth":{}}},
@@ -38,6 +38,9 @@ class SchoolController extends Controller
      */
     public function info(Request $request)
     {
+        if (!auth()->user()->can('school.view')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
         $user = Auth::user(); // Giriş yapmış kullanıcı
 
         if ($user->hasRole('manager')) {
@@ -55,40 +58,22 @@ class SchoolController extends Controller
 
         // School kontrolü
         if ($schoolId) {
-            $school = School::find($schoolId);
-
-            if ($school) {
+            try {
+                $school = School::findOrFail($schoolId);
                 return $this->successResponse($school, 'Okul bilgisi başarıyla getirildi', 200);
-            } else {
-                return $this->errorResponse('Okul bilgisi bulunamadı.', 404);
+            } catch (\Exception $e) {
+                return $this->errorResponse('Okul bilgisi alınırken bir hata oluştu: ' . $e->getMessage(), 500);
             }
+        } else {
+            return $this->errorResponse('Okul bilgisi hatalı.', 404);
         }
     }
-    /**
-     * @OA\Get(
-     *     path="/api/getschool",
-     *     tags={"Schools"},
-     *     summary="Okul bilgisi (aktif oturumdan alınır)",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Okul bilgisi başarıyla getirildi"),
-     *     @OA\Response(response=404, description="Okul bulunamadı")
-     * )
-     */
-    public function index(Request $request)
-    {
-        return $this->successResponse($request);
 
-        $school = $request->attributes->get('school');
-        if (!$school) {
-            return $this->errorResponse('Okul bilgisi bulunamadı.', 404);
-        }
-        return $this->successResponse($school);
-    }
 
     /**
      * @OA\Post(
      *     path="/api/admin/school/createschool",
-     *     tags={"Admin - Schools"},
+     *     tags={"Genel - Schools"},
      *     summary="Yeni okul oluştur (admin rolü)",
      *     description="Admin kullanıcılar için yeni okul oluşturma işlemi.",
      *     security={{"bearerAuth":{}}},
@@ -113,6 +98,9 @@ class SchoolController extends Controller
     // Admin için okul oluşturma
     public function createSchool(CreateSchoolbyAdminRequest $request)
     {
+        if (!auth()->user()->can('school.create')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
         try {
             $school = School::create([
                 'name' => $request->name,
@@ -139,7 +127,7 @@ class SchoolController extends Controller
     /**
      * @OA\Put(
      *     path="/api/admin/school/update/{school}",
-     *     tags={"Admin - Schools"},
+     *     tags={"Genel - Schools"},
      *     summary="Okul güncelle (Admin)",
      *     description="Admin kullanıcı okul bilgilerini günceller.",
      *     security={{"bearerAuth":{}}},
@@ -176,7 +164,9 @@ class SchoolController extends Controller
     public function updateSchool(UpdateSchoolbyAdminRequest $request, School $school)
     {
         // Okul yoksa
-
+        if (!auth()->user()->can('school.update')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
         try {
             $school->update($request->validated());
             return $this->successResponse($school->fresh(), 'Okul başarıyla güncellendi.', 201);
@@ -188,7 +178,7 @@ class SchoolController extends Controller
     /**
      * @OA\Get(
      *     path="/api/admin/school/getschools",
-     *     tags={"Admin - Schools"},
+     *     tags={"Genel - Schools"},
      *     summary="Tüm okulları listele (Admin)",
      *     description="Sadece school.view iznine sahip adminler listeyi görebilir.",
      *     security={{"bearerAuth":{}}},
@@ -200,11 +190,8 @@ class SchoolController extends Controller
     // Admin için okul listesi
     public function schoollist()
     {
-
-        if (!Auth::user()->can('school.view')) {
-            return response()->json([
-                'message' => 'Bu işlemi yapma yetkiniz yok (school.delete izni gerekli).'
-            ], 403);
+        if (!auth()->user()->can('school.wiew.list')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
         try {
             $schools = School::with('manager')->get();
@@ -216,7 +203,7 @@ class SchoolController extends Controller
     /**
      * @OA\Get(
      *     path="/api/admin/school/getschoolbyid/{id}",
-     *     tags={"Admin - Schools"},
+     *     tags={"Genel - Schools"},
      *     summary="Tek okul bilgisi getir (Admin)",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
@@ -229,11 +216,10 @@ class SchoolController extends Controller
     // Admin için tek okul getirme
     public function getSchool(School $school)
     {
-        if (!Auth::user()->can('school.view')) {
-            return response()->json([
-                'message' => 'Bu işlemi yapma yetkiniz yok (school.delete izni gerekli).'
-            ], 403);
+        if (!auth()->user()->can('school.view.detail')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
+
         try {
             $info =  School::with('manager')->findOrFail($school->id);
             return $this->successResponse($info, 'Okul bilgisi başarıyla getirildi', 200);
@@ -245,7 +231,7 @@ class SchoolController extends Controller
     /**
      * @OA\Delete(
      *     path="/api/admin/schools/{id}",
-     *     tags={"Admin - Schools"},
+     *     tags={"Genel - Schools"},
      *     summary="Okul sil (Admin)",
      *     description="Sadece school.delete iznine sahip adminler okul silebilir.",
      *     security={{"bearerAuth":{}}},

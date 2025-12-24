@@ -15,6 +15,11 @@ use App\Http\Controllers\School\General\SchoolController;
 use App\Http\Controllers\School\General\TeacherSubjectController;
 use App\Http\Controllers\School\General\ClassModelController;
 
+use App\Http\Controllers\School\General\StudentPreRegistrationController;
+
+
+
+
 use App\Http\Controllers\Admin\{
     ContentController,
     SubjectController,
@@ -35,6 +40,24 @@ use App\Http\Controllers\School\Week\{
     PhysicalClassroomController
 };
 
+
+use App\Http\Controllers\Chat\{
+    GroupController,
+    MessageController,
+    CommentController,
+    ReactionController,
+    LastReadMessageController,
+    NotificationController,
+    GroupMemberController,
+    AttachmentController
+};
+use App\Http\Controllers\Permission\{
+    UserPermissionController,
+    TeacherPermissionController,
+    StudentPermissionController,
+};
+
+
 use App\Http\Controllers\School\Student\{
     StudentLessonController,
 };
@@ -44,12 +67,14 @@ use App\Http\Controllers\School\Teacher\{
 };
 
 use App\Http\Controllers\{
+    BirthDayCheckController,
     UserController,
     StudentCurriculumOverrideController,
+    MediaFileController,
 };
-use App\Http\Controllers\Admin\AdminTeacherController;
 use App\Http\Controllers\School\User\StudentParentController;
 use App\Http\Controllers\School\User\StudentHealthController;
+use App\Http\Controllers\Permission\ManagerSelfPermissionController;
 
 Route::post("/register", [AuthController::class, "register"]);
 Route::post("/login", [AuthController::class, "login"]);
@@ -57,151 +82,292 @@ Route::post("/login", [AuthController::class, "login"]);
 
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::prefix("me")->group(function () {
 
-        Route::get('/', function () {
-            return response()->json(auth()->user());
-        });
-        Route::post("/logout", [AuthController::class, "logout"]);
 
-        // Route::prefix("teacher")->middleware("role:teacher")->group(function () {
-        //     Route::put("/updateprofile", [TeacherController::class, "update"]);
-        //     Route::put("/updateprofilesettings", [TeacherProfileController::class, "updateprofilesettings"]);
-        //     Route::get("/getprofilesettings", [TeacherProfileController::class, "getprofilesettings"]);
-        // });
+    //permission
+    Route::prefix('manager/self/permissions')->group(function () {
 
-        // // School Student kendi profili ->Sadece ad syad ve şifre değişebilir// diğer bilgileri manager yada teacher değiştirir
-        // Route::prefix("schoolstudent")->middleware("role:schoolstudent")->group(function () {
-        //     Route::get("/getprofilesettings", [SchoolStudentProfileController::class, "getprofilesettings"]);
-        // });
+        Route::get('/assignable', [ManagerSelfPermissionController::class, 'assignable']);
 
-        // // individual Student kendi profili
-        // Route::prefix("individualstudent")->middleware("role:individualstudent")->group(function () {
-        // });
+        Route::post('/assign', [ManagerSelfPermissionController::class, 'assign']);
+
+        Route::post('/revoke', [ManagerSelfPermissionController::class, 'revoke']);
     });
 
 
-    Route::middleware('role:manager')->prefix('manager')->group(function () {
-        Route::get('/me', [ManagerController::class, 'getManagerUser']); //kendi user tür bilgilerini getir
+    // 📘 Ön kayıt listeleme & oluşturma (school scoped)
+    Route::get(
+        '/schools/{school}/pre-registrations',
+        [StudentPreRegistrationController::class, 'index']
+    );
+
+    Route::post(
+        '/schools/{school}/pre-registrations',
+        [StudentPreRegistrationController::class, 'store']
+    );
+
+    // 🔄 Ön kayıt state işlemleri
+    Route::post(
+        '/pre-registrations/{preRegistration}/submit',
+        [StudentPreRegistrationController::class, 'submit']
+    );
+
+    Route::post(
+        '/pre-registrations/{preRegistration}/approve',
+        [StudentPreRegistrationController::class, 'approve']
+    );
+
+    Route::post(
+        '/pre-registrations/{preRegistration}/cancel',
+        [StudentPreRegistrationController::class, 'cancel']
+    );
+
+    Route::get('/birthdays/parents', [BirthDayCheckController::class, 'getParentBirthDays']);
+    Route::get('/birthdays/students', [BirthDayCheckController::class, 'getStudentBirthDays']);
+    Route::get('/birthdays/teachers', [BirthDayCheckController::class, 'getTeacherBirthDays']);
+
+
+
+
+
+
+    Route::get(
+        '/schools/teachers/assignable-permissions',
+        [TeacherPermissionController::class, 'assignablePermissions']
+    );
+
+    Route::get(
+        '/schools/{school}/teachers/{teacher}/permissions',
+        [TeacherPermissionController::class, 'list']
+    );
+
+    Route::post(
+        '/schools/{school}/teachers/{teacher}/permissions',
+        [TeacherPermissionController::class, 'assign']
+    );
+
+    Route::delete(
+        '/schools/{school}/teachers/{teacher}/permissions',
+        [TeacherPermissionController::class, 'revoke']
+    );
+
+
+    Route::get(
+        '/schools/students/assignable-permissions',
+        [StudentPermissionController::class, 'assignablePermissions']
+    );
+
+    Route::get(
+        '/schools/{school}/students/{student}/permissions',
+        [StudentPermissionController::class, 'list']
+    );
+
+    Route::post(
+        '/schools/{school}/students/{student}/permissions',
+        [StudentPermissionController::class, 'assign']
+    );
+
+    Route::delete(
+        '/schools/{school}/students/{student}/permissions',
+        [StudentPermissionController::class, 'revoke']
+    );
+
+
+
+
+    Route::prefix('admin')->group(function () {
+
+        Route::get(
+            '/users/assignable-permissions',
+            [UserPermissionController::class, 'assignablePermissions']
+        );
+
+        Route::get(
+            '/users/{user}/permissions',
+            [UserPermissionController::class, 'list']
+        );
+
+        Route::post(
+            '/users/{user}/permissions',
+            [UserPermissionController::class, 'assign']
+        );
+
+        Route::delete(
+            '/users/{user}/permissions',
+            [UserPermissionController::class, 'revoke']
+        );
+    });
+
+    Route::prefix("me")->group(function () {
+        Route::get("/", [AuthController::class, "meendpoint"]);
+        Route::post("/logout", [AuthController::class, "logout"]);
+    });
+
+
+    //Route::middleware('role:manager')->prefix('manager')->group(function () {
+    Route::prefix('manager')->group(function () {
+        //Route::get('/me', [ManagerController::class, 'getManagerUser']); //kendi user tür bilgilerini getir
         Route::put('/me', [ManagerController::class, 'updateManagerUser']); //kendi user tür bilgilerini getir
-        Route::get('/profile/me', [ManagerProfileController::class, 'getManagerProfile']); //kendi managerprofil tür bilgilerini getir
         Route::put('/profile/me', [ManagerProfileController::class, 'updateManagerProfile']); //kendi managerprofil tür bilgilerini güncelle
         Route::post('/profile', [ManagerProfileController::class, 'storeManagerProfile']); //kendi managerprofil tür bilgilerini oluştur
     });
+    Route::prefix('teacher')->group(function () {
+        Route::get('/me', [TeacherProfileController::class, 'getprofilesettings']); //kendi user tür bilgilerini getir
+        Route::put('/me', [TeacherController::class, 'updateTeacherUser']); //kendi user tür bilgilerini getir
+        Route::put('/profile/me', [TeacherProfileController::class, 'updateprofilesettings']); //kendi teacherprofil tür bilgilerini güncelle
+    });
 
-
-    // SUBJECTS (Admin only)
-    Route::middleware('role:admin')->prefix('admin/subjectssss')->group(function () {
+    Route::prefix('admin/subjectssss')->group(function () {
         Route::get('/', [SubjectController::class, 'index']);
         Route::post('/', [SubjectController::class, 'store']);
         Route::put('/{id}', [SubjectController::class, 'update']);
         Route::delete('/{id}', [SubjectController::class, 'destroy']);
     });
+    //Route::middleware('role:admin')->prefix('admin')->group(function () {
+    Route::prefix('admin')->group(function () {
+        Route::get('/school-has-grades', [SchoolHasGradeController::class, 'index']);
+        Route::post('/school-has-grades', [SchoolHasGradeController::class, 'store']);
+        Route::delete('/school-has-grades/{id}', [SchoolHasGradeController::class, 'destroy']);
+        Route::get('/school-has-grades/by-school/{school}', [SchoolHasGradeController::class, 'getBySchoolId']);
 
-    // TEACHER SUBJECTS (Admin + Manager)
+        Route::apiResource('packages', PackageController::class);
+        Route::apiResource('packages.grade-rules', PackageWeekGradeRuleController::class);
+        // Abonelikleri listele
+        Route::get('subscriptions', [SubscriptionController::class, 'index']);
 
+        // Yeni abonelik oluştur (manuel)
+        Route::post('subscriptions/create', [SubscriptionController::class, 'store']);
+        //admin yeni üyelik oluştururken bunla
+        Route::post('subscriptions/unlimited', [SubscriptionController::class, 'createUnlimited']);
 
+        // Belirli aboneliği göster
+        Route::get('subscriptions/{Subscription}', [SubscriptionController::class, 'show']);
 
-    Route::middleware('role:admin')
-        ->prefix('admin')->group(function () {
-            Route::get('/school-has-grades', [SchoolHasGradeController::class, 'index']);
-            Route::post('/school-has-grades', [SchoolHasGradeController::class, 'store']);
-            Route::delete('/school-has-grades/{id}', [SchoolHasGradeController::class, 'destroy']);
-            Route::get('/school-has-grades/by-school/{school_id}', [SchoolHasGradeController::class, 'getBySchoolId']);
+        // Paket yükseltme (upgrade)
+        Route::post('subscriptions/{id}/upgrade', [SubscriptionController::class, 'upgrade']);
 
-            Route::apiResource('packages', PackageController::class);
-            Route::apiResource('packages.grade-rules', PackageWeekGradeRuleController::class);
-            // Abonelikleri listele
-            Route::get('subscriptions', [SubscriptionController::class, 'index']);
+        // Abonelik yenileme (manuel renew)
+        Route::post('subscriptions/{id}/renew', [SubscriptionController::class, 'renew']);
 
-            // Yeni abonelik oluştur (manuel)
-            Route::post('subscriptions/create', [SubscriptionController::class, 'store']);
-            //admin yeni üyelik oluştururken bunla
-            Route::post('subscriptions/unlimited', [SubscriptionController::class, 'createUnlimited']);
+        // Aboneliği iptal et
+        Route::post('subscriptions/{id}/cancel', [SubscriptionController::class, 'cancel']);
 
-            // Belirli aboneliği göster
-            Route::get('subscriptions/{Subscription}', [SubscriptionController::class, 'show']);
+        // Ödeme bilgisi güncelle
+        Route::post('subscriptions/{id}/payment', [SubscriptionController::class, 'updatePayment']);
 
-            // Paket yükseltme (upgrade)
-            Route::post('subscriptions/{id}/upgrade', [SubscriptionController::class, 'upgrade']);
+        // Abonelik pasif yap
+        Route::post('subscriptions/{id}/deactivate', [SubscriptionController::class, 'deactivate']);
 
-            // Abonelik yenileme (manuel renew)
-            Route::post('subscriptions/{id}/renew', [SubscriptionController::class, 'renew']);
-
-            // Aboneliği iptal et
-            Route::post('subscriptions/{id}/cancel', [SubscriptionController::class, 'cancel']);
-
-            // Ödeme bilgisi güncelle
-            Route::post('subscriptions/{id}/payment', [SubscriptionController::class, 'updatePayment']);
-
-            // Abonelik pasif yap
-            Route::post('subscriptions/{id}/deactivate', [SubscriptionController::class, 'deactivate']);
-
-            // Abonelik aktif yap
-            Route::post('subscriptions/{id}/activate', [SubscriptionController::class, 'activate']);
+        // Abonelik aktif yap
+        Route::post('subscriptions/{id}/activate', [SubscriptionController::class, 'activate']);
 
 
-            Route::post("/managerregister", [AuthController::class, "managerregister"]);
-            Route::get('/manager/{user_id}/profile', [ManagerProfileController::class, 'getManagerProfileById']);
-            Route::put('/manager/{user_id}/profile', [ManagerProfileController::class, 'updateManagerProfileById']);
-            Route::get('/manager/{id}', [ManagerController::class, 'getManagerUserById']);
-            Route::put('/manager/{id}', [ManagerController::class, 'updateManagerUserById']);
-            Route::post('/manager/{user_id}/profile', [ManagerProfileController::class, 'storeManagerProfileById']);
+        Route::post("/managerregister", [AuthController::class, "managerregister"]);
+        Route::put('/manager/{user_id}/profile', [ManagerProfileController::class, 'updateManagerProfileById']);
+        Route::get('/manager/{id}', [ManagerController::class, 'getManagerUserById']);
+        Route::put('/manager/{id}', [ManagerController::class, 'updateManagerUserById']);
+        Route::post('/manager/{user_id}/profile', [ManagerProfileController::class, 'storeManagerProfileById']);
 
-            Route::prefix('grades')->group(function () {
-                Route::get('/', [GradeController::class, 'index']);
-                Route::post('/store', [GradeController::class, 'store']);
-                Route::put('/{grade}', [GradeController::class, 'update']);
-                Route::get('/{grade}', [GradeController::class, 'show']);
-                Route::delete('/{id}', [GradeController::class, 'destroy']);
-            });
-            Route::resource('contents', ContentController::class)->only(['index', 'store', 'update', 'destroy']);
-            Route::apiResource('branches', BranchController::class);
-            Route::get('/users', [UserController::class, 'index']);
-            Route::get('/users/{id}', [UserController::class, 'show']);
-            Route::post('/users', [UserController::class, 'store']);
-            Route::put('/users/{id}', [UserController::class, 'update']);
-            Route::delete('/users/{id}', [UserController::class, 'destroy']);
-
-            Route::apiResource('subjects', SubjectController::class);
-            Route::prefix("school")->group(function () { //by aadmin
-                Route::get('/getschools', [SchoolController::class, 'schoollist']);
-                Route::get('/getschoolbyid/{school}', [SchoolController::class, 'getSchool']);
-                Route::post('/createschool', [SchoolController::class, 'createschool']);
-                Route::put('/updateschool/{school}', [SchoolController::class, 'updateschool']);
-                Route::delete('/deleteschool/{school}', [SchoolController::class, 'deleteschool']);
-            });
-
-
-            Route::prefix("teachers")->group(function () { //by aadmin
-                Route::get('/', [AdminTeacherController::class, 'index']); // all teachers
-                Route::get('/getteachersbyschoolid/{school}', [AdminTeacherController::class, 'getbySchoolId']); // o okuldaki öğretmenlerin tamamını getir
-                Route::get('/{teacher}', [AdminTeacherController::class, 'show']); // getTeacherById
-                Route::post('/', [AdminTeacherController::class, 'store']); // createTeacher
-                Route::put('/{teacher}', [AdminTeacherController::class, 'update']); // updateTeacher
-                Route::delete('/{teacher}', [AdminTeacherController::class, 'destroy']); // deleteTeacher
-                Route::delete('/{teacher}/permissions', [AdminTeacherController::class, 'removePermissions']); // removeTeacherPermissions
-                Route::get('/{teacher}/permissions', [AdminTeacherController::class, 'getPermissions']); // getTeacherPermissions
-                Route::put('/{teacher}/permissions', [AdminTeacherController::class, 'updatePermissions']); // updateTeacherPermissions
-                Route::get('/available-permissions', [AdminTeacherController::class, 'availablePermissionsForTeachers']);
-            });
-            Route::get('/getschool', [SchoolController::class, 'index']);  // okula bağlı userlar için okul bilgisi çekme
-
+        Route::prefix('grades')->group(function () {
+            Route::get('/', [GradeController::class, 'index']);
+            Route::post('/store', [GradeController::class, 'store']);
+            Route::put('/{grade}', [GradeController::class, 'update']);
+            Route::get('/{grade}', [GradeController::class, 'show']);
+            Route::delete('/{id}', [GradeController::class, 'destroy']);
         });
+        Route::resource('contents', ContentController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::apiResource('branches', BranchController::class);
+        Route::get('/users', [UserController::class, 'index']);
+        Route::get('/users/{id}', [UserController::class, 'show']);
+        Route::post('/users', [UserController::class, 'store']);
+        Route::put('/users/{id}', [UserController::class, 'update']);
+        Route::delete('/users/{id}', [UserController::class, 'destroy']);
+
+        Route::apiResource('subjects', SubjectController::class);
+        Route::prefix("school")->group(function () { //by aadmin
+            Route::get('/getschools', [SchoolController::class, 'schoollist']);
+            Route::get('/getschoolbyid/{school}', [SchoolController::class, 'getSchool']);
+            Route::post('/createschool', [SchoolController::class, 'createschool']);
+            Route::put('/updateschool/{school}', [SchoolController::class, 'updateschool']);
+            Route::delete('/deleteschool/{school}', [SchoolController::class, 'deleteschool']);
+        });
+    });
 
     Route::middleware(CheckUserProfile::class)->group(function () {
+        Route::prefix('media')->middleware('auth:api')->group(function () {
+            Route::post('/upload', [MediaFileController::class, 'store']);
+            Route::get('/{media}', [MediaFileController::class, 'show']);
+            Route::put('/{media}', [MediaFileController::class, 'update']);
+            Route::delete('/{media}', [MediaFileController::class, 'destroy']);
+        });
+        Route::prefix('chat')->group(function () {
+            Route::prefix('/groups')->group(function () {
+                Route::put('/{group}', [GroupController::class, 'update']);
+                Route::delete('/{group}', [GroupController::class, 'destroy']);
+                Route::post('/{group}/last-read', [LastReadMessageController::class, 'update']);
+                Route::get('/{group}/unread-count', [LastReadMessageController::class, 'unreadCount']);
+                Route::get('/global', [GroupController::class, 'globalGroups']);
+                Route::get('/{group}', [GroupController::class, 'show']);
+                Route::get('/{group}/messages', [MessageController::class, 'index']);
+                Route::post('/{group}/messages', [MessageController::class, 'store']);
+                Route::prefix('/{group}')->group(function () {
+                    Route::prefix('/members')->group(function () {
+                        Route::get('/', [GroupMemberController::class, 'index']);
+                        Route::post('/', [GroupMemberController::class, 'store']);
+                        Route::put('/{member}', [GroupMemberController::class, 'update']);
+                        Route::delete('/{member}', [GroupMemberController::class, 'destroy']);
+                    });
+                });
+            });
+            Route::prefix('/messages')->group(function () {
+                Route::get('/{message}', [MessageController::class, 'show']);
+                Route::put('/{message}', [MessageController::class, 'update']);
+                Route::delete('/{message}', [MessageController::class, 'destroy']);
+                Route::post('/{message}/pin', [MessageController::class, 'pin']);
+                Route::delete('/{message}/pin', [MessageController::class, 'unpin']);
+                Route::prefix('/{message}')->group(function () {
+                    Route::get('/attachments', [AttachmentController::class, 'showMessageAttachment']);
+                    Route::post('/attachments', [AttachmentController::class, 'store']);
+                    Route::get('/comments', [CommentController::class, 'index']);
+                    Route::post('/comments', [CommentController::class, 'store']);
+                    Route::post('/reactions', [ReactionController::class, 'addMessageReaction']);
+                    Route::delete('/reactions/{reaction}', [ReactionController::class, 'removeMessageReaction']);
+                    Route::get('/reactions', [ReactionController::class, 'listMessageReactions']);
+                });
+            });
+            Route::prefix('/comments')->group(function () {
 
-        // Paket satın alma
+                Route::put('/{comment}', [CommentController::class, 'update']);
+                Route::delete('/{comment}', [CommentController::class, 'destroy']);
+                Route::post('/{comment}/reactions', [ReactionController::class, 'addCommentReaction']);
+                Route::delete('/{comment}/reactions/{reaction}', [ReactionController::class, 'removeCommentReaction']);
+                Route::post('/{comment}/attachments', [AttachmentController::class, 'storee']);
+            });
+            Route::prefix('/notifications')->group(function () {
+                Route::get('/', [NotificationController::class, 'index']);
+                Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
+                Route::post('/{notification}/read', [NotificationController::class, 'markAsRead']);
+                Route::post('/read-all', [NotificationController::class, 'markAllAsRead']);
+                Route::delete('/{notification}', [NotificationController::class, 'destroy']);
+            });
+
+            Route::prefix('/attachments')->group(function () {
+                Route::get('/message/{attachment}/download', [AttachmentController::class, 'downloadMessageAttachment']);
+                Route::delete('/message/{attachment}', [AttachmentController::class, 'deleteMessageAttachment']);
+                Route::get('/comment/{attachment}', [AttachmentController::class, 'showCommentAttachment']);
+                Route::get('/comment/{attachment}/download', [AttachmentController::class, 'downloadCommentAttachment']);
+                Route::delete('/comment/{attachment}', [AttachmentController::class, 'deleteCommentAttachment']);
+            });
+            Route::get('/my-groups', [GroupController::class, 'myGroups']);
+            Route::get('/unread-summary', [LastReadMessageController::class, 'unreadSummary']);
+        });
         Route::post('/packages/{package}/purchase', [PackageController::class, 'purchase'])
             ->name('packages.purchase');
 
 
 
 
-        //------------------------------------------------admin-----------------------------------------------
-        //Managerın yapacağı işlemler
         Route::prefix("manager")->group(function () {
-            Route::get('/teachers/available-permissions', [TeacherController::class, 'availablePermissionsForTeachers']);
             Route::get('/packages/{package}/my-grade-rules', [PackageWeekGradeRuleController::class, 'showManagerPackage']);
             Route::get('/getactivesubjects', [SubjectController::class, 'activeSubjects']);
             Route::get('/getactivebranches', [BranchController::class, 'activeBranches']);
@@ -213,10 +379,9 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::put('/updateschool', [SchoolController::class, 'update']);
             });
         });
-
-
         Route::prefix("schools/{school}")->middleware(['ensure.school', 'active.school'])
             ->group(function () {
+                Route::get('/chat/groups', [GroupController::class, 'schoolGroups']);
 
                 Route::prefix('teacher-subjects')->group(function () {
                     Route::get('/', [TeacherSubjectController::class, 'index']);
@@ -271,11 +436,6 @@ Route::middleware('auth:sanctum')->group(function () {
                 });
 
 
-
-
-
-
-
                 Route::prefix('teachers')->group(function () {
                     Route::get('/today-lessons', [TeacherLessonController::class, 'todayLessons']);
                     Route::get('/missing-attendance', [TeacherLessonController::class, 'missingAttendance']);
@@ -286,9 +446,6 @@ Route::middleware('auth:sanctum')->group(function () {
                     Route::post('/', [TeacherController::class, 'store']); // createTeacher
                     Route::put('/{teacher}', [TeacherController::class, 'update']); // updateTeacher
                     Route::delete('/{teacher}', [TeacherController::class, 'destroy']); // deleteTeacher
-                    Route::delete('/{teacher}/permissions', [TeacherController::class, 'removePermissions']); // removeTeacherPermissions
-                    Route::get('/{teacher}/permissions', [TeacherController::class, 'getPermissions']); // getTeacherPermissions
-                    Route::put('/{teacher}/permissions', [TeacherController::class, 'updatePermissions']); // updateTeacherPermissions
                     Route::put('/{teacher}/reset-password', [TeacherController::class, 'resetPassword']); //resetTeacherPassword
 
                 });
@@ -324,6 +481,10 @@ Route::middleware('auth:sanctum')->group(function () {
                 });
 
                 Route::prefix('classes')->group(function () {
+                    Route::get('/{classModel}/chat/group', [GroupController::class, 'classroomGroup']);
+                    Route::post('/{classModel}/chat/group', [GroupController::class, 'createClassroomGroup']);
+
+
                     Route::get('/', [ClassModelController::class, 'index']);
                     Route::post('/', [ClassModelController::class, 'store']);
                     Route::get('/{classModel}', [ClassModelController::class, 'show']);

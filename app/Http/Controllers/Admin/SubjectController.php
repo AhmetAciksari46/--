@@ -33,7 +33,10 @@ class SubjectController extends Controller
     public function index()
     {
         $this->authorize('viewAny', Subject::class);
-        return response()->json(Subject::with(['branch', 'grade'])->get());
+        if (!auth()->user()->can('subject.view.list')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
+        return $this->successResponse(Subject::with(['branch', 'grade'])->get(), 'Dersler başarıyla getirildi.', 200);
     }
 
     /**
@@ -59,8 +62,10 @@ class SubjectController extends Controller
      */
     public function activeSubjects()
     {
-
-        return response()->json(Subject::with(['branch', 'grade'])->get());
+        if (!auth()->user()->can('subject.view.list')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
+        return $this->successResponse(Subject::with(['branch', 'grade'])->get(), 'Dersler başarıyla getirildi.', 200);
     }
 
 
@@ -86,6 +91,9 @@ class SubjectController extends Controller
      */
     public function store(Request $request)
     {
+        if (!auth()->user()->can('subject.create')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $this->authorize('create', Subject::class);
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:subjects,name',
@@ -94,7 +102,7 @@ class SubjectController extends Controller
         ]);
 
         $subject = Subject::create($validated);
-        return response()->json($subject, 201);
+        return $this->successResponse($subject, 'Ders başarıyla oluşturuldu.', 200);
     }
 
     /**
@@ -117,6 +125,9 @@ class SubjectController extends Controller
      */
     public function update(Request $request, $id)
     {
+        if (!auth()->user()->can('subject.update')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $subject = Subject::findOrFail($id);
         $this->authorize('update', $subject);
 
@@ -127,7 +138,8 @@ class SubjectController extends Controller
         ]);
 
         $subject->update($validated);
-        return response()->json($subject);
+
+        return $this->successResponse($subject, 'Ders başarıyla güncellendi.', 200);
     }
 
     /**
@@ -142,10 +154,13 @@ class SubjectController extends Controller
      */
     public function destroy($id)
     {
+        if (!auth()->user()->can('subject.delete')) {
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+        }
         $subject = Subject::findOrFail($id);
         $this->authorize('delete', $subject);
         $subject->delete();
 
-        return response()->json(['message' => 'Silindi'], 204);
+        return $this->successResponse(null, 'Silindi', 200);
     }
 }

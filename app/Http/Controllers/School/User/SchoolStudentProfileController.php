@@ -43,7 +43,7 @@ class SchoolStudentProfileController extends Controller
     public function index(School $school)
     {
         if (!auth()->user()->can('student.view')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
 
         $students = User::where('role', 'schoolstudent')
@@ -51,7 +51,7 @@ class SchoolStudentProfileController extends Controller
             ->with('schoolStudentProfile')
             ->get();
         if ($students->isEmpty()) {
-            return $this->successResponse([], 'Bu okula ait öğrenci bulunamadı.', 200);
+            return $this->errorResponse('Bu okula ait öğrenci bulunamadı.', 200);
         }
         return $this->successResponse($students, 'Öğrenciler başarıyla getirildi.', 200);
     }
@@ -72,7 +72,7 @@ class SchoolStudentProfileController extends Controller
     public function show(School $school, User $student)
     {
         if (!auth()->user()->can('student.view')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
 
         if (!$student->schoolStudentProfile || $student->schoolStudentProfile->school_id != $school->id) {
@@ -106,7 +106,7 @@ class SchoolStudentProfileController extends Controller
     {
 
         if (!auth()->user()->can('student.create')) {
-            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
 
         $data = $request->validated();
@@ -151,7 +151,7 @@ class SchoolStudentProfileController extends Controller
                 'student_number' => $data['student_number'],
                 'tc_no' => $data['tc_no'],
                 'gender' => $data['gender'] ?? null,
-                'class_model_id' => $data['active_class_id'] ?? null, // <-- EKLENDİ
+                'active_class_id' => $data['active_class_id'] ?? null, // <-- EKLENDİ
             ]);
 
             DB::commit();
@@ -159,7 +159,7 @@ class SchoolStudentProfileController extends Controller
             return $this->successResponse(
                 $user->load('schoolStudentProfile'),
                 'Yeni öğrenci başarıyla oluşturuldu.',
-                201
+                200
             );
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -187,7 +187,7 @@ class SchoolStudentProfileController extends Controller
     public function update(UpdateStudentRequest $request, School $school, User $student)
     {
         if (!auth()->user()->can('student.update')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
         if (!$student->schoolStudentProfile || $student->schoolStudentProfile->school_id != $school->id) {
             return $this->errorResponse('Bu öğrenci bu okula ait değil.', 403);
@@ -203,22 +203,25 @@ class SchoolStudentProfileController extends Controller
         }
 
 
+        try {
 
+            $validated = $request->validated();
 
-        $validated = $request->validated();
+            $userFields = array_filter($validated, fn($k) => in_array($k, ['name', 'email']), ARRAY_FILTER_USE_KEY);
+            $profileFields = array_filter($validated, fn($k) => !in_array($k, ['name', 'email']), ARRAY_FILTER_USE_KEY);
 
-        $userFields = array_filter($validated, fn($k) => in_array($k, ['name', 'email']), ARRAY_FILTER_USE_KEY);
-        $profileFields = array_filter($validated, fn($k) => !in_array($k, ['name', 'email']), ARRAY_FILTER_USE_KEY);
+            if ($userFields) {
+                $student->update($userFields);
+            }
 
-        if ($userFields) {
-            $student->update($userFields);
+            if ($profileFields) {
+                $student->schoolStudentProfile->update($profileFields);
+            }
+
+            return $this->successResponse($student->load('schoolStudentProfile'), 'Öğrenci başarıyla güncellendi.', 200);
+        } catch (\Throwable $e) {
+            return $this->errorResponse($e->getMessage(), 500);
         }
-
-        if ($profileFields) {
-            $student->schoolStudentProfile->update($profileFields);
-        }
-
-        return $this->successResponse($student->load('schoolStudentProfile'), 'Öğrenci başarıyla güncellendi.', 200);
     }
 
     /**
@@ -234,7 +237,7 @@ class SchoolStudentProfileController extends Controller
     public function destroy(School $school, User $student)
     {
         if (!auth()->user()->can('student.delete')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
 
         if (!$student->schoolStudentProfile || $student->schoolStudentProfile->school_id != $school->id) {
@@ -264,10 +267,10 @@ class SchoolStudentProfileController extends Controller
     public function resetPassword(ResetStudentPasswordRequest $request, School $school, User $student)
     {
         if (!auth()->user()->can('student.update')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
         if (!$student->schoolStudentProfile || $student->schoolStudentProfile->school_id != $school->id) {
-            return response()->json(['message' => 'Bu öğrenci bu okula ait değil.'], 403);
+            return $this->errorResponse('Bu öğrenci bu okula ait değil.', 403);
         }
 
         $student->password = Hash::make($request->password);
@@ -315,12 +318,12 @@ class SchoolStudentProfileController extends Controller
     public function getByClassModel(School $school, ClassModel $classModel)
     {
         if (!auth()->user()->can('student.view')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
 
         // Sınıf okul doğrulaması
         if ($classModel->school_id !== $school->id) {
-            return response()->json(['message' => 'Bu sınıf bu okula ait değil.'], 403);
+            return $this->errorResponse('Bu sınıf bu okula ait değil.', 403);
         }
 
         // Öğrencileri çek
@@ -353,7 +356,7 @@ class SchoolStudentProfileController extends Controller
     public function getDetails(School $school, User $student)
     {
         if (!auth()->user()->can('student.view')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
 
         if (!$student->schoolStudentProfile || $student->schoolStudentProfile->school_id != $school->id) {

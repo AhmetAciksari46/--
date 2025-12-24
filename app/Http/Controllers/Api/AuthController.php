@@ -18,6 +18,8 @@ use App\Traits\ApiResponser; // <<< Bu satırı ekleyin!
 use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // Bunu ekle
 use Spatie\Permission\Models\Role;
+use App\Services\PermissionResolver;
+use App\Services\Auth\PermissionSnapshotService;
 
 /**
  * @OA\Tag(
@@ -166,10 +168,6 @@ class AuthController extends Controller
             return $this->errorResponse('Manager oluşturulurken hata: ' . $e->getMessage(), 500);
         }
     }
-
-
-
-
     /**
      * @OA\Post(
      *     path="/api/login",
@@ -196,7 +194,7 @@ class AuthController extends Controller
      */
 
     // ✅ Giriş
-    public function login(Request $request)
+    public function login(Request $request, PermissionSnapshotService $permissionSnapshotService)
     {
         // 1. DOĞRULAMA (VALIDATION)
         // email veya userName'den en az biri zorunlu olmalı, password zorunlu.
@@ -215,30 +213,104 @@ class AuthController extends Controller
             'password' => $request->input('password')
         ];
 
+
         // 3. GİRİŞ DENEMESİ (AUTHENTICATION ATTEMPT)
         if (!Auth::attempt($credentials)) {
-            return response()->json([
-                "message" => "Giriş bilgileri hatalı. Lütfen kullanıcı adınızı/e-posta adresinizi ve şifrenizi kontrol edin."
-            ], 401);
+            return $this->errorResponse('Geçersiz kimlik bilgileri.Lütfen kullanıcı adınızı/e-posta adresinizi ve şifrenizi kontrol edin.', 401);
         }
 
         // 4. BAŞARILI GİRİŞ
         $user = Auth::user();
+        $permissions = app(PermissionResolver::class)->resolve($user);
+        $permissionSnapshot = $permissionSnapshotService->build($user);
 
         // Zaten 'api_token' kullanıyorsunuz, bu iyi bir yöntem.
         $token = $user->createToken("api_token")->plainTextToken;
 
-        return response()->json([
-            "user" => $user,
-            "token" => $token
-        ]);
+        return $this->successResponse([
+            "token" => $token,
+            'user' => [
+                'id'        => $user->id,
+                'name'      => $user->name,
+                'userName'  => $user->userName,
+                'email'     => $user->email,
+                'role'      => $user->role, // sadece label
+                'is_active' => $user->is_active,
+            ],
+            "permissionSnapshot" => $permissionSnapshot
+        ], 'Giriş başarılı.', 200);
     }
 
 
 
 
 
+    /**
+     * @OA\Get(
+     *     path="/api/me",
+     *     summary="Giriş yapan kullanıcının bilgilerini ve permission snapshot'ını döner",
+     *     tags={"01 Auth İşlemleri"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Kullanıcı bilgileri ve permission snapshot döndürüldü",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Bilgiler optimize edildi."),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="user",
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="name", type="string", example="Super Admin"),
+     *                     @OA\Property(property="userName", type="string", example="root"),
+     *                     @OA\Property(property="email", type="string", example="root@root.com"),
+     *                     @OA\Property(property="role", type="string", example="admin"),
+     *                     @OA\Property(property="is_active", type="boolean", example=true)
+     *                 ),
+     *                 @OA\Property(
+     *                     property="permissionSnapshot",
+     *                     type="array",
+     *                     description="Frontend için permission listesi (snapshot)",
+     *                     @OA\Items(type="string", example="teacher.view.detail"),
+     *                     example={"school.view","teacher.view","teacher.view.detail","studentpreregistration.approve"}
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized - token yok veya geçersiz",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Unauthenticated.")
+     *         )
+     *     )
+     * )
+     */
 
+    public function meendpoint(Request $request)
+    {
+        $user = Auth::user();
+        $permissionSnapshotService = app(PermissionSnapshotService::class);
+        $permissionSnapshot = $permissionSnapshotService->build($user);
+        return $this->successResponse([
+            'user' => [
+                'id'        => $user->id,
+                'name'      => $user->name,
+                'userName'  => $user->userName,
+                'email'     => $user->email,
+                'role'      => $user->role, // sadece label
+                'is_active' => $user->is_active,
+            ],
+            "permissionSnapshot" => $permissionSnapshot
+        ], 'Bilgiler optimize edildi.', 200);
+    }
     /**
      * @OA\Post(
      *     path="/api/logout",

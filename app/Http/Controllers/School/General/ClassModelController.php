@@ -68,9 +68,8 @@ class ClassModelController extends Controller
      */
     public function index(School $school)
     {
-        //TODO: yetki kontrolü eklenecek
-        if (!auth()->user()->can('classmodel.view')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+        if (!auth()->user()->can('classmodel.view.list')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
         return $this->successResponse(
             ClassModel::where('school_id', $school->id)->get(),
@@ -114,7 +113,7 @@ class ClassModelController extends Controller
     {
 
         if (!auth()->user()->can('classmodel.create')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
 
         $this->authorizeSchoolAccess($school);
@@ -169,7 +168,7 @@ class ClassModelController extends Controller
     {
         $this->authorizeSchoolAccess($school);
         if (!auth()->user()->can('classmodel.view')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
         if ($classModel->school_id !== $school->id) {
             return $this->errorResponse("Bu sınıf bu okula ait değil.", 403);
@@ -207,7 +206,7 @@ class ClassModelController extends Controller
     {
         $this->authorizeSchoolAccess($school);
         if (!auth()->user()->can('classmodel.update')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
         if ($classModel->school_id !== $school->id) {
             return $this->errorResponse("Bu sınıf bu okula ait değil.", 403);
@@ -258,7 +257,7 @@ class ClassModelController extends Controller
     {
         $this->authorizeSchoolAccess($school);
         if (!auth()->user()->can('classmodel.delete')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
         if ($classModel->school_id !== $school->id) {
             return $this->errorResponse("Bu sınıf bu okula ait değil.", 403);

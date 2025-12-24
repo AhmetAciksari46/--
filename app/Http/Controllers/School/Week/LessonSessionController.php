@@ -39,7 +39,7 @@ class LessonSessionController extends Controller
     public function index(School $school)
     {
         if (!auth()->user()->can('lessonsession.view',)) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         $sessions = LessonSession::whereHas('schedule', function ($q) use ($school) {
             $q->where('school_id', $school->id);
@@ -64,7 +64,7 @@ class LessonSessionController extends Controller
     public function store(LessonSessionStoreRequest $request, School $school)
     {
         if (!auth()->user()->can('lessonsession.create',)) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         $data = $request->validated();
 
@@ -93,7 +93,7 @@ class LessonSessionController extends Controller
     public function show(School $school, LessonSession $session)
     {
         if (!auth()->user()->can('lessonsession.view',)) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         if ($session->schedule->school_id != $school->id) {
             return $this->errorResponse("Bu oturum bu okula ait değildir.", 403);
@@ -134,7 +134,7 @@ class LessonSessionController extends Controller
     public function generate(LessonSessionGenerateRequest $request, School $school)
     {
         if (!auth()->user()->can('lessonsession.create')) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         $data = $request->validated();
 
@@ -196,7 +196,7 @@ class LessonSessionController extends Controller
     public function update(LessonSessionUpdateRequest $request, School $school, LessonSession $session)
     {
         if (!auth()->user()->can('lessonsession.update',)) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         if ($session->schedule->school_id != $school->id) {
             return $this->errorResponse("Bu oturum bu okula ait değildir.", 403);
@@ -219,7 +219,7 @@ class LessonSessionController extends Controller
     public function destroy(School $school, LessonSession $session)
     {
         if (!auth()->user()->can('lessonsession.delete',)) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         if ($session->schedule->school_id != $school->id) {
             return $this->errorResponse("Bu oturum bu okula ait değildir.", 403);

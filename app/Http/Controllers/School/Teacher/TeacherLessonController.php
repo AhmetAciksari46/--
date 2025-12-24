@@ -49,25 +49,31 @@ class TeacherLessonController extends Controller
         $teacher = auth()->user();
 
         // Kullanıcı öğretmen değilse engellemek istersen buraya ek gelebilir
+        if (!auth()->user()->can('teacherlesson.view.list')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
+        try {
+            $today = now()->toDateString();
 
-        $today = now()->toDateString();
+            // Bu öğretmenin bugün gireceği dersler
+            $sessions = LessonSession::where('teacher_id', $teacher->id)
+                ->where('date', $today)
+                ->whereHas('schedule', function ($q) use ($school) {
+                    $q->where('school_id', $school->id);
+                })
+                ->with([
+                    'schedule',
+                    'schedule.subject',
+                    'schedule.classModel',
+                    'physicalClassroom'
+                ])
+                ->orderBy('schedule.start_time')
+                ->get();
 
-        // Bu öğretmenin bugün gireceği dersler
-        $sessions = LessonSession::where('teacher_id', $teacher->id)
-            ->where('date', $today)
-            ->whereHas('schedule', function ($q) use ($school) {
-                $q->where('school_id', $school->id);
-            })
-            ->with([
-                'schedule',
-                'schedule.subject',
-                'schedule.classModel',
-                'physicalClassroom'
-            ])
-            ->orderBy('schedule.start_time')
-            ->get();
-
-        return $this->successResponse($sessions, "Bugünkü dersler listelendi.");
+            return $this->successResponse($sessions, "Bugünkü dersler listelendi.");
+        } catch (\Exception $e) {
+            return $this->errorResponse("Ders oturumları getirilirken bir hata oluştu: " . $e->getMessage(), 500);
+        }
     }
 
     /**
@@ -99,25 +105,32 @@ class TeacherLessonController extends Controller
     public function missingAttendance(School $school)
     {
         $teacher = auth()->user();
-        $today = now()->toDateString();
+        if (!auth()->user()->can('attendance.view.list')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
+        try {
+            $today = now()->toDateString();
 
-        // Bugünkü derslerinden yoklama ALINMAMIŞ olanlar
-        $sessions = LessonSession::where('teacher_id', $teacher->id)
-            ->where('date', $today)
-            ->whereHas('schedule', function ($q) use ($school) {
-                $q->where('school_id', $school->id);
-            })
-            ->whereDoesntHave('attendances') // attendance yoksa
-            ->with([
-                'schedule',
-                'schedule.subject',
-                'schedule.classModel',
-                'physicalClassroom'
-            ])
-            ->orderBy('schedule.start_time')
-            ->get();
+            // Bugünkü derslerinden yoklama ALINMAMIŞ olanlar
+            $sessions = LessonSession::where('teacher_id', $teacher->id)
+                ->where('date', $today)
+                ->whereHas('schedule', function ($q) use ($school) {
+                    $q->where('school_id', $school->id);
+                })
+                ->whereDoesntHave('attendances') // attendance yoksa
+                ->with([
+                    'schedule',
+                    'schedule.subject',
+                    'schedule.classModel',
+                    'physicalClassroom'
+                ])
+                ->orderBy('schedule.start_time')
+                ->get();
 
-        return $this->successResponse($sessions, "Yoklaması alınmamış dersler listelendi.");
+            return $this->successResponse($sessions, "Yoklaması alınmamış dersler listelendi.");
+        } catch (\Exception $e) {
+            return $this->errorResponse("Yoklaması alınmamış dersler getirilirken bir hata oluştu: " . $e->getMessage(), 500);
+        }
     }
     /**
      * @OA\Get(
@@ -144,32 +157,39 @@ class TeacherLessonController extends Controller
 
     public function weeklyLessons(School $school)
     {
-        $teacher = auth()->user();
+        if (!auth()->user()->can('teacherlesson.view.list')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
+        try {
+            $teacher = auth()->user();
 
-        // Haftanın başlangıcı ve bitişi
-        $startOfWeek = now()->startOfWeek(Carbon::MONDAY)->toDateString();
-        $endOfWeek = now()->endOfWeek(Carbon::SUNDAY)->toDateString();
+            // Haftanın başlangıcı ve bitişi
+            $startOfWeek = now()->startOfWeek(Carbon::MONDAY)->toDateString();
+            $endOfWeek = now()->endOfWeek(Carbon::SUNDAY)->toDateString();
 
-        // Bu öğretmenin bu haftaki ders oturumlarını getir
-        $sessions = LessonSession::where('teacher_id', $teacher->id)
-            ->whereBetween('date', [$startOfWeek, $endOfWeek])
-            ->whereHas('schedule', function ($q) use ($school) {
-                $q->where('school_id', $school->id);
-            })
-            ->with([
-                'schedule',
-                'schedule.subject',
-                'schedule.classModel',
-                'physicalClassroom'
-            ])
-            ->orderBy('date')
-            ->orderBy('schedule.start_time')
-            ->get();
+            // Bu öğretmenin bu haftaki ders oturumlarını getir
+            $sessions = LessonSession::where('teacher_id', $teacher->id)
+                ->whereBetween('date', [$startOfWeek, $endOfWeek])
+                ->whereHas('schedule', function ($q) use ($school) {
+                    $q->where('school_id', $school->id);
+                })
+                ->with([
+                    'schedule',
+                    'schedule.subject',
+                    'schedule.classModel',
+                    'physicalClassroom'
+                ])
+                ->orderBy('date')
+                ->orderBy('schedule.start_time')
+                ->get();
 
-        return $this->successResponse([
-            'week_start' => $startOfWeek,
-            'week_end' => $endOfWeek,
-            'lessons' => $sessions
-        ], "Bu haftaki ders programı listelendi.");
+            return $this->successResponse([
+                'week_start' => $startOfWeek,
+                'week_end' => $endOfWeek,
+                'lessons' => $sessions
+            ], "Bu haftaki ders programı listelendi.");
+        } catch (\Exception $e) {
+            return $this->errorResponse("Yoklaması alınmamış dersler getirilirken bir hata oluştu: " . $e->getMessage(), 500);
+        }
     }
 }

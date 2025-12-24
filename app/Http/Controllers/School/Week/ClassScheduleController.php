@@ -46,7 +46,7 @@ class ClassScheduleController extends Controller
     public function index(School $school)
     {
         if (!auth()->user()->can('classschedule.view',)) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         $schedules = ClassSchedule::where('school_id', $school->id)
             ->with(['classModel', 'subject'])
@@ -71,7 +71,7 @@ class ClassScheduleController extends Controller
     public function store(ClassScheduleStoreRequest $request, School $school)
     {
         if (!auth()->user()->can('classschedule.create',)) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         $data = $request->validated();
         $data['school_id'] = $school->id;
@@ -96,7 +96,7 @@ class ClassScheduleController extends Controller
     public function show(School $school, ClassSchedule $schedule)
     {
         if (!auth()->user()->can('classschedule.view',)) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         if ($schedule->school_id !== $school->id) {
             return $this->errorResponse("Bu okula ait değil.", 403);
@@ -121,7 +121,7 @@ class ClassScheduleController extends Controller
     public function update(ClassScheduleUpdateRequest $request, School $school, ClassSchedule $schedule)
     {
         if (!auth()->user()->can('classschedule.update',)) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         if ($schedule->school_id !== $school->id) {
             return $this->errorResponse("Bu okula ait değil.", 403);
@@ -147,7 +147,7 @@ class ClassScheduleController extends Controller
     public function destroy(School $school, ClassSchedule $schedule)
     {
         if (!auth()->user()->can('classschedule.delete',)) {
-            return response()->json(['message' => 'Bu işlemi yapmak için yetkiniz yok.'], 403);
+            return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         if ($schedule->school_id !== $school->id) {
             return $this->errorResponse("Bu okula ait değil.", 403);

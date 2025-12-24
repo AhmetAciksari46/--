@@ -68,6 +68,8 @@ class CreatePackageRequest extends FormRequest
     {
         return [
             'name.required' => 'Paket adı zorunludur.',
+            'name.string' => 'Paket adı metin olmalıdır.',
+            'name.max' => 'Paket adı en fazla 255 karakter olabilir.',
             'duration_days.required' => 'Paket süresi (gün) belirtilmelidir.',
             'price.required' => 'Paket fiyatı belirtilmelidir.',
             'week_count.required' => 'Hafta sayısı belirtilmelidir.',

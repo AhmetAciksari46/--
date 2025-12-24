@@ -82,6 +82,10 @@ class School extends Model
             ->first();
     }
 
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
 
     public function class_models()
     {
@@ -116,5 +120,9 @@ class School extends Model
     public function classSchedules()
     {
         return $this->hasMany(ClassSchedule::class, 'school_id');
+    }
+    public function chatGroups()
+    {
+        return $this->hasMany(Group::class, 'school_id');
     }
 }
