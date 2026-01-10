@@ -3,28 +3,20 @@
 namespace App\Services\Auth;
 
 use App\Models\User;
-use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 
 class PermissionSnapshotService
 {
     public function build(User $user): array
     {
-        // 1️⃣ Default permission’lar
-        $defaultPermissions = Permission::query()
-            ->where('is_default', true)
-            ->pluck('name')
-            ->toArray();
+        // ✅ Cache temizle (özellikle login gibi kritik yerde)
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        // 2️⃣ Role + User permission’ları (Spatie)
-        $spatiePermissions = $user
-            ->getAllPermissions()
+        // ✅ Direkt Spatie'den tüm izinleri al (direct + role)
+        return $user->getAllPermissions()
             ->pluck('name')
+            ->unique()
+            ->values()
             ->toArray();
-
-        // 3️⃣ Merge + unique
-        return array_values(array_unique([
-            ...$defaultPermissions,
-            ...$spatiePermissions,
-        ]));
     }
 }

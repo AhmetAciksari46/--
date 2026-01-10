@@ -9,6 +9,9 @@ use App\Models\ClassModel;
 use App\Models\Group;
 use App\Models\School;
 use App\Models\GroupMember;
+use App\Models\LastReadMessage;
+use App\Models\Message;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Traits\ApiResponser;
@@ -213,18 +216,56 @@ class GroupController extends Controller
      */
     public function myGroups()
     {
-        $userId = auth()->id();
+        $user = auth()->user();
+        $groupIds = $user->accessibleGroupIds();
 
-        // SADECE gerekli alan → performanslı
-        $groupIds = GroupMember::where('user_id', $userId)
-            ->pluck('group_id')
-            ->unique()
+        if ($groupIds->isEmpty()) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Kullanıcının üye olduğu grup bulunamadı.',
+                'data' => [],
+            ], 200);
+        }
+
+        /**
+         * Amaç:
+         * - group id + name
+         * - last_read_message_id (user bazlı)
+         * - unread_count = mesaj sayısı (id > last_read_message_id)
+         *
+         * Not:
+         * - last_read yoksa unread = tüm mesajlar
+         */
+
+        // user'ın last_read verileri: group_id -> last_read_message_id
+        $lastReadByGroup = LastReadMessage::where('user_id', $user->id)
+            ->whereIn('group_id', $groupIds)
+            ->pluck('last_read_message_id', 'group_id');
+
+        // Grupları getir
+        $groups = Group::whereIn('id', $groupIds)
+            ->select('id', 'name')
+            ->get()
+            ->map(function ($group) use ($lastReadByGroup) {
+
+                $lastReadId = $lastReadByGroup[$group->id] ?? 0;
+
+                $unreadCount = Message::where('group_id', $group->id)
+                    ->when($lastReadId > 0, fn($q) => $q->where('id', '>', $lastReadId))
+                    ->count();
+
+                return [
+                    'id' => $group->id,
+                    'name' => $group->name,
+                    'unread_count' => $unreadCount,
+                ];
+            })
             ->values();
 
         return response()->json([
             'status' => true,
-            'message' => 'Kullanıcının dahil olduğu gruplar getirildi.',
-            'data' => $groupIds
+            'message' => 'Gruplar + okunmamış mesaj sayısı getirildi.',
+            'data' => $groups
         ], 200);
     }
 

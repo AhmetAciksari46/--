@@ -76,11 +76,11 @@ class SchoolStudentProfile extends Model
     {
         return $this->belongsTo(School::class, 'school_id');
     }
+
     public function parents()
     {
-        return $this->hasMany(StudentParent::class);
+        return $this->hasMany(StudentParent::class, 'school_student_profile_id');
     }
-
     public function healthProfile()
     {
         return $this->hasOne(StudentHealthProfile::class);

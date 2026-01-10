@@ -23,7 +23,7 @@ class SchoolHasGradeController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/admin/school-has-grades/by-school/{school_id}",
+     *     path="/api/admin/school-has-grades/by-school/{school}",
      *     tags={"Admin - SchoolHasGrades"},
      *     summary="Belirli bir okulun tüm sınıf seviyelerini getir (Sadece Admin)",
      *     security={{"bearerAuth":{}}},
@@ -42,6 +42,7 @@ class SchoolHasGradeController extends Controller
      */
     public function getBySchoolId(School $school)
     {
+
         if (!auth()->user()->can('grade.view.list')) {
             return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }

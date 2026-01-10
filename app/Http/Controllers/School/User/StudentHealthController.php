@@ -10,6 +10,7 @@ use App\Traits\ApiResponser;
 use App\Models\StudentHealth;
 use App\Models\SchoolStudentProfile;
 use App\Models\School;
+use App\Http\Resources\StudentHealthFlatResource;
 
 /**
  * @OA\Tag(
@@ -171,5 +172,79 @@ class StudentHealthController extends Controller
         $health->delete();
 
         return $this->successResponse([], 'Sağlık bilgisi silindi.', 200);
+    }
+
+    /**
+     * @OA\Get(
+     *   path="/api/schools/{school}/health",
+     *   summary="Okuldaki tüm öğrencilerin sağlık kayıtlarını listeler",
+     *   tags={"Manager & Teacher Student Health"},
+     *   security={{"bearerAuth":{}}},
+     *
+     *   @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
+     *   @OA\Response(response=200, description="Health list")
+     * )
+     */
+    public function bySchool(School $school)
+    {
+        if (!auth()->user()->can('student.view')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
+
+        $healthRecords = StudentHealthProfile::query()
+            ->whereHas('profile', fn($q) => $q->where('school_id', $school->id))
+            ->with(['profile.user:id,name'])
+            ->get();
+
+        if ($healthRecords->isEmpty()) {
+            return $this->successResponse([], "Bu okula ait sağlık kaydı bulunamadı.", 200);
+        }
+
+        return $this->successResponse(
+            StudentHealthFlatResource::collection($healthRecords),
+            "Okula ait sağlık kayıtları başarıyla listelendi.",
+            200
+        );
+    }
+
+    /**
+     * @OA\Get(
+     *   path="/api/schools/{school}/classes/{classModel}/health",
+     *   summary="Belirli bir sınıftaki öğrencilerin sağlık kayıtlarını listeler",
+     *   tags={"Manager & Teacher Student Health"},
+     *   security={{"bearerAuth":{}}},
+     *
+     *   @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
+     *   @OA\Parameter(name="classModel", in="path", required=true, @OA\Schema(type="integer")),
+     *   @OA\Response(response=200, description="Health list by class")
+     * )
+     */
+    public function byClass(School $school, \App\Models\ClassModel $classModel)
+    {
+        if ($classModel->school_id !== $school->id) {
+            abort(403, 'Bu sınıf bu okula ait değil.');
+        }
+
+        if (!auth()->user()->can('student.view')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
+
+        $healthRecords = StudentHealthProfile::query()
+            ->whereHas('profile', function ($q) use ($school, $classModel) {
+                $q->where('school_id', $school->id)
+                    ->where('active_class_id', $classModel->id);
+            })
+            ->with(['profile.user:id,name'])
+            ->get();
+
+        if ($healthRecords->isEmpty()) {
+            return $this->successResponse([], "Bu sınıfa ait sağlık kaydı bulunamadı.", 200);
+        }
+
+        return $this->successResponse(
+            StudentHealthFlatResource::collection($healthRecords),
+            "Sınıfa ait sağlık kayıtları başarıyla listelendi.",
+            200
+        );
     }
 }

@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use App\Models\ManagerProfile;
 use App\Models\TeacherProfile;
 use App\Models\InvidualStudentProfile;
@@ -14,12 +13,14 @@ use App\Models\SchoolStudentProfile;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\SchoolStudentRegisterRequest;
-use App\Traits\ApiResponser; // <<< Bu satırı ekleyin!
+use App\Traits\ApiResponser;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // Bunu ekle
 use Spatie\Permission\Models\Role;
 use App\Services\PermissionResolver;
 use App\Services\Auth\PermissionSnapshotService;
+use Spatie\Permission\PermissionRegistrar;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * @OA\Tag(
@@ -115,7 +116,6 @@ class AuthController extends Controller
     {
         $this->authorizeRole(['admin']); // sadece admin
 
-        // İstersen buraya ayrı bir FormRequest de koyabiliriz
         $request->validate([
             'name'      => 'required|string|max:255',
             'userName'  => 'required|string|max:255|unique:users,userName',
@@ -193,7 +193,6 @@ class AuthController extends Controller
      * )
      */
 
-    // ✅ Giriş
     public function login(Request $request, PermissionSnapshotService $permissionSnapshotService)
     {
         // 1. DOĞRULAMA (VALIDATION)
@@ -207,21 +206,27 @@ class AuthController extends Controller
         $loginValue = $request->input('login');
         $fieldType = filter_var($loginValue, FILTER_VALIDATE_EMAIL) ? 'email' : 'userName';
 
-        // 2. KİMLİK BİLGİLERİNİ HAZIRLAMA
         $credentials = [
             $fieldType => $loginValue,
             'password' => $request->input('password')
         ];
 
-
-        // 3. GİRİŞ DENEMESİ (AUTHENTICATION ATTEMPT)
         if (!Auth::attempt($credentials)) {
-            return $this->errorResponse('Geçersiz kimlik bilgileri.Lütfen kullanıcı adınızı/e-posta adresinizi ve şifrenizi kontrol edin.', 401);
+            return $this->errorResponse('Geçersiz kimlik bilgileri.Lütfen kullanıcı adınızı/e-posta adresinizi ve şifrenizi kontrol edin.', 403);
         }
 
-        // 4. BAŞARILI GİRİŞ
         $user = Auth::user();
-        $permissions = app(PermissionResolver::class)->resolve($user);
+        if ($relation = $user->profileRelationName()) {
+            $user->load($relation);
+        }
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $user = User::query()
+            ->whereKey(Auth::id())
+            ->first();
+
+        // ilişkileri garanti yeniden yükle
+        $user->load('permissions', 'roles');
         $permissionSnapshot = $permissionSnapshotService->build($user);
 
         // Zaten 'api_token' kullanıyorsunuz, bu iyi bir yöntem.
@@ -237,6 +242,8 @@ class AuthController extends Controller
                 'role'      => $user->role, // sadece label
                 'is_active' => $user->is_active,
             ],
+            "type" => $user->roles->first()?->name, // "teacher" gibi
+            "profile" => $user->profile(),
             "permissionSnapshot" => $permissionSnapshot
         ], 'Giriş başarılı.', 200);
     }
@@ -308,7 +315,9 @@ class AuthController extends Controller
                 'role'      => $user->role, // sadece label
                 'is_active' => $user->is_active,
             ],
-            "permissionSnapshot" => $permissionSnapshot
+            "type" => $user->roles->first()?->name, // "teacher" gibi
+            "profile" => $user->profile(),
+            "permissionSnapshot" => $permissionSnapshot,
         ], 'Bilgiler optimize edildi.', 200);
     }
     /**
@@ -327,5 +336,167 @@ class AuthController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
         return response()->json(["message" => "Çıkış yapıldı"]);
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/api/me/password",
+     *     tags={"01 Auth İşlemleri"},
+     *     summary="Kullanıcının kendi şifresini değiştirmesi",
+     *     description="Giriş yapmış kullanıcı mevcut şifresini doğrulayarak yeni şifre belirler.",
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"current_password","new_password","new_password_confirmation"},
+     *             @OA\Property(property="current_password", type="string", example="oldpass123"),
+     *             @OA\Property(property="new_password", type="string", example="NewPass12345"),
+     *             @OA\Property(property="new_password_confirmation", type="string", example="NewPass12345")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Şifre başarıyla güncellendi",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Şifre başarıyla güncellendi.")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized - Token yok veya geçersiz"
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation Error - mevcut şifre hatalı veya validasyon hatası",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="The current_password field is incorrect."
+     *             ),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 example={
+     *                     "current_password": {"Mevcut şifre hatalı."}
+     *                 }
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function changeMyPassword(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'current_password' => ['required', 'string'],
+            'new_password' => ['required', 'string', 'min:8', 'confirmed'],
+            // new_password_confirmation zorunlu olur
+        ]);
+
+        // mevcut şifre doğrulama
+        if (!Hash::check($request->current_password, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['Mevcut şifre hatalı.'],
+            ]);
+        }
+
+        // şifre güncelle
+        $user->update([
+            'password' => Hash::make($request->new_password),
+        ]);
+
+        return response()->json([
+            'message' => 'Şifre başarıyla güncellendi.'
+        ]);
+    }
+
+
+    /**
+     * @OA\Put(
+     *     path="/api/admin/users/{user}/password",
+     *     tags={"User"},
+     *     summary="Admin tarafından kullanıcı şifresi değiştirme",
+     *     description="Admin, belirli bir kullanıcının şifresini kullanıcı ID ile değiştirir.",
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(
+     *         name="user",
+     *         in="path",
+     *         required=true,
+     *         description="Kullanıcı ID",
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"new_password","new_password_confirmation"},
+     *             @OA\Property(property="new_password", type="string", example="AdminSetPass12345"),
+     *             @OA\Property(property="new_password_confirmation", type="string", example="AdminSetPass12345")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=200,
+     *         description="Kullanıcının şifresi başarıyla güncellendi",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Kullanıcının şifresi başarıyla güncellendi."),
+     *             @OA\Property(property="user_id", type="integer", example=10)
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized - Token yok veya geçersiz"
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden - Admin yetkisi yok",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Yetkisiz işlem.")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=404,
+     *         description="Kullanıcı bulunamadı"
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation Error - şifre formatı hatalı veya confirmation uyuşmuyor",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="The new_password field must be at least 8 characters."),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     )
+     * )
+     */
+    public function changeUserPassword(Request $request, User $user)
+    {
+        // Admin kontrolü (1. seçenek: simple)
+        if ($request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Yetkisiz işlem.'], 403);
+        }
+
+        $request->validate([
+            'new_password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user->update([
+            'password' => Hash::make($request->new_password),
+        ]);
+
+        return response()->json([
+            'message' => 'Kullanıcının şifresi başarıyla güncellendi.',
+            'user_id' => $user->id,
+        ]);
     }
 }

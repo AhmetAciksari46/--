@@ -18,6 +18,7 @@ use App\Models\ClassModel;
 use Illuminate\Support\Facades\DB;
 use App\Models\AdditionalClassRoom;
 use Spatie\Permission\Models\Role;
+use App\Http\Resources\StudentListResource;
 
 /**
  * @OA\Tag(
@@ -46,14 +47,26 @@ class SchoolStudentProfileController extends Controller
             return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
 
-        $students = User::where('role', 'schoolstudent')
+        $students = User::query()
+            ->where('role', 'schoolstudent')
             ->whereHas('schoolStudentProfile', fn($q) => $q->where('school_id', $school->id))
-            ->with('schoolStudentProfile')
+            ->select(['id', 'name', 'userName']) // ✅ minimal user
+            ->with([
+                // ✅ sadece gereken alanlar
+                'schoolStudentProfile:id,user_id,student_number,birth_date,img_path,status,is_active,active_class_id',
+                'schoolStudentProfile.activeClass:id,name', // ✅ activeClass mini object
+            ])
             ->get();
+
         if ($students->isEmpty()) {
             return $this->errorResponse('Bu okula ait öğrenci bulunamadı.', 200);
         }
-        return $this->successResponse($students, 'Öğrenciler başarıyla getirildi.', 200);
+
+        return $this->successResponse(
+            StudentListResource::collection($students),
+            'Öğrenciler başarıyla getirildi.',
+            200
+        );
     }
 
     /**
@@ -172,16 +185,80 @@ class SchoolStudentProfileController extends Controller
      * @OA\Put(
      *     path="/api/schools/{school}/students/{student}",
      *     summary="Öğrenci bilgilerini günceller",
+     *     description="Öğrenci user bilgileri (name,email,userName,is_active) ve profil bilgileri tek payload içinde güncellenir. Alanlar opsiyoneldir (partial update).",
      *     tags={"Manager & Teacher - Student Profil İşlemleri"},
      *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="student", in="path", required=true, @OA\Schema(type="integer")),
+     *
+     *     @OA\Parameter(
+     *         name="school",
+     *         in="path",
+     *         required=true,
+     *         description="Okul ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="student",
+     *         in="path",
+     *         required=true,
+     *         description="Öğrenci User ID",
+     *         @OA\Schema(type="integer", example=8)
+     *     ),
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *         description="Güncellenecek alanları gönderin (partial update).",
      *         @OA\JsonContent(ref="#/components/schemas/UpdateStudentRequest")
      *     ),
      *
-     *     @OA\Response(response=200, description="Student updated")
+     *     @OA\Response(
+     *         response=200,
+     *         description="Öğrenci başarıyla güncellendi.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Öğrenci başarıyla güncellendi."),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=8),
+     *                 @OA\Property(property="name", type="string", example="Mehmet Can Demir"),
+     *                 @OA\Property(property="email", type="string", example="mehmetcan@example.com"),
+     *                 @OA\Property(property="role", type="string", example="schoolstudent"),
+     *                 @OA\Property(property="is_active", type="boolean", example=true),
+     *                 @OA\Property(property="school_student_profile", type="object",
+     *                     @OA\Property(property="id", type="integer", example=3),
+     *                     @OA\Property(property="user_id", type="integer", example=8),
+     *                     @OA\Property(property="school_id", type="integer", example=1),
+     *                     @OA\Property(property="phone", type="string", example="+905554445566"),
+     *                     @OA\Property(property="address", type="string", example="Ankara, Türkiye"),
+     *                     @OA\Property(property="birth_date", type="string", format="date", example="2014-05-20"),
+     *                     @OA\Property(property="gender", type="string", example="male")
+     *                 )
+     *             ),
+     *             @OA\Property(property="code", type="integer", example=200)
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=403,
+     *         description="Yetkisiz işlem veya öğrenci okulunuza ait değil.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Bu işlem için yetkiniz yok."),
+     *             @OA\Property(property="code", type="integer", example=403)
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation hatası",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="The given data was invalid."),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=404,
+     *         description="Okul veya öğrenci bulunamadı"
+     *     )
      * )
      */
     public function update(UpdateStudentRequest $request, School $school, User $student)
@@ -189,9 +266,14 @@ class SchoolStudentProfileController extends Controller
         if (!auth()->user()->can('student.update')) {
             return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
+
         if (!$student->schoolStudentProfile || $student->schoolStudentProfile->school_id != $school->id) {
             return $this->errorResponse('Bu öğrenci bu okula ait değil.', 403);
         }
+
+        $validated = $request->validated(); // ✅ burada al
+
+        // ✅ active_class_id kontrolü (varsa)
         if (!empty($validated['active_class_id'])) {
             $classCheck = ClassModel::where('id', $validated['active_class_id'])
                 ->where('school_id', $school->id)
@@ -202,23 +284,26 @@ class SchoolStudentProfileController extends Controller
             }
         }
 
-
         try {
+            // ✅ User alanları
+            $userFields = Arr::only($validated, ['name', 'email', 'userName', 'is_active']);
 
-            $validated = $request->validated();
+            // ✅ Profile alanları
+            $profileFields = Arr::except($validated, ['name', 'email', 'userName', 'is_active']);
 
-            $userFields = array_filter($validated, fn($k) => in_array($k, ['name', 'email']), ARRAY_FILTER_USE_KEY);
-            $profileFields = array_filter($validated, fn($k) => !in_array($k, ['name', 'email']), ARRAY_FILTER_USE_KEY);
-
-            if ($userFields) {
+            if (!empty($userFields)) {
                 $student->update($userFields);
             }
 
-            if ($profileFields) {
+            if (!empty($profileFields)) {
                 $student->schoolStudentProfile->update($profileFields);
             }
 
-            return $this->successResponse($student->load('schoolStudentProfile'), 'Öğrenci başarıyla güncellendi.', 200);
+            return $this->successResponse(
+                $student->load('schoolStudentProfile'),
+                'Öğrenci başarıyla güncellendi.',
+                200
+            );
         } catch (\Throwable $e) {
             return $this->errorResponse($e->getMessage(), 500);
         }

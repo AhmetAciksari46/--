@@ -197,7 +197,87 @@ class User extends Authenticatable
         return null;
     }
 
+    public function accessibleGroupIds()
+    {
+        $ids = collect();
 
+        // 1) Explicit üyelik: group_members
+        $explicit = $this->groupMemberships()->pluck('group_id');
+        $ids = $ids->merge($explicit);
+
+        // 2) Global gruplar
+        $ids = $ids->merge(
+            Group::whereIn('type', [
+                GroupType::GlobalGeneral,
+                GroupType::GlobalManager,
+                GroupType::GlobalYonetim,
+            ])->pluck('id')
+        );
+
+        // GlobalManager: sadece admin+manager görmeli
+        if (!$this->hasAnyRole(['admin', 'manager'])) {
+            $ids = $ids->diff(
+                Group::where('type', GroupType::GlobalManager)->pluck('id')
+            );
+        }
+
+        // GlobalYonetim: admin+manager+teacher görmeli
+        if (!$this->hasAnyRole(['admin', 'manager', 'teacher'])) {
+            $ids = $ids->diff(
+                Group::where('type', GroupType::GlobalYonetim)->pluck('id')
+            );
+        }
+
+        // 3) Okul bazlı gruplar
+        $schoolId = $this->getSchoolId();
+
+        if ($schoolId) {
+            // okul genel → okulun tüm üyeleri
+            $ids = $ids->merge(
+                Group::where('type', GroupType::SchoolGeneral)
+                    ->where('school_id', $schoolId)
+                    ->pluck('id')
+            );
+
+            // okul yönetim → öğretmen + manager + admin (senin tanımına göre)
+            if ($this->hasAnyRole(['admin', 'manager', 'teacher'])) {
+                $ids = $ids->merge(
+                    Group::where('type', GroupType::SchoolManagement)
+                        ->where('school_id', $schoolId)
+                        ->pluck('id')
+                );
+            }
+
+            // manager implicit classroom üyeliği (senin isMemberOf içinde var)
+            if ($this->hasRole('manager')) {
+                $ids = $ids->merge(
+                    Group::where('type', GroupType::Classroom)
+                        ->where('school_id', $schoolId)
+                        ->pluck('id')
+                );
+            }
+        }
+
+        return $ids->unique()->values();
+    }
+    public function profile()
+    {
+        if ($this->isManager()) return $this->managerProfile;
+        if ($this->isTeacher()) return $this->teacherProfile;
+        if ($this->isSchoolStudent()) return $this->schoolStudentProfile;
+        if ($this->isIndividualStudent()) return $this->individualStudentProfile;
+
+        return null;
+    }
+    public function profileRelationName(): ?string
+    {
+        if ($this->isManager()) return 'managerProfile';
+        if ($this->isTeacher()) return 'teacherProfile';
+        if ($this->isSchoolStudent()) return 'schoolStudentProfile';
+        if ($this->isIndividualStudent()) return 'individualStudentProfile';
+
+        return null;
+    }
     public function isMemberOf(Group $group): bool
     {
 

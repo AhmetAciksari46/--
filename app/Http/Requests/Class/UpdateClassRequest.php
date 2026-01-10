@@ -10,7 +10,7 @@ use Illuminate\Foundation\Http\FormRequest;
  *     @OA\Property(property="name", type="string", example="9-B"),
  *     @OA\Property(property="teacher_id", type="integer", example=8),
  *     @OA\Property(property="grade_id", type="integer", example=10),
- *     @OA\Property(property="academic_year", type="string", example="2025-2026"),
+ *     @OA\Property(property="academic_year_id", type="integer", example=3),
  *     @OA\Property(property="description", type="string", example="Sosyal Bilimler sınıfı"),
  *     @OA\Property(property="is_active", type="boolean", example=false),
  * )
@@ -31,7 +31,7 @@ class UpdateClassRequest extends FormRequest
             'name'           => 'sometimes|string|max:255',
             'teacher_id'     => 'sometimes|exists:users,id',
             'grade_id'       => 'sometimes|exists:grades,id',
-            'academic_year'  => 'nullable|string|max:20',
+            'academic_year_id' => 'sometimes|exists:academic_years,id',
             'description'    => 'nullable|string',
             'is_active'      => 'boolean',
         ];

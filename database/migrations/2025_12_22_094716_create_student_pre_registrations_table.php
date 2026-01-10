@@ -14,37 +14,57 @@ return new class extends Migration
         Schema::create('student_pre_registrations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('school_id')->constrained()->cascadeOnDelete();
+            // --- Student Info ---
+            $table->string('first_name');
+            $table->string('last_name');
+            $table->string('tc', 11)->nullable()->unique();
+            $table->foreignId('grade_id')
+                ->constrained('grades')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
 
-            // STUDENT INFO
-            $table->string('student_name');
-            $table->string('student_surname');
-            $table->string('student_tc')->nullable();
+            $table->enum('gender', ['male', 'female'])->nullable();
             $table->date('birth_date')->nullable();
-            $table->string('gender')->nullable();
-            $table->string('student_phone')->nullable();
-            $table->string('student_email')->nullable();
-            $table->text('address')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('email')->nullable();
+            $table->string('address')->nullable();
 
-            // PARENT INFO (JSON)
-            $table->json('mother')->nullable(); // { name, phone, job, email, birth_date }
-            $table->json('father')->nullable();
+            // --- Parent Info (Mother) ---
+            $table->string('mother_full_name')->nullable();
+            $table->string('mother_phone')->nullable();
+            $table->string('mother_job')->nullable();
+            $table->date('mother_birth_date')->nullable();
+            $table->string('mother_email')->nullable();
 
-            $table->string('parent_status')->nullable();
-            // together | separated | mother_dead | father_dead | both_dead
+            // --- Parent Info (Father) ---
+            $table->string('father_full_name')->nullable();
+            $table->string('father_phone')->nullable();
+            $table->string('father_job')->nullable();
+            $table->date('father_birth_date')->nullable();
+            $table->string('father_email')->nullable();
 
-            // EXTRA
+            // ✅ Anne-baba durumu (resimdeki dropdown)
+            $table->enum('parents_status', [
+                'together_alive',   // Anne baba sağ ve birlikte
+                'separate_alive',   // Anne baba sağ ama ayrı
+                'mother_deceased',  // Anne vefat
+                'father_deceased',  // Baba vefat
+                'both_deceased',    // Anne ve baba vefat
+            ])->nullable(); // "-" karşılığı
+
+            // --- Notes ---
             $table->text('description')->nullable();
-            $table->json('notes')->nullable(); // note1, note2, note3
+            $table->text('note_1')->nullable();
+            $table->text('note_2')->nullable();
+            $table->text('note_3')->nullable();
 
-            // STATE
-            $table->string('status')->default('draft');
-            // draft | submitted | approved | cancelled
-
-            // AUDIT
-            $table->foreignId('created_by')->constrained('users');
-            $table->timestamp('submitted_at')->nullable();
-            $table->timestamp('approved_at')->nullable();
-            $table->timestamp('cancelled_at')->nullable();
+            // ✅ Statü (resimdeki dropdown)
+            $table->enum('status', [
+                'in_progress',   // Görüşülüyor
+                'form_request',  // Form Talepleri
+                'saved',         // Kaydedildi
+                'cancelled',     // İptal edildi
+            ])->default('in_progress');
             $table->timestamps();
         });
     }

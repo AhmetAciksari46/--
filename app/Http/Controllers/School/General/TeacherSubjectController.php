@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Subject;
 use App\Traits\ApiResponser;
 use App\Models\School;
+use App\Http\Resources\TeacherSubjectResource;
 
 /**
  * @OA\Tag(
@@ -42,21 +43,24 @@ class TeacherSubjectController extends Controller
         if (!auth()->user()->can('teachersubject.view.list')) {
             return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
-        try {
-            $subjects = TeacherSubject::whereHas('teacher.teacherProfile', function ($q) use ($school) {
+        $subjects = TeacherSubject::query()
+            ->whereHas('teacher.teacherProfile', function ($q) use ($school) {
                 $q->where('school_id', $school->id);
             })
-                ->with(['teacher.teacherProfile', 'subject'])
-                ->get();
+            ->with([
+                'teacher:id,name',
+                'subject:id,name,branch_id,grade_id',
+                'subject.branch:id,name',
+                'subject.grade:id,name',
+            ])
+            ->select(['id', 'teacher_id', 'subject_id'])
+            ->get();
 
-            return $this->successResponse(
-                $subjects,
-                'Bu okula ait öğretmen-ders ilişkileri başarıyla getirildi.',
-                200
-            );
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
-        }
+        return $this->successResponse(
+            TeacherSubjectResource::collection($subjects),
+            'Bu okula ait öğretmen-ders ilişkileri başarıyla getirildi.',
+            200
+        );
     }
 
     /**

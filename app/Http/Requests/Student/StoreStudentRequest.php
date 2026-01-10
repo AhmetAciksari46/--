@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Student;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * @OA\Schema(
@@ -46,6 +47,8 @@ class StoreStudentRequest extends FormRequest
 
     public function rules()
     {
+        $schoolId = $this->route('school')?->id; // route model binding
+
         return [
             'name' => 'required|string|max:255',
 
@@ -54,11 +57,16 @@ class StoreStudentRequest extends FormRequest
             'email' => 'nullable|email|max:255|unique:users,email',
 
             'password' => 'required|string|min:6|max:64|confirmed',
-            'password_confirmation' => 'required',
 
             'birth_date' => 'required|date|before:today',
 
-            'student_number' => 'required|string|max:50',
+            'student_number' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('school_student_profiles', 'student_number')
+                    ->where('school_id', $schoolId),
+            ],
 
             'tc_no' => 'required|string|size:11|unique:school_student_profiles,tc_no',
 
@@ -66,7 +74,7 @@ class StoreStudentRequest extends FormRequest
 
             'address' => 'nullable|string|max:255',
 
-            'gender' => 'nullable|string|in:male,female,other',
+            'gender' => 'nullable|string|in:male,female',
 
             'active_class_id' => 'nullable|integer|exists:class_models,id',
         ];

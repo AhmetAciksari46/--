@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->date('birth_date')->nullable();
             $table->string('note')->nullable();
+            $table->string('img_path')->nullable();
+
             $table->string('referance')->nullable();
             $table->unsignedBigInteger('school_id')->nullable()->constrained('schools')
                 ->nullOnDelete();

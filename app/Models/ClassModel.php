@@ -16,6 +16,7 @@ use App\Models\SchoolStudentProfile;
  *     @OA\Property(property="name", type="string", example="9-A"),
  *     @OA\Property(property="school_id", type="integer", example=1),
  *     @OA\Property(property="teacher_id", type="integer", example=3),
+ *    @OA\Property(property="academic_year_id", type="integer", example=3),
  *     @OA\Property(property="created_at", type="string", format="date-time", example="2025-10-01T12:00:00.000000Z"),
  *     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-10-01T12:00:00.000000Z")
  * )
@@ -31,11 +32,17 @@ class ClassModel extends Model
         'school_id',
         'teacher_id',
         'grade_id',
-        'academic_year',
         'description',
         'is_active',
+        'academic_year_id',
+
     ];
 
+
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class);
+    }
 
 
     // Bu sınıfın bağlı olduğu okul
@@ -68,5 +75,9 @@ class ClassModel extends Model
     public function chatGroup()
     {
         return $this->hasOne(Group::class, 'class_model_id');
+    }
+    public function grade()
+    {
+        return $this->belongsTo(Grade::class, 'grade_id');
     }
 }

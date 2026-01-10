@@ -3,77 +3,29 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\ContentDetail;
 
 class Content extends Model
 {
-    use HasFactory;
+    protected $fillable = ['type', 'status', 'cloned_from_id'];
 
-    protected $fillable = [
-        'package_id',
-        'grade',
-        'week_no',
-        'day_index',
-        'subject_id',
-        'type',
-        'title',
-        'payload',
-    ];
-
-    protected $casts = [
-        'payload' => 'array',
-    ];
-
-    /** 🔗 İlişkiler **/
-
-    // 1️⃣ Bu içerik hangi pakete ait
-    public function package()
+    public function detail()
     {
-        return $this->belongsTo(Package::class);
+        return $this->hasOne(ContentDetail::class);
     }
 
-    // 2️⃣ İçerik hangi derse ait
-    public function subject()
+    public function details()
     {
-        return $this->belongsTo(Subject::class);
+        return $this->hasMany(ContentDetail::class);
     }
 
-    // 3️⃣ Öğrenci ödev bağlantısı (ödev yapılmış mı)
-    public function studentHomeworks()
+    public function clonedFrom()
     {
-        return $this->hasMany(StudentHomework::class);
+        return $this->belongsTo(Content::class, 'cloned_from_id');
     }
 
-    // 4️⃣ Öğrenci sınav sonuç bağlantısı
-    public function studentQuizzes()
+    public function categories()
     {
-        return $this->hasMany(StudentQuiz::class);
-    }
-
-    /** 🎓 Scope: belirli sınıf, hafta ve ders için filtreleme */
-    public function scopeForGrade($query, $grade)
-    {
-        return $query->where('grade', $grade);
-    }
-
-    public function scopeForWeek($query, $week)
-    {
-        return $query->where('week_no', $week);
-    }
-
-    public function scopeForSubject($query, $subjectId)
-    {
-        return $query->where('subject_id', $subjectId);
-    }
-
-    /** 🧭 Yardımcı: okunabilir tür adı */
-    public function getTypeLabelAttribute(): string
-    {
-        return match ($this->type) {
-            'homework' => 'Ödev',
-            'quiz' => 'Sınav',
-            'note' => 'Not',
-            default => ucfirst($this->type)
-        };
+        return $this->belongsToMany(Category::class, 'category_content');
     }
 }

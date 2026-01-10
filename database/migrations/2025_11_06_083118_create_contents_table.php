@@ -13,15 +13,13 @@ return new class extends Migration
     {
         Schema::create('contents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('package_id')->constrained()->cascadeOnDelete();
-            $table->unsignedTinyInteger('grade'); // hangi sınıfa ait
-            $table->unsignedInteger('week_no'); // hangi haftaya ait
-            $table->unsignedTinyInteger('day_index')->nullable(); // hangi güne ait (A modunda)
-            $table->foreignId('subject_id')->nullable()->constrained()->nullOnDelete(); // hangi derse ait
-            $table->enum('type', ['homework', 'quiz', 'note'])->default('homework');
-            $table->string('title'); // içeriğin başlığı
-            $table->json('payload')->nullable(); // soru seti / açıklama / json içerik
+            $table->string('type'); // choice, match, true_false, ...
+
+            $table->string('status')->default('published'); // draft/published
+            $table->foreignId('cloned_from_id')->nullable()->constrained('contents')->nullOnDelete();
             $table->timestamps();
+            $table->index('type');
+            $table->index('status');
         });
     }
 

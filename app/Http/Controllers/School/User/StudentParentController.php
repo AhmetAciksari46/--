@@ -10,6 +10,9 @@ use App\Models\StudentParent;
 use App\Models\School;
 use App\Http\Requests\StudentParent\StoreStudentParentRequest;
 use App\Http\Requests\StudentParent\UpdateStudentParentRequest;
+use App\Http\Resources\StudentParentsPayloadResource;
+use App\Models\ClassModel;
+use App\Http\Resources\StudentParentFlatResource;
 
 /**
  * @OA\Tag(
@@ -20,6 +23,97 @@ use App\Http\Requests\StudentParent\UpdateStudentParentRequest;
 class StudentParentController extends Controller
 {
     use  ApiResponser;
+    /**
+     * @OA\Get(
+     *     path="/api/schools/{school}/classes/{classModel}/parents",
+     *     summary="Belirli bir sınıftaki tüm öğrencilerin velilerini listeler (active_class_id bazlı)",
+     *     tags={"Manager & Teacher - Student Veli İşlemleri"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="classModel", in="path", required=true, @OA\Schema(type="integer")),
+     *
+     *     @OA\Response(response=200, description="Parent list (flat)")
+     * )
+     */
+    public function parentsByClass(School $school, ClassModel $classModel)
+    {
+        // okul kontrol
+        if ($classModel->school_id !== $school->id) {
+            abort(403, 'Bu sınıf bu okula ait değil.');
+        }
+
+        if (!auth()->user()->can('student.view')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
+
+        $parents = StudentParent::query()
+            ->whereHas('profile', function ($q) use ($school, $classModel) {
+                $q->where('school_id', $school->id)
+                    ->where('active_class_id', $classModel->id);
+            })
+            ->with([
+                'profile.user:id,name',
+            ])
+            ->select(['id', 'school_student_profile_id', 'type', 'relationship', 'name', 'phone', 'is_parent'])
+            ->get();
+
+        if ($parents->isEmpty()) {
+            return $this->successResponse(
+                [],
+                "Bu sınıfa ait veli bulunmamaktadır.",
+                200
+            );
+        }
+
+        return $this->successResponse(
+            StudentParentFlatResource::collection($parents),
+            "Sınıfa ait veliler başarıyla listelendi.",
+            200
+        );
+    }
+    /**
+     * @OA\Get(
+     *     path="/api/schools/{school}/parents",
+     *     summary="Okuldaki tüm öğrencilerin tüm velilerini listeler",
+     *     tags={"Manager & Teacher - Student Veli İşlemleri"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(name="school", in="path", required=true, @OA\Schema(type="integer")),
+     *
+     *     @OA\Response(response=200, description="Parent list (flat)")
+     * )
+     */
+    public function parentsBySchool(School $school)
+    {
+        if (!auth()->user()->can('student.view')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
+
+        $parents = StudentParent::query()
+            ->whereHas('profile', function ($q) use ($school) {
+                $q->where('school_id', $school->id);
+            })
+            ->with([
+                'profile.user:id,name',
+            ])
+            ->select(['id', 'school_student_profile_id', 'type', 'relationship', 'name', 'phone', 'is_parent'])
+            ->get();
+
+        if ($parents->isEmpty()) {
+            return $this->successResponse(
+                [],
+                "Bu okula ait veli bulunmamaktadır.",
+                200
+            );
+        }
+
+        return $this->successResponse(
+            StudentParentFlatResource::collection($parents),
+            "Okula ait tüm veliler başarıyla listelendi.",
+            200
+        );
+    }
 
     /**
      * @OA\Get(

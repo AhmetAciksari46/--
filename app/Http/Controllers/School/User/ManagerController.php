@@ -22,27 +22,7 @@ class ManagerController extends Controller
 {
     use ApiResponser;
 
-    // /**
-    //  * @OA\Get(
-    //  *     path="/api/manager/me",
-    //  *     tags={"ManagerUser"},
-    //  *     summary="(Manager) Kendi user bilgilerini getir",
-    //  *     security={{"bearerAuth":{}}},
-    //  *     @OA\Response(response=200, description="Bilgiler başarıyla alındı"),
-    //  *     @OA\Response(response=404, description="Kullanıcı bulunamadı")
-    //  * )
-    //  */
-    // public function getManagerUser()
-    // {
 
-    //     $user = Auth::user();
-
-    //     if ($user->isManager()) {
-    //         return $this->successResponse($user->load('managerProfile'), 'Bilgiler başarıyla getirildi.');
-    //     }
-    //     return $this->errorResponse('sadece managerlar istek atabilir.', 404);
-    //     //return $this->successResponse($user->load('managerProfile'), 'Bilgiler başarıyla getirildi.');
-    // }
 
     /**
      * @OA\Put(
@@ -125,6 +105,32 @@ class ManagerController extends Controller
 
         return $this->successResponse($user, 'Manager bilgileri getirildi.');
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/admin/managerlist",
+     *     tags={"ManagerUser"},
+     *     summary="(Admin) Managerları getirir",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Bilgiler getirildi"),
+     *     @OA\Response(response=404, description="Kullanıcı bulunamadı")
+     * )
+     */
+    public function managerList()
+    {
+
+        if (!auth()->user()->can('manager.view.list')) {
+            return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
+        }
+        $managers = User::where('role', 'manager')->with('managerProfile')->get();
+
+        if (!$managers) {
+            return $this->errorResponse('Manager bulunamadı.', 404);
+        }
+
+        return $this->successResponse($managers, 'Manager listesi getirildi.');
+    }
+
 
     /**
      * @OA\Put(

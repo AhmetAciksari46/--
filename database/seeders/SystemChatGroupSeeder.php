@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Group;
 use App\Enums\GroupType;
+use App\Models\GroupMember;
+use App\Models\User;
 
 class SystemChatGroupSeeder extends Seeder
 {
@@ -53,5 +55,23 @@ class SystemChatGroupSeeder extends Seeder
                 'created_by' => $createdBy,
             ]
         );
+        $admin = User::find($createdBy);
+
+        if ($admin) {
+            $systemGroups = Group::whereIn('type', [
+                GroupType::GlobalGeneral,
+                GroupType::GlobalYonetim,
+                GroupType::GlobalManager
+            ])->get(['id']);
+
+            foreach ($systemGroups as $group) {
+                GroupMember::firstOrCreate([
+                    'group_id' => $group->id,
+                    'user_id'  => $admin->id,
+                ], [
+                    'role_in_group' => 'admin'
+                ]);
+            }
+        }
     }
 }

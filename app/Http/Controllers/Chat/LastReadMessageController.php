@@ -146,7 +146,8 @@ class LastReadMessageController extends Controller
 
         // Kullanıcının üye olduğu gruplar (senin projende bu ilişki nasıl ise ona göre düzenle)
         // Örnek: $groups = $user->groups()->pluck('groups.id');
-        $groupIds = $user->groups()->pluck('groups.id'); // <-- isMemberOf kullandığına göre muhtemelen böyle bir ilişki var
+        //$groupIds = $user->groups()->pluck('groups.id'); // <-- isMemberOf kullandığına göre muhtemelen böyle bir ilişki var
+        $groupIds = $user->accessibleGroupIds();
 
         if ($groupIds->isEmpty()) {
             return response()->json([

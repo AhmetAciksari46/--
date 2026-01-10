@@ -32,8 +32,7 @@ class SubjectController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', Subject::class);
-        if (!auth()->user()->can('subject.view.list')) {
+        if (!auth()->user()->can('subject.view')) {
             return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         return $this->successResponse(Subject::with(['branch', 'grade'])->get(), 'Dersler başarıyla getirildi.', 200);

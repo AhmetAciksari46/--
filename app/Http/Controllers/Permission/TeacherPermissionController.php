@@ -42,7 +42,6 @@ class TeacherPermissionController extends Controller
         $permissions = Permission::query()
             ->where('is_assignable', true)
             ->where('assign_level', 'manager')
-            ->whereJsonContains('allowed_roles', 'teacher')
             ->pluck('name');
 
         // 🎯 Manager'ın atayabileceği permission'lar
@@ -111,12 +110,11 @@ class TeacherPermissionController extends Controller
             ->whereIn('name', $data['permissions'])
             ->where('is_assignable', true)
             ->where('assign_level', 'manager')
-            ->whereJsonContains('allowed_roles', 'teacher')
             ->get();
 
         foreach ($permissions as $permission) {
             if ($permission->is_default) {
-                abort(422, 'Default permission atanamaz.');
+                return $this->errorResponse('Default permission atanamaz.', 422);
             }
 
             $teacher->givePermissionTo($permission);
@@ -192,6 +190,8 @@ class TeacherPermissionController extends Controller
      *     summary="Öğretmenin sahip olduğu tüm permission'ları döner",
      *     tags={"Manager - Teacher Permission Management"},
      *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="school", in="path", required=true),
+     *     @OA\Parameter(name="teacher", in="path", required=true),
      *
      *     @OA\Response(response=200, description="Teacher permission listesi")
      * )

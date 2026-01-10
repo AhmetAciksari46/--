@@ -28,4 +28,8 @@ class Grade extends Model
     {
         return $this->hasMany(ClassModel::class);
     }
+    public function preRegistration()
+    {
+        return $this->hasMany(StudentPreRegistration::class);
+    }
 }

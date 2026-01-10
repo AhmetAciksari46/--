@@ -20,7 +20,7 @@ class MediaFileController extends Controller
 {
     /**
      * @OA\Post(
-     *   path="/api/media",
+     *   path="/api/media/upload",
      *   tags={"Media Upload"},
      *   summary="Yeni medya dosyası yükle",
      *   security={{"bearerAuth":{}}},
@@ -34,7 +34,7 @@ class MediaFileController extends Controller
      *           type="object",
      *           required={"file","type"},
      *           @OA\Property(property="file", type="string", format="binary"),
-     *           @OA\Property(property="type", type="string"),
+     *           @OA\Property(property="type", type="string",description="image,video,audio,document"),
      *           @OA\Property(property="file_name", type="string")
      *         )
      *       )
@@ -74,7 +74,7 @@ class MediaFileController extends Controller
             'status' => true,
             'message' => 'Dosya başarıyla yüklendi.',
             'data' => $media
-        ], 201);
+        ], 200);
     }
 
 

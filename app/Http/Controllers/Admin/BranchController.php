@@ -32,7 +32,7 @@ class BranchController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->can('branch.view.list')) {
+        if (!auth()->user()->can('branch.view')) {
             return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         $branches = Branch::all();

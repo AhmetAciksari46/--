@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('class_models', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('academic_year')->nullable(); // 2024-2025
+            $table->foreignId('academic_year_id')->nullable()
+                ->constrained('academic_years')
+                ->nullOnDelete();
             $table->text('description')->nullable();
             $table->unsignedBigInteger('grade_id')->nullable();
 

@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Group;
 use App\Models\GroupMember;
 use App\Enums\GroupType;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 
 class UserObserver
 {
@@ -35,10 +37,19 @@ class UserObserver
         if ($user->hasAnyRole(['admin', 'manager', 'teacher'])) {
             $this->attachToGroup($user, GroupType::GlobalYonetim);
         }
+
+        /**
+         * ✅ DEFAULT PERMISSIONS
+         * → is_default = true olan permissionları user'a gerçekten ata
+         * → böylece list ve revoke düzgün çalışır
+         */
+        $this->attachDefaultPermissions($user);
+        $this->attachRoleBasedDefaultPermissions($user); // config by_role
+
     }
 
     /**
-     * Kullanıcının rolü değişirse (opsiyonel ama önerilir)
+     * Kullanıcının rolü değişirse
      */
     public function updated(User $user)
     {
@@ -51,6 +62,14 @@ class UserObserver
          * - global grupları yeniden senkronla
          */
         $this->syncGlobalGroups($user);
+
+        /**
+         * ⚠️ Burada default permissionları tekrar basmıyoruz!
+         * Çünkü admin kullanıcı default permissionı revoke etmiş olabilir.
+         * Eğer burada yeniden verirsek revoke boşa düşer.
+         *
+         * Eğer role-based default gibi özel bir yapı istersen ayrıca tasarlarız.
+         */
     }
 
     /* ======================================================
@@ -86,7 +105,65 @@ class UserObserver
             })
             ->delete();
 
-        // Sonra created mantığını tekrar uygula
-        $this->created($user);
+        // Sonra created mantığını tekrar uygula (gruplar için)
+        $this->createdGroupsOnly($user);
+    }
+
+    /**
+     * created() içindeki group mantığını ayrı çalıştırmak için.
+     * created() içinde default permission var, ama rol update'te tekrar vermek istemiyoruz.
+     */
+    private function createdGroupsOnly(User $user): void
+    {
+        $this->attachToGroup($user, GroupType::GlobalGeneral);
+
+        if ($user->hasRole('manager')) {
+            $this->attachToGroup($user, GroupType::GlobalManager);
+        }
+
+        if ($user->hasAnyRole(['admin', 'manager', 'teacher'])) {
+            $this->attachToGroup($user, GroupType::GlobalYonetim);
+        }
+    }
+
+    /**
+     * Default permissionları user'a gerçekten attach eder.
+     */
+    private function attachDefaultPermissions(User $user): void
+    {
+        $defaultPermissions = Permission::query()
+            ->where('is_default', true)
+            ->pluck('name');
+
+        if ($defaultPermissions->isEmpty()) {
+            return;
+        }
+
+        $user->givePermissionTo($defaultPermissions);
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+    }
+
+    private function attachRoleBasedDefaultPermissions(User $user): void
+    {
+        $role = $user->role;
+
+        // config'ten role default permissions listesini al
+        $roleDefaults = config("default_permissions.by_role.{$role}", []);
+
+        if (empty($roleDefaults)) {
+            return;
+        }
+
+        $permissions = Permission::query()
+            ->whereIn('name', $roleDefaults)
+            ->where('guard_name', 'sanctum')
+            ->pluck('name');
+
+        if ($permissions->isNotEmpty()) {
+            $user->givePermissionTo($permissions);
+        }
+
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }

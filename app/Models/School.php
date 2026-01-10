@@ -125,4 +125,8 @@ class School extends Model
     {
         return $this->hasMany(Group::class, 'school_id');
     }
+    public function studentPreRegistrations()
+    {
+        return $this->hasMany(StudentPreRegistration::class);
+    }
 }

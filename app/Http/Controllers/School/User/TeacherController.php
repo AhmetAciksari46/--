@@ -16,6 +16,7 @@ use App\Http\Requests\Profile\UpdateProfileRequest;
 use Illuminate\Support\Facades\DB;
 use App\Models\School;
 use Spatie\Permission\Models\Role;
+use App\Http\Resources\TeacherListResource;
 
 /**
  * @OA\Tag(
@@ -45,14 +46,28 @@ class TeacherController extends Controller
         if (!auth()->user()->can('teacher.view.list')) {
             return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
-        $teachers = User::where('role', 'teacher')
+        $teachers = User::query()
+            ->where('role', 'teacher')
             ->whereHas('teacherProfile', fn($q) => $q->where('school_id', $school->id))
-            ->with('teacherProfile')
+            ->with([
+                'teacherProfile' => fn($q) => $q->select([
+                    'id',
+                    'user_id',
+                    'phone',
+                    'img_path',
+                    'status',
+                    'is_active',
+                    'branch_id'
+                ]),
+                'teacherProfile.branch:id,name'
+            ])
+            ->select(['id', 'name', 'userName'])
             ->get();
+
         if ($teachers->isEmpty()) {
             return $this->errorResponse('Bu okula ait öğretmen bulunamadı.', 404);
         }
-        return $this->successResponse($teachers, 'Okula ait öğretmenler getirildi.', 200);
+        return $this->successResponse(TeacherListResource::collection($teachers), 'Okula ait öğretmenler getirildi.', 200);
     }
     /**
      * @OA\Get(
@@ -134,11 +149,12 @@ class TeacherController extends Controller
         if (!auth()->user()->can('teacher.create')) {
             return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
+
         try {
             $data = $request->validate([
                 'name' => 'required|string',
-                'userName' => 'required|string|unique:users',
-                'email' => 'nullable|email|unique:users',
+                'userName' => 'required|string|unique:users,userName',
+                'email' => 'nullable|email|unique:users,email',
                 'password' => 'required|string|min:6',
                 'branch_id' => 'required|exists:branches,id',
                 'phone' => 'nullable|string',
@@ -146,7 +162,9 @@ class TeacherController extends Controller
                 'birth_date' => 'nullable|date|before:today',
                 'referance' => 'nullable|string|max:255',
             ]);
-            DB::transaction(function () use ($data, $school) {
+
+            return DB::transaction(function () use ($data, $school) {
+
                 $user = User::create([
                     'name' => $data['name'],
                     'userName' => $data['userName'],
@@ -154,7 +172,9 @@ class TeacherController extends Controller
                     'password' => bcrypt($data['password']),
                     'role' => 'teacher',
                 ]);
+
                 $user->assignRole('teacher');
+
                 $user->teacherProfile()->create([
                     'school_id' => $school->id,
                     'branch_id' => $data['branch_id'],
@@ -164,12 +184,17 @@ class TeacherController extends Controller
                     'address' => $data['address'] ?? null,
                 ]);
 
-                return $this->successResponse($user->load('teacherProfile'), 'Yeni öğretmen oluşturuldu.', 200);
+                return $this->successResponse(
+                    $user->load('teacherProfile'),
+                    'Yeni öğretmen oluşturuldu.',
+                    200
+                );
             });
         } catch (\Exception $e) {
             return $this->errorResponse('Öğretmen oluşturulurken bir hata oluştu: ' . $e->getMessage(), 500);
         }
     }
+
 
     /**
      * @OA\Put(

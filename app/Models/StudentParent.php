@@ -4,14 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use app\Models\SchoolStudentProfile;
+use App\Models\SchoolStudentProfile;
 
 class StudentParent extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'student_profile_id',
+        'school_student_profile_id',
         'type',
         'relationship',
         'name',

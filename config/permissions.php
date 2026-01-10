@@ -14,7 +14,25 @@
         'grade.delete',
         'grade.view',
         'grade.view.list',
+        //mediapool
+        'mediapool.view.list',
+        'mediapool.view',
+        'mediapool.create',
+        'mediapool.update',
+        'mediapool.delete',
+        //content
+        'content.delete',
+        'content.update',
+        'content.view',
+        'content.create',
+        'content.view.list',
 
+        //category
+        'category.delete',
+        'category.view',
+        'category.update',
+        'category.create',
+        'category.view.list',
         // PACKAGE
         'package.create',
         'package.update',
@@ -55,6 +73,19 @@
         'teacher.available.permissions.view',
         'teacher.reset.password',
         'teacher.permissions.remove',
+
+        //manager
+        'managerpermission.create',
+        'managerpermission.update',
+        'managerpermission.view.list',
+        'managerpermission.delete',
+        'managerpermission.view',
+        //user
+        'userpermission.create',
+        'userpermission.update',
+        'userpermission.view.list',
+        'userpermission.delete',
+        'userpermission.view',
 
         //school
         //general
@@ -153,6 +184,22 @@
         'parentbirthdays.view.detail',
         'teacherbirthdays.view.detail',
         'studentbirthdays.view',
+
+
+        //physicalclass
+        'physicalclass.create',
+        'physicalclass.view.list',
+        'physicalclass.update',
+        'physicalclass.delete',
+        'physicalclass.view',
+
+        //academicyear
+        'academicyear.view.list',
+        'academicyear.view',
+        'academicyear.create',
+        'academicyear.update',
+        'academicyear.delete',
+
         //mediafile yapılmadı
 
 

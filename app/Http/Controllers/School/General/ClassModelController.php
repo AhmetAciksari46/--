@@ -13,6 +13,7 @@ use App\Http\Requests\Class\StoreClassRequest;
 use App\Http\Requests\Class\UpdateClassRequest;
 use App\Models\School;
 use App\Traits\ApiResponser;
+use App\Http\Resources\ClassModelResource;
 
 /**
  * @OA\Tag(
@@ -71,8 +72,16 @@ class ClassModelController extends Controller
         if (!auth()->user()->can('classmodel.view.list')) {
             return $this->errorResponse('Bu işlem için yetkiniz yok.', 403);
         }
+        $classes = ClassModel::query()
+            ->where('school_id', $school->id)
+            ->with([
+                'grade:id,name',
+                'teacher:id,name',
+                'academicYear:id,name', // eklediysen
+            ])
+            ->get();
         return $this->successResponse(
-            ClassModel::where('school_id', $school->id)->get(),
+            ClassModelResource::collection($classes),
             "Sınıflar başarıyla listelendi.",
             200
         );
@@ -135,7 +144,11 @@ class ClassModelController extends Controller
         $data['school_id'] = $school->id;
 
         $class = ClassModel::create($data);
-
+        $class->load([
+            'grade:id,name',
+            'teacher:id,name',
+            'academicYear:id,name', // eklediysen
+        ]);
         return $this->successResponse($class, "Sınıf başarıyla oluşturuldu.", 201);
     }
 
@@ -173,7 +186,11 @@ class ClassModelController extends Controller
         if ($classModel->school_id !== $school->id) {
             return $this->errorResponse("Bu sınıf bu okula ait değil.", 403);
         }
-
+        $classModel->load([
+            'grade:id,name',
+            'teacher:id,name',
+            'academicYear:id,name', // eklediysen
+        ]);
         return $this->successResponse($classModel, "Sınıf bilgileri getirildi.", 200);
     }
 
@@ -225,7 +242,11 @@ class ClassModelController extends Controller
             }
         }
         $classModel->update($request->validated());
-
+        $classModel->load([
+            'grade:id,name',
+            'teacher:id,name',
+            'academicYear:id,name', // eklediysen
+        ]);
         return $this->successResponse($classModel, "Sınıf başarıyla güncellendi.", 200);
     }
 
@@ -271,12 +292,10 @@ class ClassModelController extends Controller
     {
         $user = auth()->user();
 
-        // Admin her okula erişebilir
         if ($user->hasRole('admin')) {
             return true;
         }
 
-        // Manager kendi okulunda işlem yapabilir
         if ($user->hasRole('manager')) {
             if ($user->managerProfile && $user->managerProfile->school_id == $school->id) {
                 return true;
@@ -284,7 +303,6 @@ class ClassModelController extends Controller
             abort(403, 'Bu işlem için yetkiniz yok. (Manager Okul Erişim Engeli)');
         }
 
-        // Teacher kendi okulunda işlem yapabilir
         if ($user->hasRole('teacher')) {
             if ($user->teacherProfile && $user->teacherProfile->school_id == $school->id) {
                 return true;
@@ -292,7 +310,6 @@ class ClassModelController extends Controller
             abort(403, 'Bu işlem için yetkiniz yok. (Teacher Okul Erişim Engeli)');
         }
 
-        // Diğer roller için yasak
         abort(403, 'Bu işlem için yetkiniz yok.');
     }
 }

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Traits\ApiResponser; // <<< Bu satırı ekleyin!
+use App\Traits\ApiResponser;
 
 /**
  * @OA\Tag(
@@ -99,7 +99,7 @@ class UserController extends Controller
     {
         $this->authorizeRole(['admin', 'manager']);
         $user = User::create($request->all());
-        return response()->json($user, 201);
+        return $this->successResponse($user, 'Kullanıcı başarıyla oluşturuldu.', 200);
     }
     /**
      * @OA\Put(
@@ -133,7 +133,7 @@ class UserController extends Controller
         $this->authorizeRole(['admin', 'manager']);
         $user = User::findOrFail($id);
         $user->update($request->all());
-        return response()->json($user);
+        return $this->successResponse($user, 'Kullanıcı bilgileri başarıyla güncellendi.', 200);
     }
     /**
      * @OA\Delete(
@@ -155,6 +155,6 @@ class UserController extends Controller
     {
         $this->authorizeRole(['admin']);
         User::destroy($id);
-        return response()->json(null, 204);
+        return $this->successResponse(null, 'Kullanıcı bilgileri başarıyla silindi.', 200);
     }
 }

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Spatie\Permission\Models\Permission;
 use App\Traits\ApiResponser;
+use Spatie\Permission\PermissionRegistrar;
 
 /**
  * @OA\Tag(
@@ -36,13 +37,17 @@ class UserPermissionController extends Controller
         if (!auth()->user()->hasRole('admin')) {
             abort(403, 'Sadece admin işlem yapabilir.');
         }
-
         $permissions = Permission::query()
             ->where('is_assignable', true)
-            ->where('assign_level', 'admin')
+            ->where(function ($q) {
+                $q->where('assign_level', 'admin')
+                    ->orWhere('assign_level', 'manager');
+            })
             ->pluck('name');
         return $this->successResponse($permissions, "Aktarılabilir izinler listesi getirildi", 200);
     }
+
+
 
     /**
      * @OA\Post(
@@ -86,10 +91,12 @@ class UserPermissionController extends Controller
 
         $permissions = Permission::whereIn('name', $data['permissions'])
             ->where('is_assignable', true)
-            ->where('assign_level', 'admin')
+            ->whereIn('assign_level', ['admin', 'manager'])
             ->pluck('name');
 
         $user->givePermissionTo($permissions);
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        $user->refresh();
 
         return $this->successResponse(null, "Başarıyla yeni yetki verildi.", 200);
     }
@@ -134,13 +141,25 @@ class UserPermissionController extends Controller
             'permissions.*' => 'string|exists:permissions,name',
         ]);
 
-        foreach ($data['permissions'] as $permission) {
-            if ($user->hasPermissionTo($permission)) {
+        foreach ($data['permissions'] as $permissionName) {
+            // ✅ Guard'ı sanctum olan permission'ı bul
+            $permission = Permission::findByName($permissionName, 'sanctum');
+
+            // ✅ sadece direct permission ise kaldır
+            if ($user->hasDirectPermission($permissionName)) {
                 $user->revokePermissionTo($permission);
             }
         }
 
-        return $this->successResponse(null, "Başarıyla yetki kaldırıldı.", 200);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        $user->unsetRelation('permissions');
+        $user->unsetRelation('roles');
+        $user->refresh();
+        cache()->forget("permission_snapshot_{$user->id}");
+
+        return $this->successResponse([
+            'permissions' => $user->getAllPermissions()->pluck('name'),
+        ], "Başarıyla yetki kaldırıldı.", 200);
     }
 
     /**

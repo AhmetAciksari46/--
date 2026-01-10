@@ -14,7 +14,7 @@ trait ApiResponser
         $message = __('api.' . $key);
 
         return $message === 'api.' . $key
-            ? "Bilinmeyen hata mesajı anahtarı: {$key}"
+            ? "{$key}"
             : $message;
     }
 
@@ -27,6 +27,7 @@ trait ApiResponser
             'status'  => true,
             'message' => $message ?? __('api.success'),
             'data'    => $data ?? (object)[],
+            'code' => 200,
         ], $code);
     }
 
@@ -40,6 +41,7 @@ trait ApiResponser
             'message' => $this->getErrorMessage($key),
             'errors'  => $errors,
             'data'    => null,
-        ], $code);
+            "code" => $code,
+        ], 200);
     }
 }

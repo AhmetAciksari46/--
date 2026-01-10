@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  *     @OA\Property(property="referance", type="string", example="ABC123", nullable=true),
  *     @OA\Property(property="school_id", type="integer", example=2, nullable=true),
  *     @OA\Property(property="payment_reminder", type="boolean", example=true),
+ *     @OA\Property(property="img_path", type="string", example="/storage/teachers/1.png", nullable=true),
  *     @OA\Property(property="created_at", type="string", format="date-time", example="2025-10-21T12:00:00Z"),
  *     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-10-21T12:00:00Z"),
  *     @OA\Property(
@@ -46,6 +47,7 @@ class ManagerProfile extends Model
         'note',
         'referance',
         'school_id',
+        'img_path',
         'payment_reminder',
         'birth_date',
     ];

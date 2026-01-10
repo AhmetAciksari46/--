@@ -30,7 +30,7 @@ class GradeController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->can('grade.view.list')) {
+        if (!auth()->user()->can('grade.view')) {
             return $this->errorResponse('Bu işlemi yapmak için yetkiniz yok.', 403);
         }
         return $this->successResponse(Grade::all(), 'Seviyeler başarıyla getirildi.', 200);
